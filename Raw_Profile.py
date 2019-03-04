@@ -19,8 +19,7 @@ class Raw_Profile():
     """ Contains data from one file. Data is stored as a pandas DataFrame.
 
     :var tuple temp: temperature as (voltage1, voltage2, ..., time: ms)
-    :var tuple rh: relative humidity as (rh1, rh2, ..., time: ms)
-    :var tuple temp_rh: temperature as (voltage1, voltage2, ..., time: ms)
+    :var tuple rh: relative humidity as (rh1, T1, rh2, T2, ..., time: ms)
     :var tuple co2: CO2 data as (CO2, CO2, ..., time: ms)
     :var tuple gps: GPS data as (lat, lon, alt_MSL, time: Datetime)
     :var tuple pres: barometer data as (pres, time: ms)
@@ -96,7 +95,13 @@ class Raw_Profile():
         using a different code for each type.
         """
         temp_list = None
-        # sensor_names will be a dictionary formatted {name: index}
+        rh_list = None
+        # sensor_names will be dictionary of dictionaries formatted
+        # {
+        #     "IMET": {name: index, name: index, ...},
+        #     "RHUM": {name: index, name: index, ...},
+        #     ...
+        # }
         sensor_names = {}
         for elem in full_data:
 
@@ -110,23 +115,46 @@ class Raw_Profile():
                     temp_list = [[] for x in range(sum('Volt' in s for s in
                                  elem["data"].keys())+1)]
 
+                    sensor_names["IMET"] = {}
                     # Determine field names
                     sensor_numbers = np.add(range(len(temp_list)-1), 1)
                     for num in sensor_numbers:
-                        sensor_names["Volt"+str(num)] = num - 1
-                    sensor_names["Time"] = -1
+                        sensor_names["IMET"]["Volt"+str(num)] = num - 1
+                    sensor_names["IMET"]["Time"] = -1
 
                 # Read fields into temp_list, including Time
-                for key, value in sensor_names.items():
+                for key, value in sensor_names["IMET"].items():
                     try:
                         temp_list[value].append(elem["data"][key])
                     except KeyError:
                         temp_list[value].append(np.nan)
 
-            elif elem["meta"]["type"] == "potato":
-                print("something's wrong here")
+            elif elem["meta"]["type"] == "RHUM":
+
+                # First time only - setup rh_list and temp_rh_list
+                if rh_list is None:
+                    # Create array of lists with one list per RH
+                    # sensor reported in the data file, plus one for times
+                    rh_list = [[] for x in range(sum('Humi' in s for s in
+                               elem["data"].keys()) * 2 + 1)]
+    
+                    sensor_names["RHUM"] = {}
+                    # Determine field names
+                    sensor_numbers = np.add(range(int((len(rh_list)-1)/2)), 1)
+                    for num in sensor_numbers:
+                        sensor_names["RHUM"]["Humi"+str(num)] = 2*num - 2
+                        sensor_names["RHUM"]["Temp"+str(num)] = 2*num - 1
+                    sensor_names["RHUM"]["Time"] = -1
+
+                # Read fields into temp_list, including Time
+                for key, value in sensor_names["RHUM"].items():
+                    try:
+                        rh_list[value].append(elem["data"][key])
+                    except KeyError:
+                        temp_list[value].append(np.nan)
 
         self.temp = tuple(temp_list)
+        self.rh = tuple(rh_list)
 
     def _read_netCDF(self):
         """ Reads data from a NetCDF file. Called by the constructor.
