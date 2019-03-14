@@ -12,6 +12,7 @@ import numpy as np
 from datetime import datetime as dt
 
 units = pint.UnitRegistry()
+units.define('percent = 0.01*count = %')
 
 
 class Raw_Profile():
@@ -35,7 +36,7 @@ class Raw_Profile():
         self.rh = None
         self.temp_rh = None
         self.co2 = None
-        self.gps = None
+        self.pos = None
         self.pres = None
         self.rotation = None
         self.dev = dev
@@ -50,10 +51,6 @@ class Raw_Profile():
         rtype: dict
         return: {"lat":, "lon":, "alt_MSL":, "time":}
         """
-
-        return {"lat": self.gps[0] * units.degree, "lon": self.gps[1] *
-                units.degree, "alt_MSL": self.gps[2] * units.m, "time":
-                dt.fromtimestamp(self.gps[3])}
 
     def thermo_data(self):
         """ Gets data needed by the Thermo_Profile constructor.
@@ -111,7 +108,7 @@ class Raw_Profile():
         temp_list = None
         rh_list = None
         co2_list = None
-        gps_list = None
+        pos_list = None
         pres_list = None
         rotation_list = None
         # sensor_names will be dictionary of dictionaries formatted
@@ -150,7 +147,8 @@ class Raw_Profile():
                             else:
                                 temp_list[value].append(time)
                         else:
-                            temp_list[value].append(elem["data"][key])
+                            temp_list[value].append(elem["data"][key] *
+                                                    units.mvolt)
                     except KeyError:
                         temp_list[value].append(np.nan)
 
@@ -181,8 +179,12 @@ class Raw_Profile():
                                 raise KeyError("Time formatted incorrectly")
                             else:
                                 rh_list[value].append(time)
-                        else:
-                            rh_list[value].append(elem["data"][key])
+                        elif 'Humi' in key:
+                            rh_list[value].append(elem["data"][key] *
+                                                  units.percent)
+                        elif 'Temp' in key:
+                            rh_list[value].append(elem["data"][key] *
+                                                  units.K)
                     except KeyError:
                         rh_list[value].append(np.nan)
 
@@ -193,35 +195,45 @@ class Raw_Profile():
                     co2_list = []
 
             # GPS
-            elif elem["meta"]["type"] == "GPS":
+            elif elem["meta"]["type"] == "POS":
 
                 # First time only - setup gps_list
-                if gps_list is None:
+                if pos_list is None:
                     # Create array of lists with one list per [lat, lon, alt,
                     # time]
-                    gps_list = [[] for x in range(4)]
+                    pos_list = [[] for x in range(4)]
 
-                    sensor_names["GPS"] = {}
+                    sensor_names["POS"] = {}
 
                     # Determine field names
-                    sensor_names["GPS"]["Lat"] = 0
-                    sensor_names["GPS"]["Lng"] = 1
-                    sensor_names["GPS"]["Alt"] = 2
-                    sensor_names["GPS"]["TimeUS"] = 3
+                    sensor_names["POS"]["Lat"] = 0
+                    sensor_names["POS"]["Lng"] = 1
+                    sensor_names["POS"]["Alt"] = 2
+                    sensor_names["POS"]["TimeUS"] = 3
 
                 # Read fields into gps_list, including TimeUS
-                for key, value in sensor_names["GPS"].items():
+                for key, value in sensor_names["POS"].items():
                     try:
                         if 'Time' in key:
                             time = dt.fromtimestamp(elem["meta"]["timestamp"])
                             if time.year < 2000:
                                 raise KeyError("Time formatted incorrectly")
                             else:
-                                gps_list[value].append(time)
+                                pos_list[value].append(time)
                         else:
-                            gps_list[value].append(elem["data"][key])
+                            if 'Alt' in key:
+                                try:
+                                    pos_list[value].append(elem["data"][key] *
+                                                           units.MSL)
+                                except pint.UndefinedUnitError:
+                                    self._define_units(elem["data"][key])
+                                    pos_list[value].append(elem["data"][key] *
+                                                           units.MSL)
+                            else:
+                                pos_list[value].append(elem["data"][key] *
+                                                       units.deg)
                     except KeyError:
-                        gps_list[value].append(np.nan)
+                        pos_list[value].append(np.nan)
 
             # BARO -> Pressure
             elif elem["meta"]["type"] == "BARO":
@@ -250,8 +262,22 @@ class Raw_Profile():
                                 raise KeyError("Time formatted incorrectly")
                             else:
                                 pres_list[value].append(time)
+                        elif 'Alt' in key:
+                            try:
+                                pres_list[value].append(units.Quantity(
+                                        elem["data"][key], units.AGL))
+                            except pint.UndefinedUnitError:
+                                print('One BARO data point recorded \
+                                      without altitude')
+                                pres_list[value].append(np.NaN)
+                        elif 'Temp' in key or 'GndTemp' in key:
+                            pres_list[value].append(units.Quantity(
+                                        elem["data"][key], units.degF))
+                        elif 'Press' in key:
+                            pres_list[value].append(units.Quantity(
+                                        elem["data"][key], units.Pa))
                         else:
-                            pres_list[value].append(elem["data"][key])
+                            print('undefined BARO key: ' + key)
                     except KeyError:
                         pres_list[value].append(np.nan)
 
@@ -282,13 +308,14 @@ class Raw_Profile():
                             else:
                                 rotation_list[value].append(time)
                         else:
-                            rotation_list[value].append(elem["data"][key])
+                            rotation_list[value].append(elem["data"][key] *
+                                                        units.rad)
                     except KeyError:
                         rotation_list[value].append(np.nan)
 
         self.temp = tuple(temp_list)
         self.rh = tuple(rh_list)
-        self.gps = tuple(gps_list)
+        self.pos = tuple(pos_list)
         self.pres = tuple(pres_list)
         self.rotation = tuple(rotation_list)
 
@@ -302,3 +329,8 @@ class Raw_Profile():
         """ Save a NetCDF file to facilitate future processing if a .JSON was
         read.
         """
+
+    def _define_units(self, ground_alt):
+        print('defining AGL and MSL')
+        units.define('metersMSL = meter; offset: 0 = MSL')
+        units.define('meterAGL = MSL; offset: -' + str(ground_alt) + ' = AGL')
