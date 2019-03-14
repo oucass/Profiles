@@ -309,7 +309,7 @@ class Raw_Profile():
                                 rotation_list[value].append(time)
                         else:
                             rotation_list[value].append(elem["data"][key] *
-                                                        units.rad)
+                                                        units.deg)
                     except KeyError:
                         rotation_list[value].append(np.nan)
 
