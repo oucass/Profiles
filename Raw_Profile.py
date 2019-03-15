@@ -24,7 +24,8 @@ class Raw_Profile():
     :var tuple gps: GPS data as (lat, lon, alt_MSL, time: ms)
     :var tuple pres: barometer data as (pres, temp, ground_temp, alt_AGL,
                                         time: ms)
-    :var tuple rotation: UAS position data as (roll, pitch, yaw, time:ms)
+    :var tuple rotation: UAS position data as (VE, VN, VD, roll, pitch, yaw,
+                                               time:ms)
     :var bool dev: True if the data is from a developmental flight
     """
 
@@ -292,25 +293,28 @@ class Raw_Profile():
                     except KeyError:
                         pres_list[value].append(np.nan)
 
-            # ATT -> Rotation
-            elif elem["meta"]["type"] == "ATT":
+            # NKF1 -> Rotation
+            elif elem["meta"]["type"] == "NKF1":
 
                 # First time only - setup gps_list
                 if rotation_list is None:
-                    # Create array of lists with one list per [roll, pitch,
-                    # yaw, time]
-                    rotation_list = [[] for x in range(4)]
+                    # Create array of lists with one list per [ve, vn, vd,
+                    #roll, pitch, yaw, time]
+                    rotation_list = [[] for x in range(7)]
 
-                    sensor_names["ATT"] = {}
+                    sensor_names["NKF1"] = {}
 
                     # Determine field names
-                    sensor_names["ATT"]["Roll"] = 0
-                    sensor_names["ATT"]["Pitch"] = 1
-                    sensor_names["ATT"]["Yaw"] = 2
-                    sensor_names["ATT"]["TimeUS"] = 3
+                    sensor_names["NKF1"]["VE"] = 0
+                    sensor_names["NKF1"]["VN"] = 1
+                    sensor_names["NKF1"]["VD"] = 2
+                    sensor_names["NKF1"]["Roll"] = 3
+                    sensor_names["NKF1"]["Pitch"] = 4
+                    sensor_names["NKF1"]["Yaw"] = 5
+                    sensor_names["NKF1"]["TimeUS"] = -1
 
                 # Read fields into rotation_list, including TimeUS
-                for key, value in sensor_names["ATT"].items():
+                for key, value in sensor_names["NKF1"].items():
                     try:
                         if 'Time' in key:
                             time = dt.fromtimestamp(elem["meta"]["timestamp"])
@@ -318,7 +322,10 @@ class Raw_Profile():
                                 raise KeyError("Time formatted incorrectly")
                             else:
                                 rotation_list[value].append(time)
-                        else:
+                        elif 'VE' in key or 'VN' in key or 'VD' in key:
+                            rotation_list[value].append(elem["data"][key] *
+                                                        units.m / units.s)
+                        else:  # Roll, pitch, yaw
                             rotation_list[value].append(elem["data"][key] *
                                                         units.deg)
                     except KeyError:
