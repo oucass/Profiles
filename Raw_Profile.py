@@ -47,19 +47,55 @@ class Raw_Profile():
         elif "csv" in file_path or "CSV" in file_path:
             self._read_netCDF
 
-    def gps_data(self):
+    def pos_data(self):
         """ Gets data needed by the Profile constructor.
 
         rtype: dict
         return: {"lat":, "lon":, "alt_MSL":, "time":}
         """
 
+        to_return = {}
+
+        to_return["lat"] = self.pos[0]
+        to_return["lon"] = self.pos[1]
+        to_return["alt_MSL"] = self.pos[2]
+        to_return["time"] = self.pos[-1]
+
+        return to_return
+
     def thermo_data(self):
         """ Gets data needed by the Thermo_Profile constructor.
 
-        rtype: list
-        return: [temp, rh, pres]
+        rtype: dict
+        return: {"temp1":, "temp2":, ..., "tempj":, "time_temp":,
+                 "rh1":, "rh2":, ..., "rhk":, "time_rh":,
+                 "temp_rh1":, "temp_rh2":, ..., "temp_rhk":,
+                 "pres":, "temp_pres":, "ground_temp_pres":,
+                 "alt_pres":, "time_pres"}
         """
+        to_return = {}
+
+        for sensor_number in [a + 1 for a in range(len(self.temp) - 1)]:
+            to_return["temp" + str(sensor_number)] \
+                = self.temp[sensor_number - 1]
+
+        to_return["time_temp"] = self.temp[-1]
+
+        for sensor_number in [a + 1 for a in range((len(self.rh)-1) // 2)]:
+            to_return["rh" + str(sensor_number)] = \
+                self.rh[sensor_number * 2 - 2]
+            to_return["temp_rh" + str(sensor_number)] = \
+                self.rh[sensor_number*2 - 1]
+
+        to_return["time_rh"] = self.rh[-1]
+
+        to_return["pres"] = self.pres[0]
+        to_return["temp_pres"] = self.pres[1]
+        to_return["ground_temp_pres"] = self.pres[2][0]
+        to_return["alt_pres"] = self.pres[3]
+        to_return["time_pres"] = self.pres[-1]
+
+        return to_return
 
     def co2_data(self):
         """ Gets data needed by the CO2_Profile constructor.
