@@ -40,6 +40,7 @@ class Raw_Profile():
         self.pres = None
         self.rotation = None
         self.dev = dev
+        self.baro = "BARO"
         if "json" in file_path or "JSON" in file_path:
             self._read_JSON(file_path)
         elif "csv" in file_path or "CSV" in file_path:
@@ -119,6 +120,12 @@ class Raw_Profile():
         # }
         sensor_names = {}
         for elem in full_data:
+
+            if self.baro == "BARO" and elem["meta"]["type"] == "BAR2":
+                # remove BARO structure and switch to using BAR2
+                self.bar = "BAR2"
+                pres_list = None
+                sensor_names["BARO"] = None
 
             # IMET -> Temperature
             if elem["meta"]["type"] == "IMET":
@@ -235,26 +242,25 @@ class Raw_Profile():
                     except KeyError:
                         pos_list[value].append(np.nan)
 
-            # BARO -> Pressure
-            elif elem["meta"]["type"] == "BARO":
-
+            # BARO or BAR2-> Pressure
+            elif elem["meta"]["type"] == self.baro:
                 # First time only - setup gps_list
                 if pres_list is None:
                     # Create array of lists with one list per [pres, temp,
                     # ground_temp, alt, time]
                     pres_list = [[] for x in range(5)]
 
-                    sensor_names["BARO"] = {}
+                    sensor_names[self.baro] = {}
 
                     # Determine field names
-                    sensor_names["BARO"]["Press"] = 0
-                    sensor_names["BARO"]["Temp"] = 1
-                    sensor_names["BARO"]["GndTemp"] = 2
-                    sensor_names["BARO"]["Alt"] = 3
-                    sensor_names["BARO"]["TimeUS"] = 4
+                    sensor_names[self.baro]["Press"] = 0
+                    sensor_names[self.baro]["Temp"] = 1
+                    sensor_names[self.baro]["GndTemp"] = 2
+                    sensor_names[self.baro]["Alt"] = 3
+                    sensor_names[self.baro]["TimeUS"] = 4
 
                 # Read fields into pres_list, including TimeUS
-                for key, value in sensor_names["BARO"].items():
+                for key, value in sensor_names[self.baro].items():
                     try:
                         if 'Time' in key:
                             time = dt.fromtimestamp(elem["meta"]["timestamp"])
@@ -267,8 +273,8 @@ class Raw_Profile():
                                 pres_list[value].append(units.Quantity(
                                         elem["data"][key], units.AGL))
                             except pint.UndefinedUnitError:
-                                print('One BARO data point recorded \
-                                      without altitude')
+                                print('One ' + self.baro + ' data point \
+                                      recorded without altitude')
                                 pres_list[value].append(np.NaN)
                         elif 'Temp' in key or 'GndTemp' in key:
                             pres_list[value].append(units.Quantity(
