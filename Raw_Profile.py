@@ -123,7 +123,7 @@ class Raw_Profile():
 
             if self.baro == "BARO" and elem["meta"]["type"] == "BAR2":
                 # remove BARO structure and switch to using BAR2
-                self.bar = "BAR2"
+                self.baro = "BAR2"
                 pres_list = None
                 sensor_names["BARO"] = None
 
@@ -208,7 +208,7 @@ class Raw_Profile():
                 if pos_list is None:
                     # Create array of lists with one list per [lat, lon, alt,
                     # time]
-                    pos_list = [[] for x in range(4)]
+                    pos_list = [[] for x in range(6)]
 
                     sensor_names["POS"] = {}
 
@@ -216,7 +216,9 @@ class Raw_Profile():
                     sensor_names["POS"]["Lat"] = 0
                     sensor_names["POS"]["Lng"] = 1
                     sensor_names["POS"]["Alt"] = 2
-                    sensor_names["POS"]["TimeUS"] = 3
+                    sensor_names["POS"]["RelHomeAlt"] = 3
+                    sensor_names["POS"]["RelOriginAlt"] = 4
+                    sensor_names["POS"]["TimeUS"] = -1
 
                 # Read fields into gps_list, including TimeUS
                 for key, value in sensor_names["POS"].items():
@@ -228,7 +230,10 @@ class Raw_Profile():
                             else:
                                 pos_list[value].append(time)
                         else:
-                            if 'Alt' in key:
+                            if "Rel" in key:
+                                pos_list[value].append(elem["data"][key] *
+                                                       units.meter)
+                            elif 'Alt' in key:
                                 try:
                                     pos_list[value].append(elem["data"][key] *
                                                            units.MSL)
