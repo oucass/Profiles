@@ -18,14 +18,14 @@ units.define('percent = 0.01*count = %')
 class Raw_Profile():
     """ Contains data from one file. Data is stored as a pandas DataFrame.
 
-    :var tuple temp: temperature as (voltage1, voltage2, ..., time: ms)
-    :var tuple rh: relative humidity as (rh1, T1, rh2, T2, ..., time: ms)
-    :var tuple co2: CO2 data as (CO2, CO2, ..., time: ms)
-    :var tuple gps: GPS data as (lat, lon, alt_MSL, time: ms)
+    :var tuple temp: temperature as (voltage1, voltage2, ..., time)
+    :var tuple rh: relative humidity as (rh1, T1, rh2, T2, ..., time)
+    :var tuple co2: CO2 data as (CO2, CO2, ..., time)
+    :var tuple gps: GPS data as (lat, lon, alt_MSL, time)
     :var tuple pres: barometer data as (pres, temp, ground_temp, alt_AGL,
-                                        time: ms)
+                                        time)
     :var tuple rotation: UAS position data as (VE, VN, VD, roll, pitch, yaw,
-                                               time:ms)
+                                               time)
     :var bool dev: True if the data is from a developmental flight
     """
 
@@ -108,8 +108,21 @@ class Raw_Profile():
         """ Gets data needed by the Wind_Profile constructor.
 
         rtype: list
-        return: [rotation]
+        return: {"speed_east":, "speed_north":, "speed_down":,
+                 "roll":, "pitch":, "yaw":, "time":}
         """
+        to_return = {}
+
+        # rotation is formatted: (VE, VN, VD, roll, pitch, yaw, time)
+        to_return["speed_east"] = self.rotation[0]
+        to_return["speed_north"] = self.rotation[1]
+        to_return["speed_down"] = self.rotation[2]
+        to_return["roll"] = self.rotation[3]
+        to_return["pitch"] = self.rotation[4]
+        to_return["yaw"] = self.rotation[5]
+        to_return["time"] = self.rotation[6]
+
+        return to_return
 
     def _read_JSON(self, file_path):
         """ Reads data from a .JSON file. Called by the constructor.
