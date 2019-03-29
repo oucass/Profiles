@@ -4,12 +4,15 @@ Reads data file (JSON or netCDF) and stores the raw data
 Authors Brian Greene, Jessica Wiedemeier, Tyler Bell, Gus Azevedo \n
 Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 2019
+
+TODO co2_data not implemented, co2 not read or saved in netCDF
 """
 
 import pint
 import json
 import numpy as np
 from datetime import datetime as dt
+import netCDF4
 
 units = pint.UnitRegistry()
 units.define('percent = 0.01*count = %')
@@ -21,7 +24,8 @@ class Raw_Profile():
     :var tuple temp: temperature as (voltage1, voltage2, ..., time)
     :var tuple rh: relative humidity as (rh1, T1, rh2, T2, ..., time)
     :var tuple co2: CO2 data as (CO2, CO2, ..., time)
-    :var tuple gps: GPS data as (lat, lon, alt_MSL, time)
+    :var tuple pos: GPS data as (lat, lon, alt_MSL, alt_rel_home,
+                                 alt_rel_orig, time)
     :var tuple pres: barometer data as (pres, temp, ground_temp, alt_AGL,
                                         time)
     :var tuple rotation: UAS position data as (VE, VN, VD, roll, pitch, yaw,
@@ -35,7 +39,6 @@ class Raw_Profile():
         """
         self.temp = None
         self.rh = None
-        self.temp_rh = None
         self.co2 = None
         self.pos = None
         self.pres = None
@@ -44,8 +47,8 @@ class Raw_Profile():
         self.baro = "BARO"
         if "json" in file_path or "JSON" in file_path:
             self._read_JSON(file_path)
-        elif "csv" in file_path or "CSV" in file_path:
-            self._read_netCDF
+        elif ".nc" in file_path:
+            self._read_netCDF(file_path)
 
     def pos_data(self):
         """ Gets data needed by the Profile constructor.
@@ -204,8 +207,7 @@ class Raw_Profile():
                             else:
                                 temp_list[value].append(time)
                         else:
-                            temp_list[value].append(elem["data"][key] *
-                                                    units.mvolt)
+                            temp_list[value].append(elem["data"][key])
                     except KeyError:
                         temp_list[value].append(np.nan)
 
@@ -237,11 +239,9 @@ class Raw_Profile():
                             else:
                                 rh_list[value].append(time)
                         elif 'Humi' in key:
-                            rh_list[value].append(elem["data"][key] *
-                                                  units.percent)
+                            rh_list[value].append(elem["data"][key])
                         elif 'Temp' in key:
-                            rh_list[value].append(elem["data"][key] *
-                                                  units.K)
+                            rh_list[value].append(elem["data"][key])
                     except KeyError:
                         rh_list[value].append(np.nan)
 
@@ -251,7 +251,7 @@ class Raw_Profile():
                 if co2_list is None:
                     co2_list = []
 
-            # GPS
+            # POS
             elif elem["meta"]["type"] == "POS":
 
                 # First time only - setup gps_list
@@ -281,19 +281,11 @@ class Raw_Profile():
                                 pos_list[value].append(time)
                         else:
                             if "Rel" in key:
-                                pos_list[value].append(elem["data"][key] *
-                                                       units.meter)
+                                pos_list[value].append(elem["data"][key])
                             elif 'Alt' in key:
-                                try:
-                                    pos_list[value].append(elem["data"][key] *
-                                                           units.MSL)
-                                except pint.UndefinedUnitError:
-                                    self._define_units(elem["data"][key])
-                                    pos_list[value].append(elem["data"][key] *
-                                                           units.MSL)
+                                pos_list[value].append(elem["data"][key])
                             else:
-                                pos_list[value].append(elem["data"][key] *
-                                                       units.deg)
+                                pos_list[value].append(elem["data"][key])
                     except KeyError:
                         pos_list[value].append(np.nan)
 
@@ -324,19 +316,11 @@ class Raw_Profile():
                             else:
                                 pres_list[value].append(time)
                         elif 'Alt' in key:
-                            try:
-                                pres_list[value].append(units.Quantity(
-                                        elem["data"][key], units.AGL))
-                            except pint.UndefinedUnitError:
-                                print('One ' + self.baro + ' data point \
-                                      recorded without altitude')
-                                pres_list[value].append(np.NaN)
+                            pres_list[value].append(elem["data"][key])
                         elif 'Temp' in key or 'GndTemp' in key:
-                            pres_list[value].append(units.Quantity(
-                                        elem["data"][key], units.degF))
+                            pres_list[value].append(elem["data"][key])
                         elif 'Press' in key:
-                            pres_list[value].append(units.Quantity(
-                                        elem["data"][key], units.Pa))
+                            pres_list[value].append(elem["data"][key])
                         else:
                             print('undefined BARO key: ' + key)
                     except KeyError:
@@ -348,7 +332,7 @@ class Raw_Profile():
                 # First time only - setup gps_list
                 if rotation_list is None:
                     # Create array of lists with one list per [ve, vn, vd,
-                    #roll, pitch, yaw, time]
+                    # roll, pitch, yaw, time]
                     rotation_list = [[] for x in range(7)]
 
                     sensor_names["NKF1"] = {}
@@ -372,32 +356,378 @@ class Raw_Profile():
                             else:
                                 rotation_list[value].append(time)
                         elif 'VE' in key or 'VN' in key or 'VD' in key:
-                            rotation_list[value].append(elem["data"][key] *
-                                                        units.m / units.s)
+                            rotation_list[value].append(elem["data"][key])
                         else:  # Roll, pitch, yaw
-                            rotation_list[value].append(elem["data"][key] *
-                                                        units.deg)
+                            rotation_list[value].append(elem["data"][key])
                     except KeyError:
                         rotation_list[value].append(np.nan)
 
+        #
+        # Add the units
+        #
+
+        # Temperature
+        for i in range(len(temp_list) - 1):
+            temp_list[i] = temp_list[i] * units.mV
+
+        # RH
+        for i in range(len(rh_list) - 1):
+            # rh
+            if i % 2 == 0:
+                rh_list[i] = rh_list[i] * units.percent
+            # temp
+            else:
+                rh_list[i] = rh_list[i] * units.kelvin
+
+        # POS
+        self._define_units(pos_list[2][0])
+        pos_list[0] = pos_list[0] * units.deg  # lat
+        pos_list[1] = pos_list[1] * units.deg  # lng
+        pos_list[2] = pos_list[2] * units.MSL  # alt
+        pos_list[3] = pos_list[3] * units.m  # relHomeAlt
+        pos_list[4] = pos_list[4] * units.m  # relOrigAlt
+
+        # PRES
+        pres_list[0] = pres_list[0] * units.Pa
+        pres_list[1] = pres_list[1] * units.F
+        pres_list[2] = pres_list[2] * units.F
+        pres_list[3] = units.Quantity(pres_list[3], units.AGL)
+
+        # ROTATION
+        for i in range(len(rotation_list) - 1):
+            if i < 3:
+                rotation_list[i] = rotation_list[i] \
+                                        * units.m / units.s
+            else:
+                rotation_list[i] = rotation_list[i] * units.deg
+
+        #
+        # Convert to tuple
+        #
         self.temp = tuple(temp_list)
         self.rh = tuple(rh_list)
         self.pos = tuple(pos_list)
         self.pres = tuple(pres_list)
         self.rotation = tuple(rotation_list)
 
-        self._save_netCDF()
+        self._save_netCDF(file_path)
 
-    def _read_netCDF(self):
+    def _read_netCDF(self, file_path):
         """ Reads data from a NetCDF file. Called by the constructor.
-        """
 
-    def _save_netCDF(self):
+        self.dev = dev
+        self.baro = "BARO"
+        """
+        main_file = netCDF4.Dataset(file_path, "r", format="NETCDF4")
+        # Note: each data chunk is converted to an np array. This is not a
+        # superfluous conversion; a Variable object is incompatible with pint.
+
+        #
+        # POSITION - this should be first so that _define_units can be called
+        #
+        pos_list = []
+        # define needed units
+        self._define_units(main_file["pos"].variables["alt"][0])
+        # lat
+        pos_list.append(main_file["pos"].variables["lat"])
+        pos_list[0] = np.array(pos_list[0]) * units.deg
+        # lng
+        pos_list.append(main_file["pos"].variables["lng"])
+        pos_list[1] = np.array(pos_list[1]) * units.deg
+        # alt
+        pos_list.append(main_file["pos"].variables["alt"])
+        pos_list[2] = np.array(pos_list[2]) * units.MSL
+        # altitude relative to home
+        pos_list.append(main_file["pos"].variables["alt_rel_home"])
+        pos_list[3] = np.array(pos_list[3]) * units.m
+        # altitude relative to origin
+        pos_list.append(main_file["pos"].variables["alt_rel_orig"])
+        pos_list[4] = np.array(pos_list[4]) * units.m
+        # time
+        pos_list.append(netCDF4.num2date(main_file["pos"].
+                                         variables["time"][:],
+                                         units="microseconds since \
+                                         2010-01-01 00:00:00:00"))
+        # convert to tuple and save
+        self.pos = tuple(pos_list)
+
+        #
+        # TEMPERATURE
+        #
+        temp_list = []
+        i = 1
+        while(True):
+            try:
+                temp_list.append(main_file["temp"].variables["volt" + str(i)])
+                temp_list[i-1] = np.array(temp_list[i-1]) * units.mV
+                i += 1
+            except KeyError:
+                break
+        temp_list.append(netCDF4.num2date(main_file["temp"].
+                                          variables["time"][:],
+                                          units="microseconds since \
+                                          2010-01-01 00:00:00:00"))
+        self.temp = tuple(temp_list)
+
+        #
+        # RELATIVE HUMIDITY
+        #
+        rh_list = []
+        i = 1
+        while(True):
+            try:
+                rh_list.append(main_file["rh"].variables["rh" + str(i)])
+                rh_list[-1] = np.array(rh_list[-1]) * units.percent
+
+                rh_list.append(main_file["rh"].variables["temp" + str(i)])
+                rh_list[-1] = np.array(rh_list[-1]) * units.F
+
+                i += 1
+            except KeyError:
+                break
+        rh_list.append(netCDF4.num2date(main_file["rh"].
+                                        variables["time"][:],
+                                        units="microseconds since \
+                                        2010-01-01 00:00:00:00"))
+        self.rh = tuple(rh_list)
+
+        #
+        # TODO- CO2
+        #
+
+        #
+        # PRESSURE
+        #
+        pres_list = []
+        # pres
+        pres_list.append(main_file["pres"].variables["pres"])
+        pres_list[0] = np.array(pres_list[0]) * units.Pa
+        # temp
+        pres_list.append(main_file["pres"].variables["temp"])
+        pres_list[1] = np.array(pres_list[1]) * units.F
+        # temp_gnd
+        pres_list.append(main_file["pres"].variables["temp_ground"])
+        pres_list[2] = np.array(pres_list[2]) * units.F
+        # alt
+        pres_list.append(main_file["pres"].variables["alt"])
+        pres_list[3] = units.Quantity(np.array(pres_list[3]), units.AGL)
+        # time
+        pres_list.append(netCDF4.num2date(main_file["pres"].
+                                          variables["time"][:],
+                                          units="microseconds since \
+                                          2010-01-01 00:00:00:00"))
+        self.pres = tuple(pres_list)
+
+        #
+        # ROTATION
+        #
+        rot_list = []
+        # VE
+        rot_list.append(main_file["rotation"].variables["VE"])
+        rot_list[0] = np.array(rot_list[0]) * units.m / units.s
+        # VN
+        rot_list.append(main_file["rotation"].variables["VN"])
+        rot_list[1] = np.array(rot_list[1]) * units.m / units.s
+        # VD
+        rot_list.append(main_file["rotation"].variables["VD"])
+        rot_list[2] = np.array(rot_list[2]) * units.m / units.s
+        # roll
+        rot_list.append(main_file["rotation"].variables["roll"])
+        rot_list[3] = np.array(rot_list[3]) * units.deg
+        # pitch
+        rot_list.append(main_file["rotation"].variables["pitch"])
+        rot_list[4] = np.array(rot_list[4]) * units.deg
+        # yaw
+        rot_list.append(main_file["rotation"].variables["yaw"])
+        rot_list[5] = np.array(rot_list[5]) * units.deg
+        # time
+        rot_list.append(netCDF4.num2date(main_file["rotation"].
+                                         variables["time"][:],
+                                         units="microseconds since \
+                                         2010-01-01 00:00:00:00"))
+        self.rotation = tuple(rot_list)
+
+        #
+        # Other Attributes
+        #
+        self.baro = main_file.baro
+        self.dev = "True" in main_file.dev
+
+        main_file.close()
+
+    def _save_netCDF(self, file_path):
         """ Save a NetCDF file to facilitate future processing if a .JSON was
         read.
         """
+        main_file = netCDF4.Dataset(file_path[:-5] + ".nc", "w",
+                                    format="NETCDF4")
+
+        # TEMP
+        temp_grp = main_file.createGroup("/temp")
+        temp_grp.createDimension("temp_time", None)
+        # temp_grp.base_time = date2num(self.temp[-1][0])
+        temp_sensor_numbers = np.add(range(len(self.temp)-1), 1)
+        for num in temp_sensor_numbers:
+            new_var = temp_grp.createVariable("volt" + str(num), "f8",
+                                              ("temp_time",))
+            new_var[:] = self.temp[num - 1].magnitude
+            new_var.units = "mV"
+        new_var = temp_grp.createVariable("time", "f8", ("temp_time",))
+        new_var[:] = netCDF4.date2num(self.temp[-1],
+                                      units="microseconds since \
+                                      2010-01-01 00:00:00:00")
+        new_var.units = "microseconds since 2010-01-01 00:00:00:00"
+
+        # RH
+        rh_grp = main_file.createGroup("/rh")
+        rh_grp.createDimension("rh_time", None)
+        rh_sensor_numbers = np.add(range(int((len(self.rh)-1)/2)), 1)
+        for num in rh_sensor_numbers:
+            new_rh = rh_grp.createVariable("rh" + str(num),
+                                           "f8", ("rh_time", ))
+            new_temp = rh_grp.createVariable("temp" + str(num),
+                                             "f8", ("rh_time", ))
+            new_rh[:] = self.rh[2*num-2].magnitude
+            new_temp[:] = self.rh[2*num-1].magnitude
+            new_rh.units = "%"
+            new_temp.units = "F"
+        new_var = rh_grp.createVariable("time", "i8", ("rh_time",))
+        new_var[:] = netCDF4.date2num(self.rh[-1],
+                                      units="microseconds since \
+                                      2010-01-01 00:00:00:00")
+        new_var.units = "microseconds since 2010-01-01 00:00:00:00"
+
+        # TODO - CO2
+
+        # POS
+        pos_grp = main_file.createGroup("/pos")
+        pos_grp.createDimension("pos_time", None)
+        lat = pos_grp.createVariable("lat", "f8", ("pos_time", ))
+        lng = pos_grp.createVariable("lng", "f8", ("pos_time", ))
+        alt = pos_grp.createVariable("alt", "f8", ("pos_time", ))
+        alt_rel_home = pos_grp.createVariable("alt_rel_home", "f8",
+                                              ("pos_time", ))
+        alt_rel_orig = pos_grp.createVariable("alt_rel_orig", "f8",
+                                              ("pos_time", ))
+        time = pos_grp.createVariable("time", "i8", ("pos_time",))
+
+        lat[:] = self.pos[0].magnitude
+        lng[:] = self.pos[1].magnitude
+        alt[:] = self.pos[2].magnitude
+        alt_rel_home[:] = self.pos[3].magnitude
+        alt_rel_orig[:] = self.pos[4].magnitude
+        time[:] = netCDF4.date2num(self.pos[-1], units="microseconds since \
+                                   2010-01-01 00:00:00:00")
+
+        lat.units = "deg"
+        lng.units = "deg"
+        alt.units = "m MSL"
+        alt_rel_home.units = "m"
+        alt_rel_orig.units = "m"
+        time.units = "microseconds since 2010-01-01 00:00:00:00"
+
+        # PRES
+        pres_grp = main_file.createGroup("/pres")
+        pres_grp.createDimension("pres_time", None)
+        pres = pres_grp.createVariable("pres", "f8", ("pres_time", ))
+        temp = pres_grp.createVariable("temp", "f8", ("pres_time", ))
+        temp_gnd = pres_grp.createVariable("temp_ground", "f8",
+                                           ("pres_time", ))
+        alt = pres_grp.createVariable("alt", "f8", ("pres_time", ))
+        time = pres_grp.createVariable("time", "i8", ("pres_time", ))
+
+        pres[:] = self.pres[0].magnitude
+        temp[:] = self.pres[1].magnitude
+        temp_gnd[:] = self.pres[2].magnitude
+        alt[:] = self.pres[3].magnitude
+        time[:] = netCDF4.date2num(self.pres[-1], units="microseconds since \
+                                   2010-01-01 00:00:00:00")
+
+        pres.units = "Pa"
+        temp.units = "F"
+        temp_gnd.units = "F"
+        alt.units = "m AGL"
+        time.units = "microseconds since 2010-01-01 00:00:00:00"
+
+        # ROTATION
+        rot_grp = main_file.createGroup("/rotation")
+        rot_grp.createDimension("rot_time", None)
+        ve = rot_grp.createVariable("VE", "f8", ("rot_time", ))
+        vn = rot_grp.createVariable("VN", "f8", ("rot_time", ))
+        vd = rot_grp.createVariable("VD", "f8", ("rot_time", ))
+        roll = rot_grp.createVariable("roll", "f8", ("rot_time", ))
+        pitch = rot_grp.createVariable("pitch", "f8", ("rot_time", ))
+        yaw = rot_grp.createVariable("yaw", "f8", ("rot_time", ))
+        time = rot_grp.createVariable("time", "i8", ("rot_time", ))
+
+        ve[:] = self.rotation[0].magnitude
+        vn[:] = self.rotation[1].magnitude
+        vd[:] = self.rotation[2].magnitude
+        roll[:] = self.rotation[3].magnitude
+        pitch[:] = self.rotation[4].magnitude
+        yaw[:] = self.rotation[5].magnitude
+        time[:] = netCDF4.date2num(self.rotation[-1], units="microseconds \
+                                   since 2010-01-01 00:00:00:00")
+
+        ve.units = "m/s"
+        vn.units = "m/s"
+        vd.units = "m/s"
+        roll.units = "deg"
+        pitch.units = "deg"
+        yaw.units = "deg"
+        time.units = "microseconds since 2010-01-01 00:00:00:00"
+
+        # Assign global attributes and close the file
+        main_file.baro = self.baro
+        main_file.dev = str(self.dev)
+        main_file.close()
 
     def _define_units(self, ground_alt):
         print('defining AGL and MSL')
-        units.define('metersMSL = meter; offset: 0 = MSL')
+        units.define('meterMSL = meter; offset: 0 = MSL')
         units.define('meterAGL = MSL; offset: -' + str(ground_alt) + ' = AGL')
+
+    def is_equal(self, other):
+        """ Checks if two Raw_Profiles are the same
+        """
+        # temps
+        for i in range(len(self.temp)):
+            if not np.array_equal(self.temp[i], other.temp[i]):
+                print("temp not equal at " + str(i))
+                return False
+
+        # rhs
+        for i in range(len(self.rh)):
+            if not np.array_equal(self.rh[i], other.rh[i]):
+                print("rh not equal at " + str(i))
+                return False
+
+        # pos
+        for i in range(len(self.pos)):
+            if not np.array_equal(self.pos[i], other.pos[i]):
+                print("pos not equal at " + str(i))
+                return False
+
+        # rotations
+        for i in range(len(self.rotation)):
+            if not np.array_equal(self.rotation[i], other.rotation[i]):
+                print("rotation not equal at " + str(i))
+                return False
+
+        # pres
+        for i in range(len(self.pres)):
+            if not np.array_equal(self.pres[i], other.pres[i]):
+                print("pres not equal at " + str(i))
+                return False
+
+        # TODO - CO2
+
+        # misc
+        if self.baro != other.baro:
+            print("baro not equal")
+            return False
+        if self.dev != other.dev:
+            print("dev not equal")
+            return False
+
+        return True
