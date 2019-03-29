@@ -37,22 +37,25 @@
 <p>Authors Brian Greene, Jessica Wiedemeier, Tyler Bell, Gus Azevedo</p>
 <p>Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 2019</p>
+<p>TODO co2_data not implemented, co2 not read or saved in netCDF</p>
 <dl class="class">
 <dt id="Raw_Profile.Raw_Profile">
 <em class="property">class </em><code class="descclassname">Raw_Profile.</code><code class="descname">Raw_Profile</code><span class="sig-paren">(</span><em>file_path</em>, <em>dev=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Raw_Profile.Raw_Profile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Contains data from one file.</p>
+<dd><p>Contains data from one file. Data is stored as a pandas DataFrame.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>temp</strong> (<em>tuple</em>) – temperature as (voltage1, voltage2, …, time: ms)</li>
-<li><strong>rh</strong> (<em>tuple</em>) – relative humidity as (rh1, rh2, …, time: ms)</li>
-<li><strong>temp_rh</strong> (<em>tuple</em>) – temperature as (voltage1, voltage2, …, time: ms)</li>
-<li><strong>co2</strong> (<em>tuple</em>) – CO2 data as (CO2, CO2, …, time: ms)</li>
-<li><strong>gps</strong> (<em>tuple</em>) – GPS data as (lat, lon, alt_MSL, time: Datetime)</li>
-<li><strong>pres</strong> (<em>tuple</em>) – barometer data as (pres, time: ms)</li>
-<li><strong>rotation</strong> (<em>tuple</em>) – UAS position data as (roll, pitch, yaw, time:ms)</li>
+<li><strong>temp</strong> (<em>tuple</em>) – temperature as (voltage1, voltage2, …, time)</li>
+<li><strong>rh</strong> (<em>tuple</em>) – relative humidity as (rh1, T1, rh2, T2, …, time)</li>
+<li><strong>co2</strong> (<em>tuple</em>) – CO2 data as (CO2, CO2, …, time)</li>
+<li><strong>pos</strong> (<em>tuple</em>) – GPS data as (lat, lon, alt_MSL, alt_rel_home,
+alt_rel_orig, time)</li>
+<li><strong>pres</strong> (<em>tuple</em>) – barometer data as (pres, temp, ground_temp, alt_AGL,
+time)</li>
+<li><strong>rotation</strong> (<em>tuple</em>) – UAS position data as (VE, VN, VD, roll, pitch, yaw,
+time)</li>
 <li><strong>dev</strong> (<em>bool</em>) – True if the data is from a developmental flight</li>
 </ul>
 </td>
@@ -68,17 +71,33 @@ return: [co2, temp, rh]</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="Raw_Profile.Raw_Profile.read_netCDF">
-<code class="descname">read_netCDF</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Raw_Profile.Raw_Profile.read_netCDF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads data from a NetCDF file. Called by the constructor.</p>
+<dt id="Raw_Profile.Raw_Profile.is_equal">
+<code class="descname">is_equal</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#Raw_Profile.Raw_Profile.is_equal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if two Raw_Profiles are the same.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#Raw_Profile.Raw_Profile" title="Raw_Profile.Raw_Profile"><em>Raw_Profile</em></a>) – profile with which to compare this one</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Raw_Profile.Raw_Profile.pos_data">
+<code class="descname">pos_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Raw_Profile.Raw_Profile.pos_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets data needed by the Profile constructor.</p>
+<p>rtype: dict
+return: {“lat”:, “lon”:, “alt_MSL”:, “time”:}</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="Raw_Profile.Raw_Profile.thermo_data">
 <code class="descname">thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Raw_Profile.Raw_Profile.thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets data needed by the Thermo_Profile constructor.</p>
-<p>rtype: list
-return: [temp, rh, pres]</p>
+<p>rtype: dict
+return: {“temp1”:, “temp2”:, …, “tempj”:, “time_temp”:,                  “rh1”:, “rh2”:, …, “rhk”:, “time_rh”:,                  “temp_rh1”:, “temp_rh2”:, …, “temp_rhk”:,                  “pres”:, “temp_pres”:, “ground_temp_pres”:,                  “alt_pres”:, “time_pres”}</p>
 </dd></dl>
 
 <dl class="method">
@@ -86,7 +105,7 @@ return: [temp, rh, pres]</p>
 <code class="descname">wind_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Raw_Profile.Raw_Profile.wind_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets data needed by the Wind_Profile constructor.</p>
 <p>rtype: list
-return: [rotation]</p>
+return: {“speed_east”:, “speed_north”:, “speed_down”:,                  “roll”:, “pitch”:, “yaw”:, “time”:}</p>
 </dd></dl>
 
 </dd></dl>

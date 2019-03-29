@@ -36,6 +36,9 @@ class Raw_Profile():
     def __init__(self, file_path, dev=False):
         """ Creates a Raw_Profile object and reads in data in the appropiate
         format.
+
+        :param string file_path: file name
+        :param bool dev: True if the flight was developmental, false otherwise
         """
         self.temp = None
         self.rh = None
@@ -70,10 +73,10 @@ class Raw_Profile():
         """ Gets data needed by the Thermo_Profile constructor.
 
         rtype: dict
-        return: {"temp1":, "temp2":, ..., "tempj":, "time_temp":,
-                 "rh1":, "rh2":, ..., "rhk":, "time_rh":,
-                 "temp_rh1":, "temp_rh2":, ..., "temp_rhk":,
-                 "pres":, "temp_pres":, "ground_temp_pres":,
+        return: {"temp1":, "temp2":, ..., "tempj":, "time_temp":, \
+                 "rh1":, "rh2":, ..., "rhk":, "time_rh":, \
+                 "temp_rh1":, "temp_rh2":, ..., "temp_rhk":, \
+                 "pres":, "temp_pres":, "ground_temp_pres":, \
                  "alt_pres":, "time_pres"}
         """
         to_return = {}
@@ -111,7 +114,7 @@ class Raw_Profile():
         """ Gets data needed by the Wind_Profile constructor.
 
         rtype: list
-        return: {"speed_east":, "speed_north":, "speed_down":,
+        return: {"speed_east":, "speed_north":, "speed_down":, \
                  "roll":, "pitch":, "yaw":, "time":}
         """
         to_return = {}
@@ -129,6 +132,8 @@ class Raw_Profile():
 
     def _read_JSON(self, file_path):
         """ Reads data from a .JSON file. Called by the constructor.
+
+        :param string file_path: file name
         """
 
         # Read the file into a list which pandas can normalize and read
@@ -415,8 +420,7 @@ class Raw_Profile():
     def _read_netCDF(self, file_path):
         """ Reads data from a NetCDF file. Called by the constructor.
 
-        self.dev = dev
-        self.baro = "BARO"
+        :param string file_path: file name
         """
         main_file = netCDF4.Dataset(file_path, "r", format="NETCDF4")
         # Note: each data chunk is converted to an np array. This is not a
@@ -558,6 +562,8 @@ class Raw_Profile():
     def _save_netCDF(self, file_path):
         """ Save a NetCDF file to facilitate future processing if a .JSON was
         read.
+
+        :param string file_path: file name
         """
         main_file = netCDF4.Dataset(file_path[:-5] + ".nc", "w",
                                     format="NETCDF4")
@@ -683,12 +689,18 @@ class Raw_Profile():
         main_file.close()
 
     def _define_units(self, ground_alt):
+        """ Defines MSL and AGL in pint.
+
+        :param number ground_alt: MSL altitude at ground level
+        """
         print('defining AGL and MSL')
         units.define('meterMSL = meter; offset: 0 = MSL')
         units.define('meterAGL = MSL; offset: -' + str(ground_alt) + ' = AGL')
 
     def is_equal(self, other):
-        """ Checks if two Raw_Profiles are the same
+        """ Checks if two Raw_Profiles are the same.
+
+        :param Raw_Profile other: profile with which to compare this one
         """
         # temps
         for i in range(len(self.temp)):
