@@ -7,12 +7,11 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 
 TODO co2_data not implemented, co2 not read or saved in netCDF
 """
-
-import pint
 import json
+import pint
+import netCDF4
 import numpy as np
 from datetime import datetime as dt
-import netCDF4
 
 units = pint.UnitRegistry()
 units.define('percent = 0.01*count = %')
@@ -743,3 +742,10 @@ class Raw_Profile():
             return False
 
         return True
+
+    def get_units():
+        """ Class method
+
+        :return: units
+        """
+        return units
