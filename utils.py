@@ -14,13 +14,24 @@ register_matplotlib_converters()
 units = pint.UnitRegistry()
 
 
+# TODO can this handle descent? (and sloppy_regrid)
+# TODO test pressure res (and sloppy_regrid)
 def regrid(base=None, base_times=None, data=None, data_times=None,
            new_res=None):
     """ Returns data interpolated to an evenly spaced array with resolution
-        new_res.
+    new_res.
 
-        :cite: https://www.geeksforgeeks.org/python-get-the-index-of-first- \
-           element-greater-than-k/
+    :param list<Quantity> base: Measurements of the variable serving as the \
+       vertical coordinate
+    :param list<Datetime> base_times: Times coresponding to base
+    :param list<Quantity> data: Measurements of the dependent variable
+    :param list<Datetime> data_times: Times coresponding to data
+    :param Quantity new_res: The resolution to which base should be gridded. \
+       This must have the same dimension as base.
+    :cite: https://www.geeksforgeeks.org/python-get-the-index-of-first- \
+       element-greater-than-k/
+    :rtype: tuple
+    :return: (new_base, new_times, new_data)
     """
 
     data = data.to_base_units()
@@ -29,6 +40,12 @@ def regrid(base=None, base_times=None, data=None, data_times=None,
     print("data units: " + str(data.units))
     print("base units: " + str(base.units))
     print("resolution units: " + str(new_res.units) + "\n\n")
+
+    if(np.abs(len(data)-len(base)) <= 1):
+        print("Data temporally aligned. Using sloppy_regrid.")
+        minlen = min([len(data), len(base)])
+        sloppy_regrid(base[0:minlen-1], data[0:minlen-1],
+                      base_times[0:minlen-1], new_res)
 
     # Use negative pressure so that the max of the data list is the peak
     if new_res.dimensionality == units.Pa.dimensionality:
@@ -113,6 +130,79 @@ def regrid(base=None, base_times=None, data=None, data_times=None,
         new_data = -1*new_data
 
     return (new_base, new_times, new_data)
+
+
+def sloppy_regrid(base, data, times, new_res):
+    """ Significanly faster way to regrid data to be used when data and base
+    have the same (+/- 1) length. Assumes that data and base align temporally
+
+    :param list<Quantity> base: Measurements of the variable serving as the \
+       vertical coordinate
+    :param list<Quantity> data: Measurements of the dependent variable
+    :param list<Datetime> times: Times coresponding to data (same as to time)
+    :param Quantity new_res: The resolution to which base should be gridded. \
+       This must have the same dimension as base.
+    :rtype: tuple
+    :return: (new_base, new_times, new_data)
+    """
+
+    # Use negative pressure so that the max of the data list is the peak
+    if new_res.dimensionality == units.Pa.dimensionality:
+        data = -1*data
+
+    # Regrid base
+    new_base = np.arange((base[0] + 0.5*new_res).magnitude, (max(base) -
+                         0.5*new_res).magnitude,
+                         new_res.magnitude)
+    new_base = new_base * base[0].units
+    # Find times corresponding to regridded base
+    new_times = []
+    for elem in new_base:
+        closest_base_val_ind = next(x for x, val in enumerate(base)
+                                    if val > elem)
+        new_times.append(times[closest_base_val_ind])
+
+    # Grid data
+    new_data = []
+
+    # Prepare for first iteration
+    base_seg_start_ind = next(x for x, val in enumerate(base)
+                              if val > new_base[0] - 0.5 * new_res)
+    data_seg_start_ind = next(x for x, val in enumerate(times)
+                              if val > times[base_seg_start_ind])
+
+    for i in range(len(new_base)):
+        # prepare for this iteration
+        # The try blocks are needed because the index location algorithm can't
+        # handle data that fits perfectly.
+        try:
+            base_seg_end_ind = next(x for x, val in enumerate(base)
+                                    if val > new_base[i] + 0.5 * new_res)
+        except StopIteration:
+            base_seg_end_ind = -1
+
+        try:
+            data_seg_end_ind = next(x for x, val in enumerate(times)
+                                    if val > times[base_seg_end_ind])
+        except StopIteration:
+            data_seg_end_ind = -1
+
+        #
+        #
+        new_data.append(np.nanmean(data.magnitude[data_seg_start_ind:
+                                                  data_seg_end_ind]))
+        #
+        #
+
+        # prepare for next iteration
+        base_seg_start_ind = base_seg_end_ind
+        data_seg_start_ind = data_seg_end_ind
+
+    if new_res.dimensionality == units.Pa.dimensionality:
+        new_data = -1*new_data
+
+    new_data = new_data * data.units
+    return(new_base, new_times, new_data)
 
 
 def trim_to_profile():
