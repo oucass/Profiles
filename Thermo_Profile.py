@@ -44,7 +44,7 @@ class Thermo_Profile():
         self.alt = None
         self._sb_CAPE = None  # calculate the first time get_surface_based_CAPE
         # is called
-
+        
         # If no indices given, use entire file
         if indices[0] is None:
             indices[0] = 0
@@ -59,7 +59,7 @@ class Thermo_Profile():
         for key in temp_dict.keys():
             # Ensure only humidity is processed here
             if "temp" in key and "_" not in key:
-                temp_raw.append(temp_dict[key])
+                temp_raw.append(temp_dict[key].magnitude)
 
         # Determine bad sensors
         temp_flags = utils.qc(temp_raw, 0.4, 0.2)
@@ -74,9 +74,9 @@ class Thermo_Profile():
 
         # Average the sensors
         for i in range(len(temp_raw[0])):
-            temp.append(np.nanmean(np.array([temp_raw[a][i].magnitude for a in
+            temp.append(np.nanmean(np.array([temp_raw[a][i] for a in
                                    range(len(temp_raw))])))
-        temp = temp*temp_raw[0].units
+        temp = temp*temp_dict["temp1"][0].units
 
         # TODO convert to K from mV
 
@@ -87,7 +87,7 @@ class Thermo_Profile():
         for key in temp_dict.keys():
             # Ensure only humidity is processed here
             if "rh" in key and "temp" not in key and "time" not in key:
-                rh_raw.append(temp_dict[key])
+                rh_raw.append(temp_dict[key].magnitude)
 
         # Determine bad sensors
         rh_flags = utils.qc(rh_raw, 0.4, 0.2)
@@ -102,10 +102,10 @@ class Thermo_Profile():
 
         # Average the sensors
         for i in range(len(rh_raw[0])):
-            rh.append(np.nanmean([rh_raw[a][i].magnitude for a in
+            rh.append(np.nanmean([rh_raw[a][i] for a in
                                   range(len(rh_raw))]))
 
-        rh = rh * rh_raw[0][0].units
+        rh = rh * temp_dict["rh1"][0].units
 
         # TODO be able to use other vertical coords
 
@@ -121,7 +121,7 @@ class Thermo_Profile():
         self.time = grid1[1]
         self.rh = grid1[2]
 
-        grid2 = utils.regrid(base=alts, base_times=alt_time,
+        grid2 = utils.regrid(base=self.alt, base_times=self.time,
                              data=temp_dict["pres"],
                              data_times=temp_dict["time_pres"],
                              new_res=resolution)
@@ -133,7 +133,8 @@ class Thermo_Profile():
 
         self.pres = grid2[2]
 
-        grid3 = utils.regrid(base=alts, base_times=alt_time,
+        # TODO this line causes a UnitStrippedWarning. Is this because temp[V]?
+        grid3 = utils.regrid(base=self.alt, base_times=self.time,
                              data=temp,
                              data_times=temp_dict["time_temp"],
                              new_res=resolution)

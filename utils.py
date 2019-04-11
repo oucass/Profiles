@@ -22,43 +22,52 @@ def regrid(base=None, base_times=None, data=None, data_times=None,
         :cite: https://www.geeksforgeeks.org/python-get-the-index-of-first- \
            element-greater-than-k/
     """
+
     data = data.to_base_units()
     base = base.to_base_units()
     new_res = new_res.to_base_units()
+    print("data units: " + str(data.units))
+    print("base units: " + str(base.units))
+    print("resolution units: " + str(new_res.units) + "\n\n")
 
     # Use negative pressure so that the max of the data list is the peak
     if new_res.dimensionality == units.Pa.dimensionality:
         data = -1*data
 
     #
-    # Create new base list
-    #
+    # Create new base list if the one given has not already been regridded
+    # Inside if VERY TIME CONSUMING
+    if(base[1]-base[0] != new_res):
+        # Find a starting base index at least 1 res step above the ground.
+        base_start_ind = next(x for x, val in enumerate(base)
+                              if val > base[0] + new_res)
+        # Round the starting index to a multiple of new_res.
+        base_start_val = new_res * round(base[base_start_ind] / new_res)
+        # move starting index to match sbase_start_val
+        base_start_ind = next(x for x, val in enumerate(base)
+                              if val > base_start_val)
+        # find highest usable index
+        base_end_ind = next(x for x, val in enumerate(base)
+                            if val > max(base) - 2*new_res)
+        # round highest usable alt
+        base_end_val = new_res * round(base[base_end_ind] / new_res)
 
-    # Find a starting base index at least 1 resolution step above the ground.
-    base_start_ind = next(x for x, val in enumerate(base)
-                          if val > base[0] + new_res)
-    # Round the starting index to a multiple of new_res.
-    base_start_val = new_res * round(base[base_start_ind] / new_res)
-    # move starting index to match sbase_start_val
-    base_start_ind = next(x for x, val in enumerate(base)
-                          if val > base_start_val)
-    # find highest usable index
-    base_end_ind = next(x for x, val in enumerate(base)
-                        if val > max(base) - 2*new_res)
-    # round highest usable alt
-    base_end_val = new_res * round(base[base_end_ind] / new_res)
+        new_base = np.arange(base_start_val.magnitude, base_end_val.magnitude,
+                             new_res.magnitude) * new_res.units
 
-    new_base = np.arange(base_start_val.magnitude, base_end_val.magnitude,
-                         new_res.magnitude) * new_res.units
+        #
+        # Find corresponding times
+        #
+        new_times = []
+        for elem in new_base:
+            closest_base_val_ind = next(x for x, val in enumerate(base)
+                                        if val > elem)
+            new_times.append(base_times[closest_base_val_ind])
 
-    #
-    # Find corresponding times
-    #
-    new_times = []
-    for elem in new_base:
-        closest_base_val_ind = next(x for x, val in enumerate(base)
-                                    if val > elem)
-        new_times.append(base_times[closest_base_val_ind])
+    else:
+        print("Base is pre-gridded")
+        new_base = base
+        new_times = base_times
 
     #
     # Average around selected points
@@ -73,10 +82,19 @@ def regrid(base=None, base_times=None, data=None, data_times=None,
     new_data = []
     for i in range(len(new_base)):
         # prepare for this iteration
-        base_seg_end_ind = next(x for x, val in enumerate(base)
-                                if val > new_base[i] + 0.5 * new_res)
-        data_seg_end_ind = next(x for x, val in enumerate(data_times)
-                                if val > base_times[base_seg_end_ind])
+        # The try blocks are needed because the index location algorithm can't
+        # handle data that fits perfectly.
+        try:
+            base_seg_end_ind = next(x for x, val in enumerate(base)
+                                    if val > new_base[i] + 0.5 * new_res)
+        except StopIteration:
+            base_seg_end_ind = -1
+
+        try:
+            data_seg_end_ind = next(x for x, val in enumerate(data_times)
+                                    if val > base_times[base_seg_end_ind])
+        except StopIteration:
+            data_seg_end_ind = -1
 
         #
         #
