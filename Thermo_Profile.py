@@ -21,7 +21,8 @@ class Thermo_Profile():
            altitude, or pressure to which the data is calculated
     """
 
-    def __init__(self, temp_dict, resolution, indices=(None, None)):
+    def __init__(self, temp_dict, resolution, indices=(None, None),
+                 ascent=True, units=None):
         """ Creates Thermo_Profile object from raw data at the specified
         resolution.
 
@@ -42,13 +43,9 @@ class Thermo_Profile():
         self.pres = None
         self.temp = None
         self.alt = None
+        self._units = units
         self._sb_CAPE = None  # calculate the first time get_surface_based_CAPE
         # is called
-        
-        # If no indices given, use entire file
-        if indices[0] is None:
-            indices[0] = 0
-            indices[1] = -1
 
         # QC temperatures reported as voltage
         # TODO: determine max_bias and max_variance. Right now both are 3.
@@ -76,7 +73,7 @@ class Thermo_Profile():
         for i in range(len(temp_raw[0])):
             temp.append(np.nanmean(np.array([temp_raw[a][i] for a in
                                    range(len(temp_raw))])))
-        temp = temp*temp_dict["temp1"][0].units
+        temp = temp
 
         # TODO convert to K from mV
 
@@ -105,46 +102,86 @@ class Thermo_Profile():
             rh.append(np.nanmean([rh_raw[a][i] for a in
                                   range(len(rh_raw))]))
 
-        rh = rh * temp_dict["rh1"][0].units
+        alts = (np.array(temp_dict["alt_pres"].magnitude)
+                * temp_dict["alt_pres"].units)
+        # TODO Pressure QC
+        pres = (np.array(temp_dict["pres"].magnitude)
+                * temp_dict["pres"].units)
 
-        # TODO be able to use other vertical coords
+        # If no indices given, use entire file
+        if not indices[0] is None:
+            # trim rh, temp_dict["time_rh"], pres, temp_dict["time_pres"],
+            # temp, temp_dict["time_temp"], alt
+            time_rh = temp_dict["time_rh"]
+            selection_rh = np.where(np.array(time_rh) > indices[0],
+                                    np.array(time_rh) < indices[1], False)
+            rh = np.array(rh)[selection_rh] * temp_dict["rh1"].units
+            time_rh = np.array(time_rh)[selection_rh]
 
-        alts = temp_dict["alt_pres"]
-        alt_time = temp_dict["time_pres"]
-        # Pressure only has one sensor. Non-statistical QC may be added later
+            time_pres = temp_dict["time_pres"]
+            selection_pres = np.where(np.array(time_pres) > indices[0],
+                                      np.array(time_pres) < indices[1], False)
+            pres = np.array(pres.magnitude)[selection_pres] * pres.units
+            alts = np.array(alts.magnitude)[selection_pres] * alts.units
+            time_pres = np.array(time_pres)[selection_pres]
+
+            time_temp = temp_dict["time_temp"]
+            selection_temp = np.where(np.array(time_temp) > indices[0],
+                                      np.array(time_temp) < indices[1], False)
+            temp = np.array(temp)[selection_temp] * temp_dict["temp1"].units
+            time_temp = np.array(time_temp)[selection_temp]
+        else:
+            time_rh = temp_dict["time_rh"]
+            time_pres = temp_dict["time_pres"]
+            time_temp = temp_dict["time_temp"]
+
+        #
         # Regrid to res
-        grid1 = utils.regrid(base=alts, base_times=alt_time,
-                             data=rh, data_times=temp_dict["time_rh"],
-                             new_res=resolution)
+        #
+        if resolution.dimensionality == alts.dimensionality:
+            base = alts
+            base_time = time_pres
+        elif resolution.to_base_units().units == pres.to_base_units().units:
+            base = pres
+            base_time = time_pres
 
-        self.alt = grid1[0]
-        self.time = grid1[1]
-        self.rh = grid1[2]
+        # grid rh
+        base, base_time, self.pres = utils.regrid(base=base,
+                                                  base_times=base_time,
+                                                  data=pres,
+                                                  data_times=time_pres,
+                                                  new_res=resolution,
+                                                  ascent=ascent,
+                                                  units=self._units)
 
-        grid2 = utils.regrid(base=self.alt, base_times=self.time,
-                             data=temp_dict["pres"],
-                             data_times=temp_dict["time_pres"],
-                             new_res=resolution)
+        self.rh = utils.regrid(base=base, base_times=base_time,
+                               data=rh,
+                               data_times=time_rh,
+                               new_res=resolution,
+                               ascent=ascent,
+                               units=self._units)[2]
 
-        if not np.array_equal(self.time, grid2[1]):
-            print("Regrid failed: time")
-        if not np.array_equal(self.alt, grid2[0]):
-            print("Regrid failed: alt")
+        # grid temp
+        self.temp = utils.regrid(base=base, base_times=base_time,
+                                 data=temp,
+                                 data_times=time_temp,
+                                 new_res=resolution, ascent=ascent,
+                                 units=self._units)[2]
 
-        self.pres = grid2[2]
+        # grid alt
+        self.alt = utils.regrid(base=base, base_times=base_time,
+                                data=alts,
+                                data_times=time_pres,
+                                new_res=resolution, ascent=ascent,
+                                units=self._units)[2]
 
-        # TODO this line causes a UnitStrippedWarning. Is this because temp[V]?
-        grid3 = utils.regrid(base=self.alt, base_times=self.time,
-                             data=temp,
-                             data_times=temp_dict["time_temp"],
-                             new_res=resolution)
-
-        if not np.array_equal(self.time, grid3[1]):
-            print("Regrid failed: time")
-        if not np.array_equal(self.alt, grid2[0]):
-            print("Regrid failed: alt")
-
-        self.temp = grid3[2]
+        minlen = min(len(base), len(base_time), len(self.rh),
+                     len(self.pres), len(self.temp), len(self.alt))
+        self.pres = self.pres[0:minlen-1]
+        self.temp = self.temp[0:minlen-1]
+        self.rh = self.rh[0:minlen-1]
+        self.alt = self.alt[0:minlen-1]
+        self.time = base_time[0:minlen-1]
 
         # Calculate mixing ratio
         # TODO this line only works with temp in temperature units, not mV

@@ -13,7 +13,7 @@ import netCDF4
 import numpy as np
 from datetime import datetime as dt
 
-units = pint.UnitRegistry()
+units = pint.UnitRegistry(autoconvert_offset_to_baseunit=True)
 units.define('percent = 0.01*count = %')
 
 
@@ -384,10 +384,11 @@ class Raw_Profile():
                 rh_list[i] = rh_list[i] * units.kelvin
 
         # POS
-        self._define_units(pos_list[2][0])
+        ground_alt = pos_list[2][0]  # This is the first in the file.
+        # Profiles have not yet been separated.
         pos_list[0] = pos_list[0] * units.deg  # lat
         pos_list[1] = pos_list[1] * units.deg  # lng
-        pos_list[2] = pos_list[2] * units.MSL  # alt
+        pos_list[2] = pos_list[2] * units.m  # alt
         pos_list[3] = pos_list[3] * units.m  # relHomeAlt
         pos_list[4] = pos_list[4] * units.m  # relOrigAlt
 
@@ -395,7 +396,7 @@ class Raw_Profile():
         pres_list[0] = pres_list[0] * units.Pa
         pres_list[1] = pres_list[1] * units.F
         pres_list[2] = pres_list[2] * units.F
-        pres_list[3] = units.Quantity(pres_list[3], units.AGL)
+        pres_list[3] = np.add(pres_list[3], ground_alt) * units.m
 
         # ROTATION
         for i in range(len(rotation_list) - 1):
@@ -439,7 +440,7 @@ class Raw_Profile():
         pos_list[1] = np.array(pos_list[1]) * units.deg
         # alt
         pos_list.append(main_file["pos"].variables["alt"])
-        pos_list[2] = np.array(pos_list[2]) * units.MSL
+        pos_list[2] = np.array(pos_list[2]) * units.m
         # altitude relative to home
         pos_list.append(main_file["pos"].variables["alt_rel_home"])
         pos_list[3] = np.array(pos_list[3]) * units.m
@@ -513,7 +514,7 @@ class Raw_Profile():
         pres_list[2] = np.array(pres_list[2]) * units.F
         # alt
         pres_list.append(main_file["pres"].variables["alt"])
-        pres_list[3] = units.Quantity(np.array(pres_list[3]), units.AGL)
+        pres_list[3] = pres_list[3] * units.m
         # time
         pres_list.append(netCDF4.num2date(main_file["pres"].
                                           variables["time"][:],
@@ -651,7 +652,7 @@ class Raw_Profile():
         pres.units = "Pa"
         temp.units = "F"
         temp_gnd.units = "F"
-        alt.units = "m AGL"
+        alt.units = "m (MSL)"
         time.units = "microseconds since 2010-01-01 00:00:00:00"
 
         # ROTATION
@@ -686,15 +687,6 @@ class Raw_Profile():
         main_file.baro = self.baro
         main_file.dev = str(self.dev)
         main_file.close()
-
-    def _define_units(self, ground_alt):
-        """ Defines MSL and AGL in pint.
-
-        :param number ground_alt: MSL altitude at ground level
-        """
-        print('defining AGL and MSL')
-        units.define('meterMSL = meter; offset: 0 = MSL')
-        units.define('meterAGL = MSL; offset: -' + str(ground_alt) + ' = AGL')
 
     def is_equal(self, other):
         """ Checks if two Raw_Profiles are the same.
@@ -743,9 +735,8 @@ class Raw_Profile():
 
         return True
 
-    def get_units():
-        """ Class method
-
+    def get_units(self):
+        """
         :return: units
         """
         return units

@@ -7,17 +7,20 @@ Copyright U of Oklahoma Center for Autonomous Sensing and Sampling 2019
 
 import numpy as np
 import matplotlib.pyplot as plt
-import pint
 from pandas.plotting import register_matplotlib_converters
+import warnings
+from pint import UnitStrippedWarning
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
+
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+warnings.filterwarnings("error", category=UnitStrippedWarning)
 register_matplotlib_converters()
-units = pint.UnitRegistry()
 
 
-# TODO can this handle descent? (and sloppy_regrid)
-# TODO test pressure res (and sloppy_regrid)
 def regrid(base=None, base_times=None, data=None, data_times=None,
-           new_res=None):
+           new_res=None, ascent=True, units=None):
     """ Returns data interpolated to an evenly spaced array with resolution
     new_res.
 
@@ -28,61 +31,101 @@ def regrid(base=None, base_times=None, data=None, data_times=None,
     :param list<Datetime> data_times: Times coresponding to data
     :param Quantity new_res: The resolution to which base should be gridded. \
        This must have the same dimension as base.
+    :param bool ascent: True if data from ascending leg of profile is to be \
+       analyzed, false if descending
+    :param pint.UnitRegistry units: The unit registry defined in Profile
     :cite: https://www.geeksforgeeks.org/python-get-the-index-of-first- \
        element-greater-than-k/
     :rtype: tuple
     :return: (new_base, new_times, new_data)
     """
 
+    # Set variables passes as params
+    base_units = base[0].units
+    data_units = data[0].units
     data = data.to_base_units()
-    base = base.to_base_units()
-    new_res = new_res.to_base_units()
-    print("data units: " + str(data.units))
-    print("base units: " + str(base.units))
-    print("resolution units: " + str(new_res.units) + "\n\n")
+    base = base.to(new_res.units)
 
+    # Declare bounding indices
+    data_seg_start_ind = None
+    data_seg_end_ind = None
+    base_seg_start_ind = None
+    base_seg_end_ind = None
+
+    # Check if data and base are already aligned (i.e. they are always
+    # reported at the same time)
     if(np.abs(len(data)-len(base)) <= 1):
-        print("Data temporally aligned. Using sloppy_regrid.")
+        print("Data temporally aligned. Using sloppy_regrid for variable " +
+              "with units " + str(data_units))
         minlen = min([len(data), len(base)])
-        sloppy_regrid(base[0:minlen-1], data[0:minlen-1],
-                      base_times[0:minlen-1], new_res)
+        return sloppy_regrid(base[0:minlen-1], data[0:minlen-1],
+                             base_times[0:minlen-1], new_res, ascent, units,
+                             base_units, data_units)
 
     # Use negative pressure so that the max of the data list is the peak
     if new_res.dimensionality == units.Pa.dimensionality:
-        data = -1*data
+        base = -1*base
 
-    #
     # Create new base list if the one given has not already been regridded
-    # Inside if VERY TIME CONSUMING
-    if(base[1]-base[0] != new_res):
+    # Inside if-statement is VERY TIME CONSUMING - only use once per data set.
+    # Note: Start is always near the ground, even when analyzing descent
+    if(np.abs(base[1]-base[0]) != new_res):
+        print("Gridding base")
+
         # Find a starting base index at least 1 res step above the ground.
-        base_start_ind = next(x for x, val in enumerate(base)
-                              if val > base[0] + new_res)
+        for x, val in enumerate(base):
+            if ascent and val > base[0] + new_res:
+                base_start_ind = x
+            if not ascent and val < base[-1] + new_res:
+                base_start_ind = x
+
         # Round the starting index to a multiple of new_res.
         base_start_val = new_res * round(base[base_start_ind] / new_res)
-        # move starting index to match sbase_start_val
-        base_start_ind = next(x for x, val in enumerate(base)
-                              if val > base_start_val)
+
+        # move starting index to match base_start_val
+        for x, val in enumerate(base):
+            if ascent and val > base_start_val:
+                base_start_ind = x
+            if not ascent and val < base_start_val:
+                base_start_ind = x
+
         # find highest usable index
-        base_end_ind = next(x for x, val in enumerate(base)
-                            if val > max(base) - 2*new_res)
+        for x, val in enumerate(base):
+            if ascent and val > max(base) - 2*new_res:
+                base_end_ind = x
+            if not ascent and val < max(base) - 2*new_res:
+                base_end_ind = x
+
         # round highest usable alt
         base_end_val = new_res * round(base[base_end_ind] / new_res)
 
-        new_base = np.arange(base_start_val.magnitude, base_end_val.magnitude,
-                             new_res.magnitude) * new_res.units
+        # Create new base array using start and end vals and res
+        if ascent:
+            new_base = np.arange(base_start_val.magnitude,
+                                 base_end_val.magnitude,
+                                 new_res.magnitude) * new_res.units
+        else:
+            new_base = np.arange(base_end_val.magnitude,
+                                 base_start_val.magnitude,
+                                 -1*new_res.magnitude) * new_res.units
 
         #
         # Find corresponding times
         #
         new_times = []
         for elem in new_base:
-            closest_base_val_ind = next(x for x, val in enumerate(base)
-                                        if val > elem)
+            # Find the index of the base just past level elem - greater than
+            # on ascent, less than on descent
+            for x, val in enumerate(base):
+                if ascent and val > elem:
+                    closest_base_val_ind = x
+                    break
+                elif not ascent and val < elem:
+                    closest_base_val_ind = x
+                    break
             new_times.append(base_times[closest_base_val_ind])
 
     else:
-        print("Base is pre-gridded")
         new_base = base
         new_times = base_times
 
@@ -90,33 +133,66 @@ def regrid(base=None, base_times=None, data=None, data_times=None,
     # Average around selected points
     #
 
-    # prepare for 1st iteration
-    base_seg_start_ind = next(x for x, val in enumerate(base)
-                              if val > new_base[0] - 0.5 * new_res)
-    data_seg_start_ind = next(x for x, val in enumerate(data_times)
-                              if val > base_times[base_seg_start_ind])
+    # prepare for 1st iteration of data averaging
+    if ascent:
+        for x, val in enumerate(base):
+            if val > new_base[0] - 0.5 * new_res:
+                base_seg_start_ind = x
+                break
+        for x, val in enumerate(data_times):
+            if val > base_times[base_seg_start_ind]:
+                data_seg_start_ind = x
+                break
+
+    else:
+        for x, val in enumerate(base):
+            if val < new_base[0] + 0.5 * new_res:
+                base_seg_start_ind = x
+                break
+        for x, val in enumerate(data_times):
+            if val > base_times[base_seg_start_ind]:
+                data_seg_start_ind = x
+                break
 
     new_data = []
-    for i in range(len(new_base)):
+    for i in range(len(new_times)):
+        level = new_base[i]
+        data_seg_end_ind = None
+        base_seg_end_ind = None
         # prepare for this iteration
-        # The try blocks are needed because the index location algorithm can't
-        # handle data that fits perfectly.
-        try:
-            base_seg_end_ind = next(x for x, val in enumerate(base)
-                                    if val > new_base[i] + 0.5 * new_res)
-        except StopIteration:
-            base_seg_end_ind = -1
+        # The try blocks are needed because the index location algorithm
+        # can't handle data that fits perfectly.
+        if ascent:
+            for x, val in enumerate(base):
+                if base_seg_end_ind is not None:
+                    break
+                if val >= level + 0.4999 * new_res:
+                    base_seg_end_ind = x
+                    break
 
-        try:
-            data_seg_end_ind = next(x for x, val in enumerate(data_times)
-                                    if val > base_times[base_seg_end_ind])
-        except StopIteration:
-            data_seg_end_ind = -1
+        else:
+            for x, val in enumerate(base):
+                if base_seg_end_ind is not None:
+                    break
+                if val <= level - 0.4999 * new_res:
+                    base_seg_end_ind = x
+                    break
+
+        for x, val in enumerate(data_times):
+            if data_seg_end_ind is not None:
+                break
+            if base_seg_end_ind is None:
+                # The end of the data has been reached. Use whatever's left
+                data_seg_end_ind = -1
+                break
+            elif val > base_times[base_seg_end_ind]:
+                data_seg_end_ind = x
+                break
 
         #
         #
         new_data.append(np.nanmean(data.magnitude[data_seg_start_ind:
-                                                  data_seg_end_ind]))
+                                   data_seg_end_ind]))
         #
         #
 
@@ -124,15 +200,18 @@ def regrid(base=None, base_times=None, data=None, data_times=None,
         base_seg_start_ind = base_seg_end_ind
         data_seg_start_ind = data_seg_end_ind
 
-    new_data = new_data * data.units
+    new_data = np.array(new_data) * data_units
 
     if new_res.dimensionality == units.Pa.dimensionality:
-        new_data = -1*new_data
+        new_base = -1*new_base
 
+    new_base = new_base.to(base_units)
+    new_data = new_data.to(data_units)
     return (new_base, new_times, new_data)
 
 
-def sloppy_regrid(base, data, times, new_res):
+def sloppy_regrid(base, data, times, new_res, ascent, units, base_units,
+                  data_units):
     """ Significanly faster way to regrid data to be used when data and base
     have the same (+/- 1) length. Assumes that data and base align temporally
 
@@ -142,55 +221,99 @@ def sloppy_regrid(base, data, times, new_res):
     :param list<Datetime> times: Times coresponding to data (same as to time)
     :param Quantity new_res: The resolution to which base should be gridded. \
        This must have the same dimension as base.
+    :param bool ascent: True if data from ascending leg of profile is to be \
+       analyzed, false if descending
+    :param pint.UnitRegistry units: The unit registry defined in Profile
     :rtype: tuple
     :return: (new_base, new_times, new_data)
     """
-
     # Use negative pressure so that the max of the data list is the peak
     if new_res.dimensionality == units.Pa.dimensionality:
-        data = -1*data
+        base = -1*base
 
     # Regrid base
-    new_base = np.arange((base[0] + 0.5*new_res).magnitude, (max(base) -
-                         0.5*new_res).magnitude,
-                         new_res.magnitude)
-    new_base = new_base * base[0].units
+    if ascent:
+        new_base = np.arange((base[0] + 0.5*new_res).magnitude, (max(base) -
+                             0.5*new_res).magnitude,
+                             new_res.magnitude)
+    else:
+        new_base = np.arange((base[0] - 0.5*new_res).magnitude, (min(base) +
+                             0.5*new_res).magnitude,
+                             -1*new_res.magnitude)
+    new_base = np.array(new_base) * base_units
+
     # Find times corresponding to regridded base
     new_times = []
     for elem in new_base:
-        closest_base_val_ind = next(x for x, val in enumerate(base)
-                                    if val > elem)
+        if ascent:
+            closest_base_val_ind = next(x for x, val in enumerate(base)
+                                        if val > elem)
+        else:
+            closest_base_val_ind = next(x for x, val in enumerate(base)
+                                        if val < elem)
         new_times.append(times[closest_base_val_ind])
 
     # Grid data
     new_data = []
 
-    # Prepare for first iteration
-    base_seg_start_ind = next(x for x, val in enumerate(base)
-                              if val > new_base[0] - 0.5 * new_res)
-    data_seg_start_ind = next(x for x, val in enumerate(times)
-                              if val > times[base_seg_start_ind])
+    # Prepare for first iteration of data averaging by declaring
+    # base_seg_start_ind, base_seg_end_ind, data_seg_start_ind, and
+    # data_seg_end_ind.
+    base_seg_end_ind = None
+    data_seg_end_ind = None
+    if ascent:
+        base_seg_start_ind = next(x for x, val in enumerate(base)
+                                  if val.to_base_units() >
+                                  new_base[0].to_base_units() - 0.5 * new_res)
+        data_seg_start_ind = next(x for x, val in enumerate(times)
+                                  if val > times[base_seg_start_ind])
+    else:
+        base_seg_start_ind = next(x for x, val in enumerate(base)
+                                  if val.to_base_units() <
+                                  new_base[0].to_base_units() + 0.5 * new_res)
+        data_seg_start_ind = next(x for x, val in enumerate(times)
+                                  if val > times[base_seg_start_ind])
 
-    for i in range(len(new_base)):
-        # prepare for this iteration
-        # The try blocks are needed because the index location algorithm can't
-        # handle data that fits perfectly.
-        try:
-            base_seg_end_ind = next(x for x, val in enumerate(base)
-                                    if val > new_base[i] + 0.5 * new_res)
-        except StopIteration:
-            base_seg_end_ind = -1
+    # Begin data averaging
+    for i in range(len(new_times)):
+        # Prepare for this iteration
+        level = new_base[i]
+        data_seg_end_ind = None
+        base_seg_end_ind = None
 
-        try:
-            data_seg_end_ind = next(x for x, val in enumerate(times)
-                                    if val > times[base_seg_end_ind])
-        except StopIteration:
-            data_seg_end_ind = -1
+        # Determine bounding indices for base based resolution
+        if ascent:
+            for x, val in enumerate(base):
+                if base_seg_end_ind is not None:
+                    break
+                if val >= level + 0.4999 * new_res:
+                    base_seg_end_ind = x
+                    break
+
+        else:
+            for x, val in enumerate(base):
+                if base_seg_end_ind is not None:
+                    break
+                if val <= level - 0.4999 * new_res:
+                    base_seg_end_ind = x
+                    break
+
+        # Determine bounding indices for data based on bounding times of base
+        for x, val in enumerate(times):
+            if data_seg_end_ind is not None:
+                break
+            if base_seg_end_ind is None:
+                # The end of the data has been reached. Use whatever's left
+                data_seg_end_ind = -1
+                break
+            elif val > times[base_seg_end_ind]:
+                data_seg_end_ind = x
+                break
 
         #
         #
         new_data.append(np.nanmean(data.magnitude[data_seg_start_ind:
-                                                  data_seg_end_ind]))
+                                   data_seg_end_ind]))
         #
         #
 
@@ -199,15 +322,10 @@ def sloppy_regrid(base, data, times, new_res):
         data_seg_start_ind = data_seg_end_ind
 
     if new_res.dimensionality == units.Pa.dimensionality:
-        new_data = -1*new_data
+        new_base = -1*new_base
+    new_data = np.array(new_data) * data_units
 
-    new_data = new_data * data.units
     return(new_base, new_times, new_data)
-
-
-def trim_to_profile():
-    """ Returns time bounds of a vertical profile
-    """
 
 
 def temp_calib(temp, coefs):
@@ -384,7 +502,7 @@ def _s_dev(data, max_abs_error):
 
 
 def identify_profile(alts, alt_times, profile_start_height=None,
-                     toReturn=[], ind=0):
+                     to_return=[], ind=0):
     """ Identifies the temporal bounds of all profiles in the data file. These
     assumptions must be valid:
         * The craft starts and ends each profile below profile_start_height
@@ -404,8 +522,8 @@ def identify_profile(alts, alt_times, profile_start_height=None,
         plt.plot(alt_times, alts, figure=fig1)
         plt.grid(axis="y", which="both", figure=fig1)
 
-        fig1.gca().tick_params(axis='x', which='both', bottom=False,
-                               labelbottom=False)
+        myFmt = mdates.DateFormatter('%M')
+        fig1.gca().xaxis.set_major_formatter(myFmt)
 
         plt.show(block=False)
 
@@ -458,21 +576,63 @@ def identify_profile(alts, alt_times, profile_start_height=None,
             # The current profile has been processed; we just need to check
             # if there are more profiles in the file
             else:
-                if(not (start_ind_asc, peak_ind, end_ind_des) in toReturn):
-                    toReturn.append((alt_times[start_ind_asc],
-                                     alt_times[peak_ind],
-                                     alt_times[end_ind_des]))
-                if end_ind_des is None:
-                    print("Could not find end time des (LineTag B)")  # B
-                if alts[ind] > profile_start_height:
-                    # There is another profile before the end of the file -
-                    # find it.
-                    identify_profile(alts, profile_start_height, toReturn,
-                                     ind=ind + 10)
-                    # Break because the rest of the file will be processed by
-                    # the previous call.
-                    break
+                    # User verifies selection
+                    fig2 = plt.figure()
+                    plt.plot(alt_times, alts, figure=fig2)
+                    plt.grid(axis="y", which="both", figure=fig2)
 
-                ind += 1
+                    myFmt = mdates.DateFormatter('%M')
+                    fig2.gca().xaxis.set_major_formatter(myFmt)
 
-    return toReturn
+                    plt.vlines([alt_times[start_ind_asc],
+                                alt_times[peak_ind],
+                                alt_times[end_ind_des]],
+                               min(alts) - 50, max(alts) + 50)
+
+                    plt.show(block=False)
+
+                    # Get user opinion
+                    valid = input('Correct? (y/n): ')
+                    print("Profile from ", alt_times[start_ind_asc], "to",
+                          alt_times[end_ind_des], "added")
+                    # If good, wrap up the profile
+                    if valid in "yYyesYes" and not (start_ind_asc, peak_ind,
+                                                    end_ind_des) in to_return:
+                        plt.close()
+                        if end_ind_des is None:
+                            print("Could not find end time des (LineTag B)")
+                            return
+                        # Add the profile if it is not already in to_return
+                        to_return.append((alt_times[start_ind_asc],
+                                          alt_times[peak_ind],
+                                          alt_times[end_ind_des]))
+
+                        # Check if more profiles in file
+                        if ind + 50 < len(alts) \
+                           and max(alts[ind + 50::]) > (profile_start_height +
+                                                        alts[60] - alts[50]):
+                            # There is another profile before the end of the
+                            # file - find it.
+                            to_return = identify_profile(alts,
+                                                         profile_start_height,
+                                                         to_return,
+                                                         ind=ind + 50)
+                            # Break because the rest of the file will be
+                            # processed by the previous call.
+                            break
+
+                        ind += 1
+                        return to_return
+
+                    elif valid in "nNnoNo":
+                        print(max(alts[ind:]), profile_start_height)
+                        plt.close()
+                        to_return = identify_profile(alts, alt_times,
+                                                     to_return)
+                    else:
+                        print("Invalid choice. Re-selecting profile...")
+                        plt.close()
+                        to_return = identify_profile(alts, alt_times,
+                                                     to_return)
+
+    return to_return
