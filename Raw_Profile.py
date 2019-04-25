@@ -422,16 +422,15 @@ class Raw_Profile():
 
         :param string file_path: file name
         """
-        main_file = netCDF4.Dataset(file_path, "r", format="NETCDF4")
+        main_file = netCDF4.Dataset(file_path, "r", format="NETCDF4",
+                                    mmap=False)
         # Note: each data chunk is converted to an np array. This is not a
         # superfluous conversion; a Variable object is incompatible with pint.
 
         #
-        # POSITION - this should be first so that _define_units can be called
+        # POSITION - this should be first
         #
         pos_list = []
-        # define needed units
-        self._define_units(main_file["pos"].variables["alt"][0])
         # lat
         pos_list.append(main_file["pos"].variables["lat"])
         pos_list[0] = np.array(pos_list[0]) * units.deg
@@ -514,7 +513,7 @@ class Raw_Profile():
         pres_list[2] = np.array(pres_list[2]) * units.F
         # alt
         pres_list.append(main_file["pres"].variables["alt"])
-        pres_list[3] = pres_list[3] * units.m
+        pres_list[3] = np.array(pres_list[3]) * units.m
         # time
         pres_list.append(netCDF4.num2date(main_file["pres"].
                                           variables["time"][:],
@@ -566,7 +565,7 @@ class Raw_Profile():
         :param string file_path: file name
         """
         main_file = netCDF4.Dataset(file_path[:-5] + ".nc", "w",
-                                    format="NETCDF4")
+                                    format="NETCDF4", mmap=False)
 
         # TEMP
         temp_grp = main_file.createGroup("/temp")

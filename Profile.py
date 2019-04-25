@@ -40,10 +40,8 @@ class Profile():
         self._raw_profile = Raw_Profile(file_path, dev)
         self._units = self._raw_profile.get_units()
         self._pos = self._raw_profile.pos_data()
-        # TODO pull out ground alt here to define AGL
         indices = utils.identify_profile(self._pos["alt_MSL"].magnitude,
                                          self._pos["time"])[profile_num - 1]
-        print(indices)
 
         if ascent:
             self.indices = (indices[0], indices[1])
@@ -54,9 +52,12 @@ class Profile():
         self._co2_profile = None
         self.dev = dev
         self.location = None
-        # TODO altitude QC https://github.com/oucass/ISOBAR/blob/master/data_class.py p2alt
         self.resolution = resolution * self._units.parse_expression(res_units)
         self.ascent = ascent
+        if ".nc" in file_path:
+            self.file_path = file_path[:-3]
+        elif ".json" in file_path:
+            self.file_path = file_path[:-5]
 
     def get_wind_profile(self):
         if self._wind_profile is None:
@@ -69,8 +70,8 @@ class Profile():
             self._thermo_profile = \
                 Thermo_Profile(thermo_data,
                                self.resolution, indices=self.indices,
-                               ascent=self.ascent, units=self._units)
-                # TODO alt QC in Thermo_Profile
+                               ascent=self.ascent, units=self._units,
+                               filepath=self.file_path)
 
         return self._thermo_profile
 
@@ -80,4 +81,4 @@ class Profile():
         return self._co2_profile
 
 
-a = Profile("/home/jessica/GitHub/data_templates/00000136.json", 10, 'Pa', 1, ascent=False)
+a = Profile("/home/jessica/GitHub/data_templates/00000141.json", 10, 'm', 1, ascent=False)
