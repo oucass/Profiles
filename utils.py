@@ -24,11 +24,11 @@ def regrid(base=None, base_times=None, data=None, data_times=None,
     """ Returns data interpolated to an evenly spaced array with resolution
     new_res.
 
-    :param list<Quantity> base: Measurements of the variable serving as the \
-       vertical coordinate
-    :param list<Datetime> base_times: Times coresponding to base
-    :param list<Quantity> data: Measurements of the dependent variable
-    :param list<Datetime> data_times: Times coresponding to data
+    :param np.array<Quantity> base: Measurements of the variable serving as \
+       the vertical coordinate
+    :param np.array<Datetime> base_times: Times coresponding to base
+    :param np.array<Quantity> data: Measurements of the dependent variable
+    :param np.array<Datetime> data_times: Times coresponding to data
     :param Quantity new_res: The resolution to which base should be gridded. \
        This must have the same dimension as base.
     :param bool ascent: True if data from ascending leg of profile is to be \
@@ -41,8 +41,8 @@ def regrid(base=None, base_times=None, data=None, data_times=None,
     """
 
     # Set variables passes as params
-    base_units = base[0].units
-    data_units = data[0].units
+    base_units = base.units
+    data_units = data.units
     data = data.to_base_units()
     base = base.to(new_res.units)
 
@@ -420,7 +420,7 @@ def _bias(data, max_abs_error):
     """ This method identifies sensors with excessive biases and returns a
     list flagging sensors determined to be questionable.
 
-    :param list<Quantity> data: a list containing one list for each sensor
+    :param np.array<Quantity> data: a list containing one list for each sensor
        in the ensemble, i.e. all external RH sensors
     :param Quantity max_abs_error: sensors with means more than
        max_abs_error from the mean of sensor means will be flagged
@@ -432,7 +432,7 @@ def _bias(data, max_abs_error):
     # Calculate the mean of each sensor
     means = np.zeros(len(data))
     for i in range(len(data)):
-        means[i] = np.nanmean(data[i])
+        means[i] = np.nanmean(data[i].magnitude)
 
     while(True):
         # Identify the sensor with the mean farthest from the mean of means
@@ -463,7 +463,7 @@ def _s_dev(data, max_abs_error):
     variabilities and returns a list flagging sensors determined to be
     questionable.
 
-    :param list<Quantity> data: a list containing one list for each sensor
+    :param np.array<Quantity> data: a list containing one list for each sensor
        in the ensemble, i.e. all external RH sensors
     :param Quantity max_abs_error: sensors with standard deviations will be
        flagged.
@@ -475,7 +475,7 @@ def _s_dev(data, max_abs_error):
     # Calculate the mean of each sensor
     sdevs = np.zeros(len(data))
     for i in range(len(data)):
-        sdevs[i] = np.nanstd(data[i])
+        sdevs[i] = np.nanstd(data[i].magnitude)
 
     while(True):
         # Identify the sensor with the mean farthest from the mean of means

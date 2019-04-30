@@ -8,19 +8,19 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 TODO co2_data not implemented, co2 not read or saved in netCDF
 """
 import json
-import pint
 import netCDF4
 import numpy as np
 from datetime import datetime as dt
+from metpy.units import units as muu
 
-units = pint.UnitRegistry(autoconvert_offset_to_baseunit=True)
+units = muu
 units.define('percent = 0.01*count = %')
 
 
 class Raw_Profile():
     """ Contains data from one file. Data is stored as a pandas DataFrame.
 
-    :var tuple temp: temperature as (voltage1, voltage2, ..., time)
+    :var tuple temp: temperature as (Temp1, Resi1, Temp2, Resi2, ..., time)
     :var tuple rh: relative humidity as (rh1, T1, rh2, T2, ..., time)
     :var tuple co2: CO2 data as (CO2, CO2, ..., time)
     :var tuple pos: GPS data as (lat, lon, alt_MSL, alt_rel_home,
@@ -72,7 +72,8 @@ class Raw_Profile():
         """ Gets data needed by the Thermo_Profile constructor.
 
         rtype: dict
-        return: {"temp1":, "temp2":, ..., "tempj":, "time_temp":, \
+        return: {"temp1":, "temp2":, ..., "tempj":, \
+                 "resi1":, "resi2":, ..., "resij": , "time_temp": \
                  "rh1":, "rh2":, ..., "rhk":, "time_rh":, \
                  "temp_rh1":, "temp_rh2":, ..., "temp_rhk":, \
                  "pres":, "temp_pres":, "ground_temp_pres":, \
@@ -80,9 +81,12 @@ class Raw_Profile():
         """
         to_return = {}
 
-        for sensor_number in [a + 1 for a in range(len(self.temp) - 1)]:
+        for sensor_number in [a + 1 for a in
+                              range(int(len(self.temp) / 2) - 1)]:
             to_return["temp" + str(sensor_number)] \
-                = self.temp[sensor_number - 1]
+                = self.temp[sensor_number*2 - 2]
+            to_return["resi" + str(sensor_number)] \
+                = self.temp[sensor_number*2 - 1]
 
         to_return["time_temp"] = self.temp[-1]
 
@@ -96,7 +100,7 @@ class Raw_Profile():
 
         to_return["pres"] = self.pres[0]
         to_return["temp_pres"] = self.pres[1]
-        to_return["ground_temp_pres"] = self.pres[2][0]
+        to_return["ground_temp_pres"] = self.pres[2]
         to_return["alt_pres"] = self.pres[3]
         to_return["time_pres"] = self.pres[-1]
 
@@ -189,16 +193,19 @@ class Raw_Profile():
 
                 # First time only - setup temp_list
                 if temp_list is None:
-                    # Create array of lists with one list per temperature
-                    # sensor reported in the data file, plus one for times
-                    temp_list = [[] for x in range(sum('Volt' in s for s in
-                                 elem["data"].keys())+1)]
+                    # Create array of lists with two lists per temperature
+                    # sensor reported in the data file - one for temperature
+                    # and one for resistance - plus one for times
+                    temp_list = [[] for x in range(sum('Temp' in s for s in
+                                 elem["data"].keys()) * 2 + 1)]
 
                     sensor_names["IMET"] = {}
                     # Determine field names
-                    sensor_numbers = np.add(range(len(temp_list)-1), 1)
+                    sensor_numbers = np.add(range(int((len(temp_list)-1) / 2)),
+                                            1)
                     for num in sensor_numbers:
-                        sensor_names["IMET"]["Volt"+str(num)] = num - 1
+                        sensor_names["IMET"]["Temp"+str(num)] = 2*num - 2
+                        sensor_names["IMET"]["Resi"+str(num)] = 2*num - 1
                     sensor_names["IMET"]["Time"] = -1
 
                 # Read fields into temp_list, including Time
@@ -213,7 +220,13 @@ class Raw_Profile():
                         else:
                             temp_list[value].append(elem["data"][key])
                     except KeyError:
+                        # Any expected variable that was not logged will show
+                        # as a list of NaN.
                         temp_list[value].append(np.nan)
+                    except IndexError:
+                        print(key, value)
+                        print(temp_list[value])
+                        print(elem["data"][key])
 
             # Humidity
             elif elem["meta"]["type"] == "RHUM":
@@ -371,8 +384,9 @@ class Raw_Profile():
         #
 
         # Temperature
-        for i in range(len(temp_list) - 1):
-            temp_list[i] = temp_list[i] * units.mV
+        for i in range(int((len(temp_list) - 1) / 2)):
+            temp_list[2*i] = temp_list[2*i] * units.K
+            temp_list[2*i + 1] = temp_list[2*i + 1] * units.ohm
 
         # RH
         for i in range(len(rh_list) - 1):
@@ -394,8 +408,8 @@ class Raw_Profile():
 
         # PRES
         pres_list[0] = pres_list[0] * units.Pa
-        pres_list[1] = pres_list[1] * units.F
-        pres_list[2] = pres_list[2] * units.F
+        pres_list[1] = pres_list[1] * units.fahrenheit
+        pres_list[2] = pres_list[2] * units.fahrenheit
         pres_list[3] = np.add(pres_list[3], ground_alt) * units.m
 
         # ROTATION

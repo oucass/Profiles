@@ -1,0 +1,52 @@
+Temperature Calculations:
+
+  Reading resistance
+
+    read:
+        In Raw_Profile._read_JSON() search for "if elem["meta"]["type"] ==
+      "IMET":". The following section is where all IMET data is read. The code
+      currently searches for Temp1, Temp2, ..., Resi1, Resi2, ..., and Time.
+      No JSON files with logged resistance were available for code development.
+      Change "Resi" in Raw_Profile to match the name of the identifier in the
+      JSON file. Search for "temp_list[2*i + 2] = temp_list[2*i + 2] *
+      units.Ohms and change the units to those in which resistance is actually
+      logged.
+
+    test:
+        Ensure that resistance, temperature, and time are being recorded
+      correctly. Data files without logged resistance should be using the
+      logged temperature.
+
+  Coefficients
+      Coefficients are currently stored in a dictionary of dictionaries located
+    at the top of Thermo_Profile.py. The coefficients do need to be changed
+    any time the IMET sensors are moved - these calculations rely on both the
+    temperatures listed in the JSON and the coefficients being identically
+    ordered. Each set of coefficients should be followed by a comment
+    identifying the individual sensor for which it was calculated. Coefficients
+    should eventually be stored in a JSON database file.
+
+  Calculation
+      np.pow(np.add(np.add(np.multiply(np.log(resist), coeff[nnumber][1])),
+                    np.multiply(np.pow(resist, 3), coeff[nnumber][2])), -1)
+    yields the calculated temperature. In C++, the equation would be written
+      _temperature = 1.0f / (coeff[0] + coeff[1] * logf(resist) + coeff[2] *
+                             powf(logf(resist), 3));
+    These equations have not been tested in Profiles to ensure that they were
+    implemented correctly - that needs to be done.
+
+
+Pressure Altitude
+    Add flag (boolean parameter) from Profiles down to use altitude calculated
+  from pressure rather than the GPS-based altitude.
+    The iterative equation for the calculation (using LaTex-style markdown) is
+  alt_n = alt_{n-1} + \Delta P * \frac{R_d*T}{P_{layer_mean}*g}
+
+Acceptable Bounds of Variation and Bias
+      Each time utils.qc() is called (so far only in Thermo_Profile, but will
+    also be used in Wind_Profile and CO2_Profile), the maximum acceptable
+    difference of the variance of one sensor from the mean variance and the
+    maximum acceptable difference of the mean of one sensor from the mean of all
+    sensors should be determined empirically. The values currently in use are
+    acceptable for testing purposes, but may (or may not) benefit significantly
+    from optimization.
