@@ -501,8 +501,8 @@ def _s_dev(data, max_abs_error):
                 return to_return
 
 
-def identify_profile(alts, alt_times, profile_start_height=None,
-                     to_return=[], ind=0):
+def identify_profile(alts, alt_times, confirm_bounds,
+                     profile_start_height=None, to_return=[], ind=0):
     """ Identifies the temporal bounds of all profiles in the data file. These
     assumptions must be valid:
         * The craft starts and ends each profile below profile_start_height
@@ -576,6 +576,7 @@ def identify_profile(alts, alt_times, profile_start_height=None,
             # The current profile has been processed; we just need to check
             # if there are more profiles in the file
             else:
+                if confirm_bounds:
                     # User verifies selection
                     fig2 = plt.figure()
                     plt.plot(alt_times, alts, figure=fig2)
@@ -592,12 +593,12 @@ def identify_profile(alts, alt_times, profile_start_height=None,
                     plt.show(block=False)
 
                     # Get user opinion
-                    valid = input('Correct? (y/n): ')
+                    valid = input('Correct? (Y/n): ')
                     print("Profile from ", alt_times[start_ind_asc], "to",
                           alt_times[end_ind_des], "added")
                     # If good, wrap up the profile
-                    if valid in "yYyesYes" and not (start_ind_asc, peak_ind,
-                                                    end_ind_des) in to_return:
+                    if (valid in "yYyesYes" or valid is "") and not \
+                       (start_ind_asc, peak_ind, end_ind_des) in to_return:
                         plt.close()
                         if end_ind_des is None:
                             print("Could not find end time des (LineTag B)")

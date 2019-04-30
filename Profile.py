@@ -27,7 +27,7 @@ class Profile():
     """
 
     def __init__(self, file_path, resolution, res_units, profile_num,
-                 ascent=True, dev=False):
+                 ascent=True, dev=False, confirm_bounds=True):
         """ Creates a Profile object.
 
         :param string fpath: data file
@@ -41,7 +41,8 @@ class Profile():
         self._units = self._raw_profile.get_units()
         self._pos = self._raw_profile.pos_data()
         indices = utils.identify_profile(self._pos["alt_MSL"].magnitude,
-                                         self._pos["time"])[profile_num - 1]
+                                         self._pos["time"], confirm_bounds
+                                         )[profile_num - 1]
 
         if ascent:
             self.indices = (indices[0], indices[1])
