@@ -11,15 +11,15 @@ Welcome to Profiles's documentation!
    :caption: Contents:
    :titlesonly:
 
-   Profiles
    Profile
    Raw_Profile
-   Wind_Profile
    Thermo_Profile
+   utils
    CO2_Profile
    Location
    plotting
-   utils
+   Profiles
+   Wind_Profile
 
 
 

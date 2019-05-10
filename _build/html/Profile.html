@@ -7,26 +7,39 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Profile &#8212; Profiles 0.0 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/agogo.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Raw_Profile" href="Raw_Profile.html" />
-    <link rel="prev" title="Profiles" href="Profiles.html" />
-   
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <link rel="prev" title="Welcome to Profiles’s documentation!" href="index.html" /> 
   </head><body>
-  
+    <div class="header-wrapper" role="banner">
+      <div class="header">
+        <div class="headertitle"><a
+          href="index.html">Profiles 0.0 documentation</a></div>
+        <div class="rel" role="navigation" aria-label="related navigation">
+          <a href="index.html" title="Welcome to Profiles’s documentation!"
+             accesskey="P">previous</a> |
+          <a href="Raw_Profile.html" title="Raw_Profile"
+             accesskey="N">next</a> |
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
 
-    <div class="document">
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
@@ -39,7 +52,7 @@
 2019</p>
 <dl class="class">
 <dt id="Profile.Profile">
-<em class="property">class </em><code class="descclassname">Profile.</code><code class="descname">Profile</code><span class="sig-paren">(</span><em>file_path</em>, <em>resolution</em>, <em>dev=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Profile.Profile" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">Profile.</code><code class="descname">Profile</code><span class="sig-paren">(</span><em>file_path</em>, <em>resolution</em>, <em>res_units</em>, <em>profile_num</em>, <em>ascent=True</em>, <em>dev=False</em>, <em>confirm_bounds=True</em><span class="sig-paren">)</span><a class="headerlink" href="#Profile.Profile" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Profile object contains data from a profile (if altitude or pressure
 is specified under resolution) or flight (if the resolution is in units
 of time)</p>
@@ -62,17 +75,53 @@ altitude, or pressure</li>
 <dl class="method">
 <dt id="Profile.Profile.get_co2_profile">
 <code class="descname">get_co2_profile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Profile.Profile.get_co2_profile" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>If a CO2_Profile object does not already exist, it is created when
+this method is called.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the CO2_Profile object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="CO2_Profile.html#CO2_Profile.CO2_Profile" title="CO2_Profile.CO2_Profile">CO2_Profile</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="Profile.Profile.get_thermo_profile">
 <code class="descname">get_thermo_profile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Profile.Profile.get_thermo_profile" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>If a Thermo_Profile object does not already exist, it is created
+when this method is called.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the Thermo_Profile object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="Thermo_Profile.html#Thermo_Profile.Thermo_Profile" title="Thermo_Profile.Thermo_Profile">Thermo_Profile</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="Profile.Profile.get_wind_profile">
 <code class="descname">get_wind_profile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Profile.Profile.get_wind_profile" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>If a Wind_Profile object does not already exist, it is created when
+this method is called.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the Wind_Profile object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="Wind_Profile.html#Wind_Profile.Wind_Profile" title="Wind_Profile.Wind_Profile">Wind_Profile</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -82,53 +131,66 @@ altitude, or pressure</li>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="Profiles.html" title="previous chapter">Profiles</a></li>
-      <li>Next: <a href="Raw_Profile.html" title="next chapter">Raw_Profile</a></li>
-  </ul></li>
-</ul>
-</div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/Profile.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
+        <div class="sidebar">
+          <h3>Table of Contents</h3>
+          <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Raw_Profile.html">Raw_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Thermo_Profile.html">Thermo_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CO2_Profile.html">CO2_Profile (COMING SOON)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Location.html">Location (COMING SOON)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">plotting (COMING SOON)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Profiles.html">Profiles (COMING SOON)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Wind_Profile.html">Wind_Profile (COMING SOON)</a></li>
+</ul>
+
+          <div role="search">
+            <h3 style="margin-top: 1.5em;">Search</h3>
+            <form class="search" action="search.html" method="get">
+                <input type="text" name="q" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+            </form>
+          </div>
+        </div>
+        <div class="clearer"></div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2019, Jessica Wiedemeier, Tyler Bell, Brian Green, Gus Azevedo.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
-      
-      |
-      <a href="_sources/Profile.rst.txt"
-          rel="nofollow">Page source</a>
     </div>
 
-    
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <div role="navigation" aria-label="related navigaton">
+            <a href="index.html" title="Welcome to Profiles’s documentation!"
+              >previous</a> |
+            <a href="Raw_Profile.html" title="Raw_Profile"
+              >next</a> |
+            <a href="py-modindex.html" title="Python Module Index"
+              >modules</a> |
+            <a href="genindex.html" title="General Index"
+              >index</a>
+          </div>
+          <div role="note" aria-label="source link">
+              <br/>
+              <a href="_sources/Profile.rst.txt"
+                rel="nofollow">Show Source</a>
+          </div>
+        </div>
 
-    
+        <div class="right">
+          
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Jessica Wiedemeier, Tyler Bell, Brian Green, Gus Azevedo.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.3.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
   </body>
 </html>

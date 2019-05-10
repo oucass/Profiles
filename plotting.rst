@@ -1,5 +1,5 @@
-plotting
-=====================
+plotting (COMING SOON)
+======================
 
 .. py:data:: fpath_logos
 

@@ -1,11 +1,14 @@
 utils
 =====================
 
-.. py:data:: fpath_temp_calib
+.. py:data:: coeff
 
-   The file path to the calibration coefficients for the temperature sensors 
+   Coefficients for the temperature sensors onboard TonySonde N955. This will be expanded to include a database of all known coefficients.
 
+.. autofunction:: utils.identify_profile
 .. autofunction:: utils.qc
-.. autofunction:: utils.temp_calib
-.. autofunction:: utils.correct_alt_pres
+.. autofunction:: utils.regrid
 .. autofunction:: utils.rotate
+.. autofunction:: utils.sloppy_regrid
+.. autofunction:: utils.temp_calib
+

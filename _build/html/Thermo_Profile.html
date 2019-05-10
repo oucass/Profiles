@@ -7,26 +7,39 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Thermo_Profile &#8212; Profiles 0.0 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/agogo.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="CO2_Profile" href="CO2_Profile.html" />
-    <link rel="prev" title="Wind_Profile" href="Wind_Profile.html" />
-   
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <link rel="next" title="utils" href="utils.html" />
+    <link rel="prev" title="Raw_Profile" href="Raw_Profile.html" /> 
   </head><body>
-  
+    <div class="header-wrapper" role="banner">
+      <div class="header">
+        <div class="headertitle"><a
+          href="index.html">Profiles 0.0 documentation</a></div>
+        <div class="rel" role="navigation" aria-label="related navigation">
+          <a href="Raw_Profile.html" title="Raw_Profile"
+             accesskey="P">previous</a> |
+          <a href="utils.html" title="utils"
+             accesskey="N">next</a> |
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
 
-    <div class="document">
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
@@ -39,17 +52,19 @@
 2019</p>
 <dl class="class">
 <dt id="Thermo_Profile.Thermo_Profile">
-<em class="property">class </em><code class="descclassname">Thermo_Profile.</code><code class="descname">Thermo_Profile</code><span class="sig-paren">(</span><em>temp_raw</em>, <em>rh_raw</em>, <em>pres_raw</em>, <em>resolution</em><span class="sig-paren">)</span><a class="headerlink" href="#Thermo_Profile.Thermo_Profile" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">Thermo_Profile.</code><code class="descname">Thermo_Profile</code><span class="sig-paren">(</span><em>temp_dict</em>, <em>resolution</em>, <em>indices=(None</em>, <em>None)</em>, <em>ascent=True</em>, <em>units=None</em>, <em>filepath=None</em>, <em>nnumber=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Thermo_Profile.Thermo_Profile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Contains data from one file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>Datetime&gt; temp</strong> (<em>tuple&lt;list&lt;Quantity&gt;</em><em>,</em>) – QC’d and averaged temperature</li>
-<li><strong>Datetime&gt; mixing_ratio</strong> (<em>tuple&lt;list&lt;Quantity&gt;</em><em>,</em>) – calculated mixing ratio</li>
-<li><strong>Datetime&gt; pres</strong> (<em>tuple&lt;list&lt;Quantity&gt;</em><em>,</em>) – QC’d pressure</li>
-<li><strong>time</strong> (<em>list&lt;Datetime&gt;</em>) – times at which processed data exists</li>
+<li><strong>temp</strong> (<em>np.array&lt;Quantity&gt;</em>) – QC’d and averaged temperature</li>
+<li><strong>mixing_ratio</strong> (<em>np.array&lt;Quantity&gt;</em>) – calculated mixing ratio</li>
+<li><strong>rh</strong> (<em>np.array&lt;Quantity&gt;</em>) – QC’d and averaged relative humidity</li>
+<li><strong>pres</strong> (<em>np.array&lt;Quantity&gt;</em>) – QC’d pressure</li>
+<li><strong>alt</strong> (<em>np.array&lt;Quantity&gt;</em>) – altitude</li>
+<li><strong>time</strong> (<em>np.array&lt;Datetime&gt;</em>) – times at which processed data exists</li>
 <li><strong>resolution</strong> (<em>Quantity</em>) – vertical resolution in units of time,
 altitude, or pressure to which the data is calculated</li>
 </ul>
@@ -57,23 +72,6 @@ altitude, or pressure to which the data is calculated</li>
 </tr>
 </tbody>
 </table>
-<dl class="method">
-<dt id="Thermo_Profile.Thermo_Profile.get_surface_based_CAPE">
-<code class="descname">get_surface_based_CAPE</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Thermo_Profile.Thermo_Profile.get_surface_based_CAPE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Either calculates (the first call) or retrieves (later calls) the
-value of surface based CAPE.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Quantity</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">surface-based CAPE</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 </dd></dl>
 
 </div>
@@ -82,53 +80,66 @@ value of surface based CAPE.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="Wind_Profile.html" title="previous chapter">Wind_Profile</a></li>
-      <li>Next: <a href="CO2_Profile.html" title="next chapter">CO2_Profile</a></li>
-  </ul></li>
-</ul>
-</div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/Thermo_Profile.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
+        <div class="sidebar">
+          <h3>Table of Contents</h3>
+          <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Profile.html">Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Raw_Profile.html">Raw_Profile</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Thermo_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CO2_Profile.html">CO2_Profile (COMING SOON)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Location.html">Location (COMING SOON)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">plotting (COMING SOON)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Profiles.html">Profiles (COMING SOON)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Wind_Profile.html">Wind_Profile (COMING SOON)</a></li>
+</ul>
+
+          <div role="search">
+            <h3 style="margin-top: 1.5em;">Search</h3>
+            <form class="search" action="search.html" method="get">
+                <input type="text" name="q" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+            </form>
+          </div>
+        </div>
+        <div class="clearer"></div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2019, Jessica Wiedemeier, Tyler Bell, Brian Green, Gus Azevedo.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
-      
-      |
-      <a href="_sources/Thermo_Profile.rst.txt"
-          rel="nofollow">Page source</a>
     </div>
 
-    
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <div role="navigation" aria-label="related navigaton">
+            <a href="Raw_Profile.html" title="Raw_Profile"
+              >previous</a> |
+            <a href="utils.html" title="utils"
+              >next</a> |
+            <a href="py-modindex.html" title="Python Module Index"
+              >modules</a> |
+            <a href="genindex.html" title="General Index"
+              >index</a>
+          </div>
+          <div role="note" aria-label="source link">
+              <br/>
+              <a href="_sources/Thermo_Profile.rst.txt"
+                rel="nofollow">Show Source</a>
+          </div>
+        </div>
 
-    
+        <div class="right">
+          
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Jessica Wiedemeier, Tyler Bell, Brian Green, Gus Azevedo.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.3.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
   </body>
 </html>

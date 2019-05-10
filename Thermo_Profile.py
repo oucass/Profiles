@@ -11,25 +11,16 @@ import numpy as np
 import netCDF4
 import os
 
-coeff = {"N955":
-         {"IMET1": (1.02777010e-03, 2.59349232e-04, 1.56043078e-07),  # 57562
-          "IMET2": (9.91077399e-04, 2.64646362e-04, 1.43596294e-07),  # 57563
-          "IMET3": (1.00786813e-03, 2.61722397e-04, 1.48476183e-07)  # 58821
-          }}
-
-"""
-More coefficients can be found at https://github.com/oucass/CASS-ardupilot/
-blob/Copter-3.6/ArduCopter/sensors.cpp
-"""
-
 
 class Thermo_Profile():
     """ Contains data from one file.
 
-    :var tuple<list<Quantity>, Datetime> temp: QC'd and averaged temperature
-    :var tuple<list<Quantity>, Datetime> mixing_ratio: calculated mixing ratio
-    :var tuple<list<Quantity>, Datetime> pres: QC'd pressure
-    :var list<Datetime> time: times at which processed data exists
+    :var np.array<Quantity> temp: QC'd and averaged temperature
+    :var np.array<Quantity> mixing_ratio: calculated mixing ratio
+    :var np.array<Quantity> rh: QC'd and averaged relative humidity
+    :var np.array<Quantity> pres: QC'd pressure
+    :var np.array<Quantity> alt: altitude
+    :var np.array<Datetime> time: times at which processed data exists
     :var Quantity resolution: vertical resolution in units of time,
            altitude, or pressure to which the data is calculated
     """
@@ -79,13 +70,7 @@ class Thermo_Profile():
                     resi_raw.append(temp_dict[key].magnitude)
 
             # Calculate temperature
-            temp_raw = np.pow(np.add(np.add(
-                        np.multiply(np.log(resi_raw), coeff[nnumber][1])),
-                        np.multiply(np.pow(resi_raw, 3), coeff[nnumber][2])),
-                                       -1)
-
-            print("Temperature calculated from resistance using coefficients ",
-                  coeff[nnumber])
+            temp_raw = utils.temp_calib(resi_raw, nnumber)
 
         else:  # Use logged temperatures
             temp_raw = []  # List of lists, each containing data from a sensor
@@ -294,11 +279,3 @@ class Thermo_Profile():
                                               units=main_file.variables\
                                               ["time"].units))
         main_file.close()
-
-    def get_surface_based_CAPE():
-        """ Either calculates (the first call) or retrieves (later calls) the
-        value of surface based CAPE.
-
-        :rtype: Quantity
-        :return: surface-based CAPE
-        """

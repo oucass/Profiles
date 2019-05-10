@@ -5,18 +5,31 @@ Authors Brian Greene, Jessica Wiedemeier, Tyler Bell
 Copyright U of Oklahoma Center for Autonomous Sensing and Sampling 2019
 """
 
+import warnings
 import numpy as np
 import matplotlib.pyplot as plt
-from pandas.plotting import register_matplotlib_converters
-import warnings
-from pint import UnitStrippedWarning
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from numpy import sin, cos
+from pandas.plotting import register_matplotlib_converters
+from pint import UnitStrippedWarning
 
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("error", category=UnitStrippedWarning)
 register_matplotlib_converters()
+
+coeff = {"N955":
+         {"IMET1": (1.02777010e-03, 2.59349232e-04, 1.56043078e-07),  # 57562
+          "IMET2": (9.91077399e-04, 2.64646362e-04, 1.43596294e-07),  # 57563
+          "IMET3": (1.00786813e-03, 2.61722397e-04, 1.48476183e-07)  # 58821
+          }}
+
+"""
+More coefficients can be found at https://github.com/oucass/CASS-ardupilot/
+blob/Copter-3.6/ArduCopter/sensors.cpp
+TODO create JSON file to read into variable coeff with coefficients from all
+IMET sensors and platforms which can be updated any time a platform is changed
+"""
 
 
 def regrid(base=None, base_times=None, data=None, data_times=None,
@@ -215,10 +228,11 @@ def sloppy_regrid(base, data, times, new_res, ascent, units, base_units,
     """ Significanly faster way to regrid data to be used when data and base
     have the same (+/- 1) length. Assumes that data and base align temporally
 
-    :param list<Quantity> base: Measurements of the variable serving as the \
-       vertical coordinate
-    :param list<Quantity> data: Measurements of the dependent variable
-    :param list<Datetime> times: Times coresponding to data (same as to time)
+    :param list-like<Quantity> base: Measurements of the variable serving as \
+       the vertical coordinate
+    :param list-like<Quantity> data: Measurements of the dependent variable
+    :param list-like<Datetime> times: Times coresponding to data (same as to \
+        time)
     :param Quantity new_res: The resolution to which base should be gridded. \
        This must have the same dimension as base.
     :param bool ascent: True if data from ascending leg of profile is to be \
@@ -227,6 +241,7 @@ def sloppy_regrid(base, data, times, new_res, ascent, units, base_units,
     :rtype: tuple
     :return: (new_base, new_times, new_data)
     """
+
     # Use negative pressure so that the max of the data list is the peak
     if new_res.dimensionality == units.Pa.dimensionality:
         base = -1*base
@@ -328,26 +343,24 @@ def sloppy_regrid(base, data, times, new_res, ascent, units, base_units,
     return(new_base, new_times, new_data)
 
 
-def temp_calib(temp, coefs):
+def temp_calib(resistance, nnumber):
     """ Converts voltage to temperatures using the given coefficients.
 
-    :param list<Quantity> temp: voltages recorded by temperature sensors
-    :param list<Quantity> coefs: coefficients to convert voltage to
-       temperature. The coefficients should be determined seperately for
-       each sensor
+    :param list<Quantity> resistance: resistances recorded by temperature \
+       sensors
+    :param str nnumber: The platform identifier, used to determine which \
+       coefficients should be pulled from the database
     :rtype: list<Quantity>
     :return: list of temperatures in K
     """
 
+    print("Temperature calculated from resistance using coefficients ",
+          coeff[nnumber])
 
-def correct_alt_pres(gps, pres):
-    """ Uses pressure data to correct altitude data.
-
-    :param tuple gps: GPS data as (lat, lon, alt_MSL, time: Datetime)
-    :param tuple pres: barometer data as (pres, time: ms)
-    :rtype: tuple
-    :return: gps with corrected altitudes
-    """
+    return np.pow(np.add(np.add(np.multiply(np.log(resistance),
+                                            coeff[nnumber][1])),
+                         np.multiply(np.pow(resistance, 3),
+                                     coeff[nnumber][2])), -1)
 
 
 def rotate(u, v, w, yaw, pitch, roll):
@@ -400,7 +413,6 @@ def qc(data, max_bias, max_variance):
        sensor flagged for response time.
     """
 
-    # TODO: Test this function and downstream functions (_bias, _s_dev)
     # _bias: returns list of length number of sensors; 0 means data is good
     good_means = _bias(data, max_bias)
     # _s_dev: returns list of length number of sensors; 0 means data is good
@@ -436,7 +448,7 @@ def _bias(data, max_abs_error):
 
     while(True):
         # Identify the sensor with the mean farthest from the mean of means
-        max_diff = 0  # TODO this should be the same type of Quantity as Data
+        max_diff = 0
         furthest_from_mean = 0  # index of sensor furthest from mean
 
         for j in range(len(data)):
@@ -479,7 +491,7 @@ def _s_dev(data, max_abs_error):
 
     while(True):
         # Identify the sensor with the mean farthest from the mean of means
-        max_diff = 0  # TODO this should be the same type of Quantity as Data
+        max_diff = 0
         furthest_from_mean = 0  # index of sensor furthest from mean
 
         for j in range(len(data)):
@@ -505,11 +517,11 @@ def identify_profile(alts, alt_times, confirm_bounds,
                      profile_start_height=None, to_return=[], ind=0):
     """ Identifies the temporal bounds of all profiles in the data file. These
     assumptions must be valid:
-        * The craft starts and ends each profile below profile_start_height
-        * The craft does not go above profile_start_height until the first
-        profile is started
-        * The craft does not go above profile_start_height after the last
-        profile is ended.
+    * The craft starts and ends each profile below profile_start_height
+    * The craft does not go above profile_start_height until the first
+    profile is started
+    * The craft does not go above profile_start_height after the last
+    profile is ended.
 
     :rtype: list<tuple>
     :return: a list of times defining the profiles in the format \

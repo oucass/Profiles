@@ -5,9 +5,6 @@ Authors Brian Greene, Jessica Wiedemeier, Tyler Bell, Gus Azevedo \n
 Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 2019
 """
-from numpy import sin as sin
-from numpy import cos as cos
-import numpy as np
 import utils
 from Raw_Profile import Raw_Profile
 from Thermo_Profile import Thermo_Profile
@@ -61,11 +58,23 @@ class Profile():
             self.file_path = file_path[:-5]
 
     def get_wind_profile(self):
+        """ If a Wind_Profile object does not already exist, it is created when
+        this method is called.
+
+        :return: the Wind_Profile object
+        :rtype: Wind_Profile
+        """
         if self._wind_profile is None:
             a = 2  # TODO Calculate it
         return self._wind_profile
 
     def get_thermo_profile(self):
+        """ If a Thermo_Profile object does not already exist, it is created
+        when this method is called.
+
+        :return: the Thermo_Profile object
+        :rtype: Thermo_Profile
+        """
         if self._thermo_profile is None:
             thermo_data = self._raw_profile.thermo_data()
             self._thermo_profile = \
@@ -77,10 +86,12 @@ class Profile():
         return self._thermo_profile
 
     def get_co2_profile(self):
+        """ If a CO2_Profile object does not already exist, it is created when
+        this method is called.
+
+        :return: the CO2_Profile object
+        :rtype: CO2_Profile
+        """
         if self._co2_profile is None:
             a = 2  # TODO Calculate it
         return self._co2_profile
-
-
-a = Profile("/home/jessica/GitHub/data_templates/00000141.json", 10, 'm', 1, ascent=False)
-b = a.get_thermo_profile()
