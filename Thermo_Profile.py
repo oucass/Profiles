@@ -53,11 +53,16 @@ class Thermo_Profile():
         self._units = units
         self._sb_CAPE = None  # calculate upon access
         self._datadir = os.path.dirname(filepath + ".json")
+        if ascent:
+            self._ascent_filename_tag = "Ascending"
+        else:
+            self._ascent_filename_tag = "Descending"
         temp = []
         rh = []
 
-        if os.path.basename(filepath + "thermo.nc") in \
-           os.listdir(self._datadir):
+        if os.path.basename(filepath + "thermo_" + str(resolution.magnitude) +
+                            str(resolution.units) + self._ascent_filename_tag +
+                            ".nc") in os.listdir(self._datadir):
             print("Reading thermo_profile from pre-processed netCDF")
             self._read_netCDF(filepath)
             return
@@ -90,10 +95,10 @@ class Thermo_Profile():
             if "rh" in key and "temp" not in key and "time" not in key:
                 rh_raw.append(temp_dict[key].magnitude)
 
-        alts = (np.array(temp_dict["alt_pres"].magnitude)
-                * temp_dict["alt_pres"].units)
-        pres = (np.array(temp_dict["pres"].magnitude)
-                * temp_dict["pres"].units)
+        alts = np.array(temp_dict["alt_pres"].magnitude)\
+            * temp_dict["alt_pres"].units
+        pres = np.array(temp_dict["pres"].magnitude)\
+            * temp_dict["pres"].units
 
         # If no indices given, use entire file
         if not indices[0] is None:
@@ -146,7 +151,8 @@ class Thermo_Profile():
         temp_ind = 0  # track index in temp_raw  after items are removed.
         for flags_ind in range(len(temp_flags)):
             if temp_flags[flags_ind] != 0:
-                temp_raw.pop(temp_ind)
+                print("Temperature sensor", temp_ind + 1, "removed")
+                temp_raw[temp_ind] = [np.nan]*len(temp_raw[temp_ind])*temp_raw.units
             else:
                 temp_ind += 1
 
@@ -168,15 +174,22 @@ class Thermo_Profile():
             base = pres
             base_time = time_pres
 
-        # grid rh
-        base, base_time, self.pres = utils.regrid(base=base,
-                                                  base_times=base_time,
-                                                  data=pres,
-                                                  data_times=time_pres,
-                                                  new_res=resolution,
-                                                  ascent=ascent,
-                                                  units=self._units)
+        # grid alt
+        base, base_time, self.alt = utils.regrid(base=base,
+                                                 base_times=base_time,
+                                                 data=alts,
+                                                 data_times=time_pres,
+                                                 new_res=resolution,
+                                                 ascent=ascent,
+                                                 units=self._units)
 
+        # grid pres
+        self.pres = utils.regrid(base=base, base_times=base_time,
+                                 data=pres, data_times=time_pres,
+                                 new_res=resolution, ascent=ascent,
+                                 units=self._units)[2]
+
+        # grid RH
         self.rh = utils.regrid(base=base, base_times=base_time,
                                data=rh,
                                data_times=time_rh,
@@ -191,13 +204,6 @@ class Thermo_Profile():
                                  new_res=resolution, ascent=ascent,
                                  units=self._units)[2]
 
-        # grid alt
-        self.alt = utils.regrid(base=base, base_times=base_time,
-                                data=alts,
-                                data_times=time_pres,
-                                new_res=resolution, ascent=ascent,
-                                units=self._units)[2]
-
         minlen = min(len(base), len(base_time), len(self.rh),
                      len(self.pres), len(self.temp), len(self.alt))
         self.pres = self.pres[0:minlen-1]
@@ -210,6 +216,7 @@ class Thermo_Profile():
         self.mixing_ratio = calc.mixing_ratio_from_relative_humidity(
                             np.divide(self.rh.magnitude, 100), self.temp,
                             self.pres)
+
         self._save_netCDF(filepath)
 
     def _save_netCDF(self, file_path):
@@ -218,7 +225,10 @@ class Thermo_Profile():
 
         :param string file_path: file name
         """
-        main_file = netCDF4.Dataset(file_path + "thermo.nc", "w",
+        main_file = netCDF4.Dataset(file_path + "thermo_" +
+                                    str(self.resolution.magnitude) +
+                                    str(self.resolution.units) +
+                                    self._ascent_filename_tag + ".nc", "w",
                                     format="NETCDF4", mmap=False)
 
         main_file.createDimension("time", None)
@@ -255,19 +265,22 @@ class Thermo_Profile():
 
         :param string file_path: file name
         """
-        main_file = netCDF4.Dataset(file_path + "thermo.nc", "r",
+        main_file = netCDF4.Dataset(file_path + "thermo_" +
+                                    str(self.resolution.magnitude) +
+                                    str(self.resolution.units) +
+                                    self._ascent_filename_tag + ".nc", "r",
                                     format="NETCDF4", mmap=False)
         # Note: each data chunk is converted to an np array. This is not a
         # superfluous conversion; a Variable object is incompatible with pint.
 
+        self.alt = np.array(main_file.variables["alt"]) * \
+                    self._units.parse_expression(main_file.variables["alt"]\
+                                                 .units)
         self.pres = np.array(main_file.variables["pres"]) * \
                     self._units.parse_expression(main_file.variables["pres"]\
                                                  .units)
         self.rh = np.array(main_file.variables["rh"]) * \
                     self._units.parse_expression(main_file.variables["rh"]\
-                                                 .units)
-        self.alt = np.array(main_file.variables["alt"]) * \
-                    self._units.parse_expression(main_file.variables["alt"]\
                                                  .units)
         self.temp = np.array(main_file.variables["temp"]) * \
                     self._units.parse_expression(main_file.variables["temp"]\

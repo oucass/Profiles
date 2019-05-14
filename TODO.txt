@@ -1,3 +1,8 @@
+Getting started:
+    Download Anaconda 3. Install the environment "Profiles_dev" (in this folder). 
+  If you make changes to the environment, export the entire environment to post all changes on GitHub.
+    Download Sphinx for documentation. All settings are in conf.py, which is in this folder.
+
 Temperature Calculations:
 
   Reading resistance
@@ -58,6 +63,23 @@ CO2:
 
   CO2_Profile
     Implement CO2_Profile. A skeleton file already exists.
+
+  User access
+    In Profile.get_co2_profile, create a CO2_Profile object.
+
+Wind:
+  Calculate
+    Calculate wind data from roll, pitch, yaw data in Raw_Profile.
+
+  Wind_Profile
+    Implement Wind_Profile. A skeleton file already exists.
+
+  User access
+    In Profile.get_wind_data, create a Wind_Profile object
+
+Profiles:
+  Finish implementation
+
 
 AFTER ANY CHANGE TO THE USER INTERFACE, UPDATE RST FILES, HTML FILES, AND UML.
 Email jessica.m.wiedemeier-1@ou.edu if you are unsure how to do this - I can

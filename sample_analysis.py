@@ -1,4 +1,5 @@
 from Profile import Profile
+from Profiles import Profiles
 import matplotlib.pyplot as plt
 
 """
@@ -21,11 +22,20 @@ different profile start height.
        units for vertical resolution specified
        profile number - this should be 1 unless your file contains multiple
           profiles
+       dev should be False IFF (you are processing operational data AND not
+                                working on code development)
        ascent - if True, data from the ascending leg of the flight will be
           used. If False, data from the descending leg will be used.
 """
-a = Profile("/home/jessica/GitHub/data_templates/00000141.json", 10, 'm', 1,
-            ascent=True)
+
+# Example using Profiles
+a = Profiles()
+a.add_all_profiles("/home/jessica/GitHub/data_templates/00000136.json")
+a.add_all_profiles("/home/jessica/GitHub/data_templates/00000161.json")
+
+# Example using Profile (singular)
+b = Profile("/home/jessica/GitHub/data_templates/00000141.json", 10, 'm', 1,
+            dev=True, ascent=True)
 
 """
 Calculate thermodynamic variables from raw data. The values returned have
@@ -34,11 +44,33 @@ a Thermo_Profile object was already created from the same ".json" file AND the
 same vertical resolution AND the same value of ascent (True/False) was used,
 the pre-processed netCDF is read to save time and avoid redundant calculations.
 """
-b = a.get_thermo_profile()
+
+# Example using Profiles
+at = []
+for p in a.profiles:
+    at.append(p.get_thermo_profile())
+
+# Example using Profile
+bt = b.get_thermo_profile()
 
 """
 Here's an example of one way to view the processed data. See the docs for a
 full list of accessible variables.
 """
-plt.plot(b.temp, b.alt)
+
+# Example using Profiles
+plt.figure()
+for t in at:
+    plt.plot(t.temp, t.alt)
 plt.show()
+
+# Example using Profile
+plt.figure()
+plt.plot(bt.temp, bt.alt)
+plt.show()
+
+"""
+Now look in your data directory. There are .nc files that can be processed
+faster than .json for the same result. Try replacing .json with .nc in lines
+31-40 above.
+"""

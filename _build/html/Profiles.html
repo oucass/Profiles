@@ -52,7 +52,7 @@
 2019</p>
 <dl class="class">
 <dt id="Profiles.Profiles">
-<em class="property">class </em><code class="descclassname">Profiles.</code><code class="descname">Profiles</code><span class="sig-paren">(</span><em>descent=False</em>, <em>dev=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Profiles.Profiles" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">Profiles.</code><code class="descname">Profiles</code><span class="sig-paren">(</span><em>resolution=10</em>, <em>res_units='m'</em>, <em>ascent=True</em>, <em>dev=False</em>, <em>confirm_bounds=True</em><span class="sig-paren">)</span><a class="headerlink" href="#Profiles.Profiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class manages data (in the form of Profile objects) from one or
 many flights.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -90,7 +90,8 @@ all Profiles to profiles</p>
 <dt id="Profiles.Profiles.add_flight">
 <code class="descname">add_flight</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="headerlink" href="#Profiles.Profiles.add_flight" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads a file and adds a Profile object, which may not be a vertical
-profile, which contains all data after the sensors stablize.</p>
+profile, which contains all data after the sensors stablize. COMING
+SOON</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -109,7 +110,7 @@ profile, which contains all data after the sensors stablize.</p>
 <dt id="Profiles.Profiles.add_profile">
 <code class="descname">add_profile</code><span class="sig-paren">(</span><em>file_path</em>, <em>time=datetime.datetime(1</em>, <em>1</em>, <em>1</em>, <em>0</em>, <em>0)</em><span class="sig-paren">)</span><a class="headerlink" href="#Profiles.Profiles.add_profile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads a file and creates a Profile for the first vertical profile
-after time.</p>
+after time. COMING SOON</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -133,7 +134,8 @@ after time.</p>
 <dl class="method">
 <dt id="Profiles.Profiles.make_skewT">
 <code class="descname">make_skewT</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Profiles.Profiles.make_skewT" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a Skew-T diagram using all available data.</p>
+<dd><p>Create a Skew-T diagram using all available data. COMING SOON
+(after plotting)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -150,7 +152,7 @@ after time.</p>
 <dt id="Profiles.Profiles.merge">
 <code class="descname">merge</code><span class="sig-paren">(</span><em>to_add</em><span class="sig-paren">)</span><a class="headerlink" href="#Profiles.Profiles.merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads all Profile objects from a pre-existing Profiles into this
-Profiles. All flights must be from the same location.</p>
+Profiles. All flights must be from the same location. COMING SOON</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -169,7 +171,8 @@ copied over</td>
 <dl class="method">
 <dt id="Profiles.Profiles.read_netCDF">
 <code class="descname">read_netCDF</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="headerlink" href="#Profiles.Profiles.read_netCDF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Re-creates a Profiles object which has been saved as a NetCDF</p>
+<dd><p>Re-creates a Profiles object which has been saved as a NetCDF
+COMING SOON</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -188,7 +191,8 @@ successfully copied</td>
 <dl class="method">
 <dt id="Profiles.Profiles.save_netCDF">
 <code class="descname">save_netCDF</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="headerlink" href="#Profiles.Profiles.save_netCDF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stores all attributes of this Profiles object as a NetCDF</p>
+<dd><p>Stores all attributes of this Profiles object as a NetCDF COMING
+SOON</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

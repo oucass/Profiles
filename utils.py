@@ -7,8 +7,10 @@ Copyright U of Oklahoma Center for Autonomous Sensing and Sampling 2019
 
 import warnings
 import numpy as np
+import sys
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from datetime import timedelta
 from numpy import sin, cos
 from pandas.plotting import register_matplotlib_converters
 from pint import UnitStrippedWarning
@@ -52,6 +54,11 @@ def regrid(base=None, base_times=None, data=None, data_times=None,
     :rtype: tuple
     :return: (new_base, new_times, new_data)
     """
+
+    # Sanity check
+    if len(base) == 0:
+        print("Empty base passed to regrid")
+        return
 
     # Set variables passes as params
     base_units = base.units
@@ -513,7 +520,7 @@ def _s_dev(data, max_abs_error):
                 return to_return
 
 
-def identify_profile(alts, alt_times, confirm_bounds,
+def identify_profile(alts, alt_times, confirm_bounds=True,
                      profile_start_height=None, to_return=[], ind=0):
     """ Identifies the temporal bounds of all profiles in the data file. These
     assumptions must be valid:
@@ -527,7 +534,6 @@ def identify_profile(alts, alt_times, confirm_bounds,
     :return: a list of times defining the profiles in the format \
        (time_start, time_max_height, time_end)
     """
-
     # Get the starting height from the user
     if profile_start_height is None:
         fig1 = plt.figure()
@@ -539,7 +545,11 @@ def identify_profile(alts, alt_times, confirm_bounds,
 
         plt.show(block=False)
 
-        profile_start_height = int(input('Profile start height: '))
+        try:
+            profile_start_height = int(input('Wrong file? Enter "q" to quit. '
+                                             + '\nProfile start height: '))
+        except ValueError:
+            sys.exit(0)
         plt.close()
 
     # If no profiles exist after ind, return an empty index list.
@@ -606,30 +616,36 @@ def identify_profile(alts, alt_times, confirm_bounds,
 
                     # Get user opinion
                     valid = input('Correct? (Y/n): ')
-                    print("Profile from ", alt_times[start_ind_asc], "to",
-                          alt_times[end_ind_des], "added")
                     # If good, wrap up the profile
-                    if (valid in "yYyesYes" or valid is "") and not \
-                       (start_ind_asc, peak_ind, end_ind_des) in to_return:
+                    if valid in "yYyesYes" or valid is "":
                         plt.close()
                         if end_ind_des is None:
                             print("Could not find end time des (LineTag B)")
                             return
                         # Add the profile if it is not already in to_return
-                        to_return.append((alt_times[start_ind_asc],
-                                          alt_times[peak_ind],
-                                          alt_times[end_ind_des]))
+                        pending_profile = (alt_times[start_ind_asc],
+                                           alt_times[peak_ind],
+                                           alt_times[end_ind_des])
+                        if not _profile_in(pending_profile, to_return):
+                            to_return.append((alt_times[start_ind_asc],
+                                              alt_times[peak_ind],
+                                              alt_times[end_ind_des]))
 
+                            print("Profile from ", alt_times[start_ind_asc],
+                                  "to", alt_times[end_ind_des], "added")
                         # Check if more profiles in file
-                        if ind + 50 < len(alts) \
-                           and max(alts[ind + 50::]) > (profile_start_height +
-                                                        alts[60] - alts[50]):
+                        if ind + 500 < len(alts) \
+                           and max(alts[ind + 500::]) > \
+                           (profile_start_height + alts[600] - alts[500]):
                             # There is another profile before the end of the
                             # file - find it.
-                            to_return = identify_profile(alts,
-                                                         profile_start_height,
-                                                         to_return,
-                                                         ind=ind + 50)
+                            a = profile_start_height
+                            to_return =\
+                             identify_profile(alts, alt_times,
+                                              confirm_bounds=confirm_bounds,
+                                              profile_start_height=a,
+                                              to_return=to_return,
+                                              ind=ind + 500)
                             # Break because the rest of the file will be
                             # processed by the previous call.
                             break
@@ -649,3 +665,22 @@ def identify_profile(alts, alt_times, confirm_bounds,
                                                      to_return)
 
     return to_return
+
+
+def _profile_in(indices, all_indices):
+    """ Helper function for identify_profile to ensure similar or overlapping
+    profiles not included
+    """
+    for profile_n in all_indices:
+        # Check for similar
+        if ((profile_n[0]-indices[0] <= timedelta(seconds=5)
+           and indices[0]-profile_n[0] <= timedelta(seconds=5)) or
+           (profile_n[1]-indices[1] <= timedelta(seconds=5)
+           and indices[1]-profile_n[1] <= timedelta(seconds=5)) or
+           (profile_n[2]-indices[2] <= timedelta(seconds=5)
+           and indices[2]-profile_n[2] <= timedelta(seconds=5))):
+            return True
+        # Check for overlapping
+        if indices[1] > profile_n[0] and indices[1] < profile_n[2]:
+            return True
+    return False

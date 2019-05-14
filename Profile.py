@@ -24,7 +24,8 @@ class Profile():
     """
 
     def __init__(self, file_path, resolution, res_units, profile_num,
-                 ascent=True, dev=False, confirm_bounds=True):
+                 ascent=True, dev=False, confirm_bounds=True,
+                 index_list=None):
         """ Creates a Profile object.
 
         :param string fpath: data file
@@ -32,14 +33,34 @@ class Profile():
            calculated in units of time, altitude, or pressure
         :param str res_units: units of resolution in a format which can \
            be parsed by pint
+        :param int profile_num: 1 or greater. Identifies profile when file \
+           contains multiple
+        :param bool ascent: True to use ascending leg of flight, False to use \
+           descending leg
         :param bool dev: True if data is from a developmental flight
+        :param confirm_bounds: False to bypass user confirmation of \
+           automatically identified start, peak, and end times
+        :param list<tuple> index_list: Profile start, peak, and end indices if\
+           known - leave as None in most cases
+        :return a Profile object or None (if halt_if_fail and the requested \
+           profile was not found)
         """
         self._raw_profile = Raw_Profile(file_path, dev)
         self._units = self._raw_profile.get_units()
         self._pos = self._raw_profile.pos_data()
-        indices = utils.identify_profile(self._pos["alt_MSL"].magnitude,
-                                         self._pos["time"], confirm_bounds
-                                         )[profile_num - 1]
+        try:
+            if index_list is None:
+                index_list = \
+                 utils.identify_profile(self._pos["alt_MSL"].magnitude,
+                                        self._pos["time"], confirm_bounds)
+            indices = index_list[profile_num - 1]
+        except IndexError:
+            print("Analysis shows that the given file has few than " +
+                  str(profile_num) + " profiles. If you are certain the file "
+                  + "does contain more profiles than we have found, try again "
+                  + "with a different starting height. \n\n")
+            return self.__init__(file_path, resolution, res_units, profile_num,
+                                 ascent=True, dev=False, confirm_bounds=True)
 
         if ascent:
             self.indices = (indices[0], indices[1])
