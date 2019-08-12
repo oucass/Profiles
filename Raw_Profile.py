@@ -56,7 +56,7 @@ class Raw_Profile():
         """ Gets data needed by the Profile constructor.
 
         rtype: dict
-        return: {"lat":, "lon":, "alt_MSL":, "time":}
+        return: {"lat":, "lon":, "alt_MSL":, "time":, "units"}
         """
 
         to_return = {}
@@ -65,6 +65,7 @@ class Raw_Profile():
         to_return["lon"] = self.pos[1]
         to_return["alt_MSL"] = self.pos[2]
         to_return["time"] = self.pos[-1]
+        to_return["units"] = units
 
         return to_return
 
@@ -83,6 +84,7 @@ class Raw_Profile():
 
         for sensor_number in [a + 1 for a in
                               range(int(len(self.temp) / 2) - 1)]:
+            # TODO this line is never reached - look in data to see why
             to_return["temp" + str(sensor_number)] \
                 = self.temp[sensor_number*2 - 2]
             to_return["resi" + str(sensor_number)] \
@@ -196,7 +198,7 @@ class Raw_Profile():
                     # Create array of lists with two lists per temperature
                     # sensor reported in the data file - one for temperature
                     # and one for resistance - plus one for times
-                    temp_list = [[] for x in range(sum('Temp' in s for s in
+                    temp_list = [[] for x in range(sum('T' in s for s in
                                  elem["data"].keys()) * 2 + 1)]
 
                     sensor_names["IMET"] = {}
@@ -204,9 +206,13 @@ class Raw_Profile():
                     sensor_numbers = np.add(range(int((len(temp_list)-1) / 2)),
                                             1)
                     for num in sensor_numbers:
-                        sensor_names["IMET"]["Temp"+str(num)] = 2*num - 2
-                        sensor_names["IMET"]["Resi"+str(num)] = 2*num - 1
+                        sensor_names["IMET"]["T"+str(num)] = 2*num - 2
+                        sensor_names["IMET"]["R"+str(num)] = 2*num - 1
                     sensor_names["IMET"]["Time"] = -1
+                    
+                    print(sensor_names["IMET"])
+                    print(sensor_names["IMET"]["T1"])
+                    print(sensor_names["IMET"]["R1"]) # Right now, these are integers instead of lists. Troubleshoot.
 
                 # Read fields into temp_list, including Time
                 for key, value in sensor_names["IMET"].items():
@@ -224,9 +230,7 @@ class Raw_Profile():
                         # as a list of NaN.
                         temp_list[value].append(np.nan)
                     except IndexError:
-                        print(key, value)
-                        print(temp_list[value])
-                        print(elem["data"][key])
+                        print("Error in Raw_Profile - 227")
 
             # Humidity
             elif elem["meta"]["type"] == "RHUM":

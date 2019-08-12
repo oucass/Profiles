@@ -12,7 +12,7 @@ from Profile import Profile
 from Raw_Profile import Raw_Profile
 
 
-class Profiles():
+class Profile_Set():
     """ This class manages data (in the form of Profile objects) from one or
     many flights.
 
@@ -70,16 +70,51 @@ class Profiles():
         print(len(self.profiles), "profiles including those added from file",
               file_path)
 
-    def add_profile(self, file_path, time=dt.datetime(dt.MINYEAR, 1, 1,
-                                                      tzinfo=None)):
+    def add_profile(self, file_path,
+                    time=dt.datetime(dt.MINYEAR, 1, 1, tzinfo=None),
+                    profile_num=None):
         """ Reads a file and creates a Profile for the first vertical profile
-        after time. COMING SOON
+        after time OR for the profile_numth profile.
 
         :param string file_path: the data file
         :param datetime time: the time after which the profile begins
+        (used only if profile_num is not specified)
+        :param int profile_num: use the nth profile in the file
         :rtype: bool
         :return: True if a profile was found and added
         """
+
+        # Process altitude data for profile identification
+        raw_profile = Raw_Profile(file_path, self.dev)
+        pos = raw_profile.pos_data()
+
+        # Identify the start, peak, and end indices of each profile
+        index_list = utils.identify_profile(pos["alt_MSL"].magnitude,
+                                            pos["time"], self.confirm_bounds,
+                                            to_return=[])
+
+        if(profile_num is None):
+            self.profiles.append(Profile(file_path, self.resolution,
+                                         self.res_units, profile_num,
+                                         self.ascent, self.dev,
+                                         self.confirm_bounds,
+                                         index_list=index_list))
+        else:
+            for profile_num_guess in range(len(index_list)):
+                # Check if this profile is the first to start after time
+                if (index_list[profile_num_guess][0] >= time):
+                    profile_num = profile_num_guess + 1
+                    self.profiles.append(Profile(file_path, self.resolution,
+                                         self.res_units, profile_num,
+                                         self.ascent, self.dev,
+                                         self.confirm_bounds,
+                                         index_list=index_list))
+
+                # No need to add any more profiles from this file
+                break
+
+        print(len(self.profiles), "profiles including profile number ",
+              str(profile_num), " added from file", file_path)
 
     def add_flight(self, file_path):
         """ Reads a file and adds a Profile object, which may not be a vertical

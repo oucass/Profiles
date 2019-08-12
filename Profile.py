@@ -73,9 +73,9 @@ class Profile():
         self.location = None
         self.resolution = resolution * self._units.parse_expression(res_units)
         self.ascent = ascent
-        if ".nc" in file_path:
+        if ".nc" in file_path or ".NC" in file_path:
             self.file_path = file_path[:-3]
-        elif ".json" in file_path:
+        elif ".json" in file_path or ".JSON" in file_path:
             self.file_path = file_path[:-5]
 
     def get_wind_profile(self):
@@ -116,3 +116,6 @@ class Profile():
         if self._co2_profile is None:
             a = 2  # TODO Calculate it
         return self._co2_profile
+
+
+a = Profile("/home/jessica/GitHub/data_templates/00000010.JSON", 10, "m", 1)

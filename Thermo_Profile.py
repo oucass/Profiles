@@ -10,6 +10,7 @@ import utils
 import numpy as np
 import netCDF4
 import os
+import pickle
 
 
 class Thermo_Profile():
@@ -43,7 +44,8 @@ class Thermo_Profile():
         :param str filepath: the path to the original data file WITHOUT the \
            suffix .nc or .json
         """
-
+        # TODO - tidy
+        # pickle.dump(temp_dict, open("temp_dict", "wb"))
         self.resolution = resolution
         self.time = None
         self.rh = None
@@ -66,17 +68,18 @@ class Thermo_Profile():
             print("Reading thermo_profile from pre-processed netCDF")
             self._read_netCDF(filepath)
             return
-        elif False in np.isnan(temp_dict["resi1"]):  # if resistances logged
-            resi_raw = []  # List of lists, each containing data from a sensor
-
-            # Fill resi_raw
-            for key in temp_dict.keys():
-                if "resi" in key:
-                    resi_raw.append(temp_dict[key].magnitude)
-
-            # Calculate temperature
-            temp_raw = utils.temp_calib(resi_raw, nnumber)
-
+            '''
+            elif False in np.isnan(temp_dict["resi1"]):  # if resistances logged
+                resi_raw = []  # List of lists, each containing data from a sensor
+    
+                # Fill resi_raw
+                for key in temp_dict.keys():
+                    if "resi" in key:
+                        resi_raw.append(temp_dict[key].magnitude)
+    
+                # Calculate temperature
+                temp_raw = utils.temp_calib(resi_raw, nnumber)
+            '''
         else:  # Use logged temperatures
             temp_raw = []  # List of lists, each containing data from a sensor
 
@@ -107,7 +110,8 @@ class Thermo_Profile():
             time_rh = temp_dict["time_rh"]
             selection_rh = np.where(np.array(time_rh) > indices[0],
                                     np.array(time_rh) < indices[1], False)
-            rh_raw = np.array(rh_raw)[:, selection_rh] * temp_dict["rh1"].units
+            print(np.array(rh_raw).shape, "\n", selection_rh.shape)
+            rh_raw = np.array(rh_raw)[selection_rh] * temp_dict["rh1"].units
             time_rh = np.array(time_rh)[selection_rh]
 
             time_pres = temp_dict["time_pres"]
