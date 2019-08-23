@@ -19,7 +19,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Profiles'
+project = 'Profile_Set'
 copyright = '2019, Jessica Wiedemeier, Tyler Bell, Brian Green, Gus Azevedo'
 author = 'Jessica Wiedemeier, Tyler Bell, Brian Green, Gus Azevedo'
 
@@ -129,8 +129,8 @@ latex_elements = {
     # 'pointsize': '10pt',
 
     # Additional stuff for the LaTeX preamble.
-    #
-    # 'preamble': '',
+    
+    'preamble': r'''\usepackage{amsmath}''',
 
     # Latex figure (float) alignment
     #
@@ -141,7 +141,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Profiles.tex', 'Profiles Documentation',
+    (master_doc, 'Profile_Set.tex', 'Profile_Set Documentation',
      'Jessica Wiedemeier, Tyler Bell, Brian Green, Gus Azevedo', 'manual'),
 ]
 

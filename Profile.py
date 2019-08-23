@@ -8,6 +8,7 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 import utils
 from Raw_Profile import Raw_Profile
 from Thermo_Profile import Thermo_Profile
+from Wind_Profile import Wind_Profile
 
 
 class Profile():
@@ -21,6 +22,12 @@ class Profile():
     :var Location location: information about the flight location
     :var Quantity resolution: resolution of the data in units of time,
        altitude, or pressure
+    :var tuple indices:
+    :var bool dev:
+    :var bool ascent:
+    :var String file_path:
+    :var np.Array<Datetime> gridded_times:
+    :var np.Array<Quantity> gridded_base:
     """
 
     def __init__(self, file_path, resolution, res_units, profile_num,
@@ -45,9 +52,12 @@ class Profile():
         :return a Profile object or None (if halt_if_fail and the requested \
            profile was not found)
         """
+
         self._raw_profile = Raw_Profile(file_path, dev)
         self._units = self._raw_profile.get_units()
         self._pos = self._raw_profile.pos_data()
+        self._pres = (self._raw_profile.pres[0], self._raw_profile.pres[-1])
+
         try:
             if index_list is None:
                 index_list = \
@@ -78,6 +88,20 @@ class Profile():
         elif ".json" in file_path or ".JSON" in file_path:
             self.file_path = file_path[:-5]
 
+        if(self.resolution.dimensionality ==
+           self._units.get_dimensionality('m')):
+            base = self._pos['alt_MSL']
+            base_time = self._pos['time']
+        elif(self.resolution.dimensionality ==
+             self._units.get_dimensionality('Pa')):
+            base = self._pres[0]
+            base_time = self._pres[1]
+
+        self.gridded_times, self.gridded_base \
+            = utils.regrid_base(base=base, base_times=base_time,
+                                new_res=self.resolution, ascent=ascent,
+                                units=self._units)
+
     def get_wind_profile(self):
         """ If a Wind_Profile object does not already exist, it is created when
         this method is called.
@@ -86,7 +110,12 @@ class Profile():
         :rtype: Wind_Profile
         """
         if self._wind_profile is None:
-            a = 2  # TODO Calculate it
+            wind_data = self._raw_profile.wind_data()
+            self._wind_profile = \
+                Wind_Profile(wind_data, self.resolution,
+                             gridded_times=self.gridded_times,
+                             indices=self.indices, ascent=self.ascent,
+                             units=self._units, filepath=self.file_path)
         return self._wind_profile
 
     def get_thermo_profile(self):
@@ -99,8 +128,9 @@ class Profile():
         if self._thermo_profile is None:
             thermo_data = self._raw_profile.thermo_data()
             self._thermo_profile = \
-                Thermo_Profile(thermo_data,
-                               self.resolution, indices=self.indices,
+                Thermo_Profile(thermo_data, self.resolution,
+                               gridded_times=self.gridded_times,
+                               indices=self.indices,
                                ascent=self.ascent, units=self._units,
                                filepath=self.file_path)
 
@@ -116,6 +146,3 @@ class Profile():
         if self._co2_profile is None:
             a = 2  # TODO Calculate it
         return self._co2_profile
-
-
-a = Profile("/home/jessica/GitHub/data_templates/00000010.JSON", 10, "m", 1)

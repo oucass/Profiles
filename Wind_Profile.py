@@ -6,25 +6,79 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 2019
 """
 import numpy as np
+import os
+
 
 class Wind_Profile():
     """ Contains data from one file.
 
     :var list<Quantity> u: U component of wind
     :var list<Quantity> v: V-component of wind
-    :var list<Datetime> time: time of each point
+    :var list<Datetime> gridded_times: time of each point
     """
 
-    def __init__(self, wind_data, resolution, isCopter=True):
+    def __init__(self, wind_dict, resolution, gridded_times=None,
+                 indices=(None, None), ascent=True, units=None, filepath='',
+                 vertical_coord_times=[]):
         """ Creates Wind_Profile object based on rotation data at the specified
         resolution.
         """
-        self.u = None
-        self.v = None
-        self.dir = None
-        self.speed = None
-        self.time = None
-        self._calc_winds(wind_data) # TODO integrate result
+
+        self.gridded_times = gridded_times
+
+        filepath_nc = filepath + "wind_" + str(resolution.magnitude) + \
+            str(resolution.units) + self._ascent_filename_tag + ".nc"
+
+        if os.path.basename(filepath_nc) in os.listdir(self._datadir):
+            print("Reading wind_profile from pre-processed netCDF")
+            self._read_netCDF(filepath_nc)
+            return
+        else:
+            time_raw = wind_dict["time"]
+            # If no indices given, use entire file
+            if not indices[0] is None:
+                # trim profile
+
+                selection = np.where(np.array(time_raw) > indices[0],
+                                     np.array(time_raw) < indices[1], False)
+
+                roll = np.array(wind_dict["roll"].magnitude)[selection] * \
+                    wind_dict["roll"].units
+                pitch = np.array(wind_dict["pitch"].magnitude)[selection] * \
+                    wind_dict["pitch"].units
+                yaw = np.array(wind_dict["yaw"].magnitude)[selection] * \
+                    wind_dict["yaw"].units
+                vE = np.array(wind_dict["speed_east"].magnitude)[selection] * \
+                    wind_dict["speed_east"].units
+                vN = np.array(wind_dict["speed_north"].magnitude)[selection] \
+                    * wind_dict["speed_north"].units
+                vD = np.array(wind_dict["speed_down"].magnitude)[selection] * \
+                    wind_dict["speed_down"].units
+                time_raw = np.array(time_raw)[selection]
+            else:
+                roll = wind_dict["roll"]
+                pitch = wind_dict["pitch"]
+                yaw = wind_dict["yaw"]
+                vE = wind_dict["speed_east"]
+                vN = wind_dict["speed_north"]
+                vD = wind_dict["speed_down"]
+
+
+        #
+        # TODO call _calc_winds
+        #
+
+        #
+        # TODO Regrid to res
+        #
+
+        #
+        # TODO make instance vars
+        #
+
+        #
+        # TODO save NC
+        #
 
     def _calc_winds(self, wind_data):
         """ Calculate wind direction, speed, u, and v
@@ -78,4 +132,12 @@ class Wind_Profile():
         az[iNeg] = az[iNeg] + 360. * units.deg
 
         # az is the wind direction, speed is the wind speed
-        return (az, speed)
+        return (az, speed, wind_data["time"])
+
+    def _read_NetCDF(self, filepath_nc):
+        # TODO make real version
+        print("Finish implementing Wind_Profile")
+
+    def _save_NetCDF(self, filepath):
+        # TODO make real version
+        print("Finish implementing Wind_Profile")

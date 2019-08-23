@@ -1,5 +1,5 @@
+from Profile_Set import Profile_Set
 from Profile import Profile
-from Profiles import Profiles
 import matplotlib.pyplot as plt
 
 """
@@ -29,12 +29,11 @@ different profile start height.
 """
 
 # Example using Profiles
-a = Profiles()
-a.add_all_profiles("/home/jessica/GitHub/data_templates/00000136.json")
-a.add_all_profiles("/home/jessica/GitHub/data_templates/00000161.json")
+a = Profile_Set()
+a.add_all_profiles("/home/jessica/GitHub/data_templates/00000010.JSON")
 
 # Example using Profile (singular)
-b = Profile("/home/jessica/GitHub/data_templates/00000141.json", 10, 'm', 1,
+b = Profile("/home/jessica/GitHub/data_templates/00000010.JSON", 10, 'm', 1,
             dev=True, ascent=True)
 
 """

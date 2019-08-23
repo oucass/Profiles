@@ -78,7 +78,7 @@ class Profile_Set():
 
         :param string file_path: the data file
         :param datetime time: the time after which the profile begins
-        (used only if profile_num is not specified)
+           (used only if profile_num is not specified)
         :param int profile_num: use the nth profile in the file
         :rtype: bool
         :return: True if a profile was found and added

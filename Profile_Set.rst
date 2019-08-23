@@ -1,6 +1,6 @@
-Profiles (COMING SOON)
+Profile_Set
 ===================================================================================
 
-.. automodule:: Profiles
+.. automodule:: Profile_Set
    :members:
    :undoc-members:

@@ -20,18 +20,101 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("error", category=UnitStrippedWarning)
 register_matplotlib_converters()
 
-coeff = {"N955":
-         {"IMET1": (1.02777010e-03, 2.59349232e-04, 1.56043078e-07),  # 57562
-          "IMET2": (9.91077399e-04, 2.64646362e-04, 1.43596294e-07),  # 57563
-          "IMET3": (1.00786813e-03, 2.61722397e-04, 1.48476183e-07)  # 58821
-          }}
 
-"""
-More coefficients can be found at https://github.com/oucass/CASS-ardupilot/
-blob/Copter-3.6/ArduCopter/sensors.cpp
-TODO create JSON file to read into variable coeff with coefficients from all
-IMET sensors and platforms which can be updated any time a platform is changed
-"""
+def regrid_base(base=None, base_times=None, new_res=None, ascent=True,
+                units=None):
+    """ Calculates times at which data means should be calculated.
+
+    :param np.array<Quantity> base: Measurements of the variable serving as \
+       the vertical coordinate
+    :param np.array<Datetime> base_times: Times coresponding to base
+    :param Quantity new_res: The resolution to which base should be gridded. \
+       This must have the same dimension as base.
+    :param bool ascent: True if data from ascending leg of profile is to be \
+       analyzed, false if descending
+    :param pint.UnitRegistry units: The unit registry defined in Profile
+    :rtype: (np.Array<Datetime>, np.Array<Quantity>)
+    :return: times at which the craft is at vertical points z*res above \
+       ground and the corrosponding base values
+    """
+
+    # Use negative pressure so that the max of the data list is the peak
+    if new_res.dimensionality == units.Pa.dimensionality:
+        base = -1*base
+
+    # Regrid base
+    if ascent:
+        new_base = np.arange((base[0] + 0.5*new_res).magnitude, (max(base) -
+                             0.5*new_res).magnitude,
+                             new_res.magnitude)
+    else:
+        new_base = np.arange((base[0] - 0.5*new_res).magnitude, (min(base) +
+                             0.5*new_res).magnitude,
+                             -1*new_res.magnitude)
+    new_base = np.array(new_base) * base.units
+
+    # Find times corresponding to regridded base
+    new_times = []
+    for elem in new_base:
+        if ascent:
+            closest_base_val_ind = next(x for x, val in enumerate(base)
+                                        if val > elem)
+        else:
+            closest_base_val_ind = next(x for x, val in enumerate(base)
+                                        if val < elem)
+        new_times.append(base_times[closest_base_val_ind])
+    return (new_times, new_base)
+
+
+def regrid_data(data=None, data_times=None, gridded_times=None, units=None):
+    """ Returns data interpolated to an evenly spaced array based on
+    gridded_times.
+
+    :param np.array<Quantity> data: Measurements of the dependent variable
+    :param np.array<Datetime> data_times: Times coresponding to data
+    :param pint.UnitRegistry units: The unit registry defined in Profile
+    :param np.Array<Datetime> gridded_times: The times returned by regrid_base
+    :cite: https://www.geeksforgeeks.org/python-get-the-index-of-first- \
+       element-greater-than-k/
+    :rtype: np.Array<Quantity>
+    :return: gridded_data
+    """
+
+    #
+    # Average around selected points
+    #
+    data_index = 0  # This tracks the most recent data element processed
+
+    gridded_data = []
+    for i in range(len(gridded_times)-1):
+        #
+        # Find the data indicies in the specified time range
+        #
+        start_time = gridded_times[i]
+        end_time = gridded_times[i+1]
+        data_seg_start_ind = None
+        data_seg_end_ind = None
+
+        while(data_index < len(data)):
+            if data_times[data_index] >= start_time:
+                data_seg_start_ind = data_index
+                break
+            data_index += 1
+
+        while(data_index < len(data)):
+            if data_times[data_index] >= end_time:
+                data_seg_end_ind = data_index
+                break
+            data_index += 1
+
+        # Calculate and store the segment mean
+        if (data_seg_start_ind is not None and data_seg_end_ind is not None):
+            gridded_data.append(np.nanmean(data.magnitude[data_seg_start_ind:
+                                           data_seg_end_ind]))
+
+    gridded_data = np.array(gridded_data) * data.units
+
+    return (gridded_data)
 
 
 def regrid(base=None, base_times=None, data=None, data_times=None,
@@ -60,7 +143,7 @@ def regrid(base=None, base_times=None, data=None, data_times=None,
         print("Empty base passed to regrid")
         return
 
-    # Set variables passes as params
+    # Set variables passed as params
     base_units = base.units
     data_units = data.units
     data = data.to_base_units()
@@ -72,15 +155,17 @@ def regrid(base=None, base_times=None, data=None, data_times=None,
     base_seg_start_ind = None
     base_seg_end_ind = None
 
+
+    # TODO decide the fate of sloppy_regrid
     # Check if data and base are already aligned (i.e. they are always
     # reported at the same time)
     if(np.abs(len(data)-len(base)) <= 1):
-        print("Data temporally aligned. Using sloppy_regrid for variable " +
-              "with units " + str(data_units))
+        print("Data temporally aligned. Using sloppy_regrid for variable "
+              + "with units " + str(data_units))
         minlen = min([len(data), len(base)])
         return sloppy_regrid(base[0:minlen-1], data[0:minlen-1],
-                             base_times[0:minlen-1], new_res, ascent, units,
-                             base_units, data_units)
+                             base_times[0:minlen-1], new_res, ascent,
+                             units, base_units, data_units)
 
     # Use negative pressure so that the max of the data list is the peak
     if new_res.dimensionality == units.Pa.dimensionality:
@@ -92,62 +177,61 @@ def regrid(base=None, base_times=None, data=None, data_times=None,
     if(np.abs(base[1]-base[0]) != new_res):
         print("Gridding base")
 
-        # Find a starting base index at least 1 res step above the ground.
-        for x, val in enumerate(base):
-            if ascent and val > base[0] + new_res:
-                base_start_ind = x
-            if not ascent and val < base[-1] + new_res:
-                base_start_ind = x
+    # Find a starting base index at least 1 res step above the ground.
+    for x, val in enumerate(base):
+        if ascent and val > base[0] + new_res:
+            base_start_ind = x
+        if not ascent and val < base[-1] + new_res:
+            base_start_ind = x
 
-        # Round the starting index to a multiple of new_res.
-        base_start_val = new_res * round(base[base_start_ind] / new_res)
+    # Round the starting index to a multiple of new_res.
+    base_start_val = new_res * round(base[base_start_ind] / new_res)
 
-        # move starting index to match base_start_val
-        for x, val in enumerate(base):
-            if ascent and val > base_start_val:
-                base_start_ind = x
-            if not ascent and val < base_start_val:
-                base_start_ind = x
+    # move starting index to match base_start_val
+    for x, val in enumerate(base):
+        if ascent and val > base_start_val:
+            base_start_ind = x
+        if not ascent and val < base_start_val:
+            base_start_ind = x
 
-        # find highest usable index
-        for x, val in enumerate(base):
-            if ascent and val > max(base) - 2*new_res:
-                base_end_ind = x
-            if not ascent and val < max(base) - 2*new_res:
-                base_end_ind = x
+    # find highest usable index
+    for x, val in enumerate(base):
+        if ascent and val > max(base) - 2*new_res:
+            base_end_ind = x
+        if not ascent and val < max(base) - 2*new_res:
+            base_end_ind = x
 
-        # round highest usable alt
-        base_end_val = new_res * round(base[base_end_ind] / new_res)
+    # round highest usable alt
+    base_end_val = new_res * round(base[base_end_ind] / new_res)
 
-        # Create new base array using start and end vals and res
-        if ascent:
-            new_base = np.arange(base_start_val.magnitude,
-                                 base_end_val.magnitude,
-                                 new_res.magnitude) * new_res.units
-        else:
-            new_base = np.arange(base_end_val.magnitude,
-                                 base_start_val.magnitude,
-                                 -1*new_res.magnitude) * new_res.units
-
-        #
-        # Find corresponding times
-        #
-        new_times = []
-        for elem in new_base:
-            # Find the index of the base just past level elem - greater than
-            # on ascent, less than on descent
-            for x, val in enumerate(base):
-                if ascent and val > elem:
-                    closest_base_val_ind = x
-                    break
-                elif not ascent and val < elem:
-                    closest_base_val_ind = x
-                    break
-            new_times.append(base_times[closest_base_val_ind])
-
+    # Create new base array using start and end vals and res
+    if ascent:
+        new_base = np.arange(base_start_val.magnitude,
+                             base_end_val.magnitude,
+                             new_res.magnitude) * new_res.units
     else:
-        new_base = base
-        new_times = base_times
+        new_base = np.arange(base_end_val.magnitude,
+                             base_start_val.magnitude,
+                             -1*new_res.magnitude) * new_res.units
+
+    #
+    # Find corresponding times
+    #
+    new_times = []
+    for elem in new_base:
+        # Find the index of the base just past level elem - greater than
+        # on ascent, less than on descent
+        for x, val in enumerate(base):
+            if ascent and val > elem:
+                closest_base_val_ind = x
+                break
+            elif not ascent and val < elem:
+                closest_base_val_ind = x
+                break
+        new_times.append(base_times[closest_base_val_ind])
+
+    new_base = base
+    new_times = base_times
 
     #
     # Average around selected points

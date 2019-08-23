@@ -4,16 +4,13 @@ Reads data file (JSON or netCDF) and stores the raw data
 Authors Brian Greene, Jessica Wiedemeier, Tyler Bell, Gus Azevedo \n
 Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 2019
-
-TODO co2_data not implemented, co2 not read or saved in netCDF
 """
 import json
 import netCDF4
 import numpy as np
 from datetime import datetime as dt
-from metpy.units import units as muu
+from metpy.units import units
 
-units = muu
 units.define('percent = 0.01*count = %')
 
 
@@ -84,7 +81,6 @@ class Raw_Profile():
 
         for sensor_number in [a + 1 for a in
                               range(int(len(self.temp) / 2) - 1)]:
-            # TODO this line is never reached - look in data to see why
             to_return["temp" + str(sensor_number)] \
                 = self.temp[sensor_number*2 - 2]
             to_return["resi" + str(sensor_number)] \
@@ -195,24 +191,20 @@ class Raw_Profile():
 
                 # First time only - setup temp_list
                 if temp_list is None:
+
                     # Create array of lists with two lists per temperature
                     # sensor reported in the data file - one for temperature
                     # and one for resistance - plus one for times
-                    temp_list = [[] for x in range(sum('T' in s for s in
-                                 elem["data"].keys()) * 2 + 1)]
-
+                    temp_list = [[] for x in
+                                 range(9)]
                     sensor_names["IMET"] = {}
                     # Determine field names
-                    sensor_numbers = np.add(range(int((len(temp_list)-1) / 2)),
+                    sensor_numbers = np.add(range(int((len(temp_list)-2) / 2)),
                                             1)
                     for num in sensor_numbers:
                         sensor_names["IMET"]["T"+str(num)] = 2*num - 2
                         sensor_names["IMET"]["R"+str(num)] = 2*num - 1
                     sensor_names["IMET"]["Time"] = -1
-                    
-                    print(sensor_names["IMET"])
-                    print(sensor_names["IMET"]["T1"])
-                    print(sensor_names["IMET"]["R1"]) # Right now, these are integers instead of lists. Troubleshoot.
 
                 # Read fields into temp_list, including Time
                 for key, value in sensor_names["IMET"].items():
@@ -239,15 +231,15 @@ class Raw_Profile():
                 if rh_list is None:
                     # Create array of lists with one list per RH
                     # sensor reported in the data file, plus one for times
-                    rh_list = [[] for x in range(sum('Humi' in s for s in
-                               elem["data"].keys()) * 2 + 1)]
+                    rh_list = [[] for x in range(sum(('H' in s and 'th' not in s) 
+                               for s in elem["data"].keys()) * 2 + 1)]
 
                     sensor_names["RHUM"] = {}
                     # Determine field names
                     sensor_numbers = np.add(range(int((len(rh_list)-1)/2)), 1)
                     for num in sensor_numbers:
-                        sensor_names["RHUM"]["Humi"+str(num)] = 2*num - 2
-                        sensor_names["RHUM"]["Temp"+str(num)] = 2*num - 1
+                        sensor_names["RHUM"]["H"+str(num)] = 2*num - 2
+                        sensor_names["RHUM"]["T"+str(num)] = 2*num - 1
                     sensor_names["RHUM"]["Time"] = -1
 
                 # Read fields into rh_list, including Time
@@ -259,9 +251,9 @@ class Raw_Profile():
                                 raise KeyError("Time formatted incorrectly")
                             else:
                                 rh_list[value].append(time)
-                        elif 'Humi' in key:
+                        elif 'H' in key:
                             rh_list[value].append(elem["data"][key])
-                        elif 'Temp' in key:
+                        elif 'T' in key:
                             rh_list[value].append(elem["data"][key])
                     except KeyError:
                         rh_list[value].append(np.nan)
@@ -389,17 +381,20 @@ class Raw_Profile():
 
         # Temperature
         for i in range(int((len(temp_list) - 1) / 2)):
-            temp_list[2*i] = temp_list[2*i] * units.K
-            temp_list[2*i + 1] = temp_list[2*i + 1] * units.ohm
+            try:
+                temp_list[2*i] = temp_list[2*i] * units.K
+                temp_list[2*i + 1] = temp_list[2*i + 1] * units.ohm
+            except IndexError:
+                print("No data for sensor ", i + 1)
 
         # RH
         for i in range(len(rh_list) - 1):
             # rh
             if i % 2 == 0:
-                rh_list[i] = rh_list[i] * units.percent
+                rh_list[i] = np.array(rh_list[i]) * units.percent
             # temp
             else:
-                rh_list[i] = rh_list[i] * units.kelvin
+                rh_list[i] = np.array(rh_list[i]) * units.kelvin
 
         # POS
         ground_alt = pos_list[2][0]  # This is the first in the file.
@@ -589,11 +584,15 @@ class Raw_Profile():
         temp_grp = main_file.createGroup("/temp")
         temp_grp.createDimension("temp_time", None)
         # temp_grp.base_time = date2num(self.temp[-1][0])
-        temp_sensor_numbers = np.add(range(len(self.temp)-1), 1)
+        temp_sensor_numbers = np.add(range(int((len(self.temp)-1)/2)), 1)
         for num in temp_sensor_numbers:
             new_var = temp_grp.createVariable("volt" + str(num), "f8",
                                               ("temp_time",))
-            new_var[:] = self.temp[num - 1].magnitude
+            try:
+                new_var[:] = self.temp[2*num-2].magnitude
+            except AttributeError:
+                # This sensor didn't report
+                continue
             new_var.units = "mV"
         new_var = temp_grp.createVariable("time", "f8", ("temp_time",))
         new_var[:] = netCDF4.date2num(self.temp[-1],

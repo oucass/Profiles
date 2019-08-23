@@ -10,7 +10,6 @@ import utils
 import numpy as np
 import netCDF4
 import os
-import pickle
 
 
 class Thermo_Profile():
@@ -21,13 +20,14 @@ class Thermo_Profile():
     :var np.array<Quantity> rh: QC'd and averaged relative humidity
     :var np.array<Quantity> pres: QC'd pressure
     :var np.array<Quantity> alt: altitude
-    :var np.array<Datetime> time: times at which processed data exists
+    :var np.array<Datetime> gridded_times: times at which processed data exists
     :var Quantity resolution: vertical resolution in units of time,
            altitude, or pressure to which the data is calculated
     """
 
-    def __init__(self, temp_dict, resolution, indices=(None, None),
-                 ascent=True, units=None, filepath=None, nnumber=None):
+    def __init__(self, temp_dict, resolution, gridded_times=None,
+                 indices=(None, None), ascent=True, units=None,
+                 filepath=None, nnumber=None):
         """ Creates Thermo_Profile object from raw data at the specified
         resolution.
 
@@ -44,10 +44,8 @@ class Thermo_Profile():
         :param str filepath: the path to the original data file WITHOUT the \
            suffix .nc or .json
         """
-        # TODO - tidy
-        # pickle.dump(temp_dict, open("temp_dict", "wb"))
         self.resolution = resolution
-        self.time = None
+        self.gridded_times = gridded_times
         self.rh = None
         self.pres = None
         self.temp = None
@@ -68,19 +66,8 @@ class Thermo_Profile():
             print("Reading thermo_profile from pre-processed netCDF")
             self._read_netCDF(filepath)
             return
-            '''
-            elif False in np.isnan(temp_dict["resi1"]):  # if resistances logged
-                resi_raw = []  # List of lists, each containing data from a sensor
-    
-                # Fill resi_raw
-                for key in temp_dict.keys():
-                    if "resi" in key:
-                        resi_raw.append(temp_dict[key].magnitude)
-    
-                # Calculate temperature
-                temp_raw = utils.temp_calib(resi_raw, nnumber)
-            '''
-        else:  # Use logged temperatures
+
+        else:
             temp_raw = []  # List of lists, each containing data from a sensor
 
             # Fill temp_raw
@@ -110,8 +97,7 @@ class Thermo_Profile():
             time_rh = temp_dict["time_rh"]
             selection_rh = np.where(np.array(time_rh) > indices[0],
                                     np.array(time_rh) < indices[1], False)
-            print(np.array(rh_raw).shape, "\n", selection_rh.shape)
-            rh_raw = np.array(rh_raw)[selection_rh] * temp_dict["rh1"].units
+            rh_raw = np.array(rh_raw)[:, selection_rh] * temp_dict["rh1"].units
             time_rh = np.array(time_rh)[selection_rh]
 
             time_pres = temp_dict["time_pres"]
@@ -134,7 +120,7 @@ class Thermo_Profile():
             time_pres = temp_dict["time_pres"]
             time_temp = temp_dict["time_temp"]
         # Determine bad sensors
-        rh_flags = utils.qc(rh_raw, 0.4, 0.2)
+        rh_flags = utils.qc(rh_raw, 0.4, 0.2)  # TODO read these from file
 
         # Remove bad sensors
         for flags_ind in range(len(rh_flags)):
@@ -156,7 +142,8 @@ class Thermo_Profile():
         for flags_ind in range(len(temp_flags)):
             if temp_flags[flags_ind] != 0:
                 print("Temperature sensor", temp_ind + 1, "removed")
-                temp_raw[temp_ind] = [np.nan]*len(temp_raw[temp_ind])*temp_raw.units
+                temp_raw[temp_ind] = \
+                    [np.nan]*len(temp_raw[temp_ind])*temp_raw.units
             else:
                 temp_ind += 1
 
@@ -169,52 +156,35 @@ class Thermo_Profile():
         temp = np.array(temp) * temp_raw.units
 
         #
-        # Regrid to res
+        # Regrid to match times specified by Profile
         #
-        if resolution.dimensionality == alts.dimensionality:
-            base = alts
-            base_time = time_pres
-        elif resolution.to_base_units().units == pres.to_base_units().units:
-            base = pres
-            base_time = time_pres
 
         # grid alt
-        base, base_time, self.alt = utils.regrid(base=base,
-                                                 base_times=base_time,
-                                                 data=alts,
-                                                 data_times=time_pres,
-                                                 new_res=resolution,
-                                                 ascent=ascent,
-                                                 units=self._units)
+        self.alt = utils.regrid_data(data=alts, data_times=time_pres,
+                                     gridded_times=self.gridded_times,
+                                     units=self._units)
 
         # grid pres
-        self.pres = utils.regrid(base=base, base_times=base_time,
-                                 data=pres, data_times=time_pres,
-                                 new_res=resolution, ascent=ascent,
-                                 units=self._units)[2]
+        self.pres = utils.regrid_data(data=pres, data_times=time_pres,
+                                      gridded_times=self.gridded_times,
+                                      units=self._units)
 
         # grid RH
-        self.rh = utils.regrid(base=base, base_times=base_time,
-                               data=rh,
-                               data_times=time_rh,
-                               new_res=resolution,
-                               ascent=ascent,
-                               units=self._units)[2]
+        self.rh = utils.regrid_data(data=rh, data_times=time_rh,
+                                    gridded_times=self.gridded_times,
+                                    units=self._units)
 
         # grid temp
-        self.temp = utils.regrid(base=base, base_times=base_time,
-                                 data=temp,
-                                 data_times=time_temp,
-                                 new_res=resolution, ascent=ascent,
-                                 units=self._units)[2]
+        self.temp = utils.regrid_data(data=temp, data_times=time_temp,
+                                      gridded_times=self.gridded_times,
+                                      units=self._units)
 
-        minlen = min(len(base), len(base_time), len(self.rh),
+        minlen = min(len(self.alt), len(self.gridded_times), len(self.rh),
                      len(self.pres), len(self.temp), len(self.alt))
         self.pres = self.pres[0:minlen-1]
         self.temp = self.temp[0:minlen-1]
         self.rh = self.rh[0:minlen-1]
         self.alt = self.alt[0:minlen-1]
-        self.time = base_time[0:minlen-1]
 
         # Calculate mixing ratio
         self.mixing_ratio = calc.mixing_ratio_from_relative_humidity(
@@ -258,8 +228,9 @@ class Thermo_Profile():
         mr_var.units = str(self.mixing_ratio.units)
         # TIME
         time_var = main_file.createVariable("time", "f8", ("time",))
-        time_var[:] = netCDF4.date2num(self.time, units='microseconds since \
-                2010-01-01 00:00:00:00')
+        time_var[:] = netCDF4.date2num(self.gridded_times,
+                                       units='microseconds since \
+                                       2010-01-01 00:00:00:00')
         time_var.units = 'microseconds since 2010-01-01 00:00:00:00'
 
         main_file.close()
@@ -277,22 +248,18 @@ class Thermo_Profile():
         # Note: each data chunk is converted to an np array. This is not a
         # superfluous conversion; a Variable object is incompatible with pint.
 
-        self.alt = np.array(main_file.variables["alt"]) * \
-                    self._units.parse_expression(main_file.variables["alt"]\
-                                                 .units)
-        self.pres = np.array(main_file.variables["pres"]) * \
-                    self._units.parse_expression(main_file.variables["pres"]\
-                                                 .units)
-        self.rh = np.array(main_file.variables["rh"]) * \
-                    self._units.parse_expression(main_file.variables["rh"]\
-                                                 .units)
-        self.temp = np.array(main_file.variables["temp"]) * \
-                    self._units.parse_expression(main_file.variables["temp"]\
-                                                 .units)
-        self.mixing_ratio = np.array(main_file.variables["mr"]) * \
-                    self._units.parse_expression(main_file.variables["mr"]\
-                                                 .units)
-        self.time = np.array(netCDF4.num2date(main_file.variables["time"][:],
-                                              units=main_file.variables\
-                                              ["time"].units))
+        self.alt = np.array(main_file.variables["alt"])[:-2] * \
+            self._units.parse_expression(main_file.variables["alt"].units)
+        self.pres = np.array(main_file.variables["pres"])[:-2] * \
+            self._units.parse_expression(main_file.variables["pres"].units)
+        self.rh = np.array(main_file.variables["rh"])[:-2] * \
+            self._units.parse_expression(main_file.variables["rh"].units)
+        self.temp = np.array(main_file.variables["temp"])[:-2] * \
+            self._units.parse_expression(main_file.variables["temp"].units)
+        self.mixing_ratio = np.array(main_file.variables["mr"])[:-2] * \
+            self._units.parse_expression(main_file.variables["mr"].units)
+        self.gridded_times = \
+            np.array(netCDF4.num2date(main_file.variables["time"][:-2],
+                                      units=main_file.variables["time"].units))
+
         main_file.close()
