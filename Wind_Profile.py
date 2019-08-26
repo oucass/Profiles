@@ -8,6 +8,8 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 import numpy as np
 import pandas as pd
 import os
+import utils
+import metpy.calc
 
 
 class Wind_Profile():
@@ -20,7 +22,7 @@ class Wind_Profile():
 
     def __init__(self, wind_dict, resolution, gridded_times=None,
                  indices=(None, None), ascent=True, units=None, filepath='',
-                 vertical_coord_times=[]):
+                 vertical_coord_times=[], tail_number=None):
         """ Creates Wind_Profile object based on rotation data at the specified
         resolution.
         """
@@ -64,25 +66,34 @@ class Wind_Profile():
                 vN = wind_dict["speed_north"]
                 vD = wind_dict["speed_down"]
 
-        #
-        # TODO call _calc_winds
-        #
+        wind_data = {'roll': roll,
+                     'pitch': pitch,
+                     'yaw': yaw,
+                     'vE': vE,
+                     'vN': vN,
+                     'vD': vD}
+
+        direction, speed, time = self._calc_winds(wind_data, tail_number)
 
         #
-        # TODO Regrid to res
+        # Regrid to res
         #
+        self.dir = utils.regrid_data(data=direction, data_times=time,
+                                     gridded_times=self.gridded_times,
+                                     units=self._units)
+        self.speed = utils.regrid_data(data=speed, data_times=time,
+                                       gridded_times=self.gridded_times,
+                                       units=self._units)
+        self.u, self.v = metpy.calc.get_wind_components(self.speed, self.dir)
 
         #
-        # TODO make instance vars
+        # save NC
         #
-
-        #
-        # TODO save NC
-        #
-
+        self._save_NetCDF()
 
     def _calc_winds(self, wind_data, tail_num):
-        """ Calculate wind direction, speed, u, and v
+        """ Calculate wind direction, speed, u, and v. Currently, this only
+        works when the craft is HORIZONTALLY STATIONARY.
         :param dict wind_data: dictionary from Raw_Profile.get_wind_data()
         :param bool isCopter: True if rotor-wing, false if fixed-wing
         :rtype: tuple<list>
@@ -90,6 +101,7 @@ class Wind_Profile():
         """
 
         # TODO find a way to do this with a fixed-wing
+        # TODO account for moving platform
         units = wind_data["units"]
 
         # psi and az represent the copter's direction in spherical coordinates

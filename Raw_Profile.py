@@ -13,6 +13,8 @@ from metpy.units import units
 
 units.define('percent = 0.01*count = %')
 
+# TODO read sensor and tail numbers - pass to Thermo and Wind_Profiles
+
 
 class Raw_Profile():
     """ Contains data from one file. Data is stored as a pandas DataFrame.
