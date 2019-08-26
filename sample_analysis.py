@@ -30,10 +30,10 @@ different profile start height.
 
 # Example using Profiles
 a = Profile_Set()
-a.add_all_profiles("/home/jessica/GitHub/data_templates/00000010.JSON")
+a.add_all_profiles("/home/jessica/GitHub/data_templates/00000003.JSON")
 
 # Example using Profile (singular)
-b = Profile("/home/jessica/GitHub/data_templates/00000010.JSON", 10, 'm', 1,
+b = Profile("/home/jessica/GitHub/data_templates/00000003.JSON", 10, 'm', 1,
             dev=True, ascent=True)
 
 """

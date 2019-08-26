@@ -6,6 +6,7 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 2019
 """
 import numpy as np
+import pandas as pd
 import os
 
 
@@ -63,7 +64,6 @@ class Wind_Profile():
                 vN = wind_dict["speed_north"]
                 vD = wind_dict["speed_down"]
 
-
         #
         # TODO call _calc_winds
         #
@@ -80,7 +80,8 @@ class Wind_Profile():
         # TODO save NC
         #
 
-    def _calc_winds(self, wind_data):
+
+    def _calc_winds(self, wind_data, tail_num):
         """ Calculate wind direction, speed, u, and v
         :param dict wind_data: dictionary from Raw_Profile.get_wind_data()
         :param bool isCopter: True if rotor-wing, false if fixed-wing
@@ -118,9 +119,9 @@ class Wind_Profile():
             psi[i] = np.arccos(R[2, 2]) * 180. / np.pi
             az[i] = np.arctan2(R[1, 2], R[0, 2]) * 180. / np.pi
 
-        # TODO read calibration values from file
-        a_spd = 34.5
-        b_spd = -6.4
+        coefs = pd.read_csv('./MasterCoefList.csv')
+        a_spd = float(coefs.A[coefs.SerialNumber == tail_num])
+        b_spd = float(coefs.B[coefs.SerialNumber == tail_num])
 
         speed = a_spd * np.sqrt(np.tan(psi * np.pi / 180.)) + b_spd
         speed = speed * units.mps
