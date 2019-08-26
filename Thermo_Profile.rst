@@ -19,3 +19,5 @@ Resistance (R) to temperature (T)
    \end{aligned}
 
 Coefficients are pulled from ./coefs.csv on your computer.
+
+Equation from: Greene, B.R. Boundary Layer Profiling Using Rotary-Wing Unmanned Aircraft Systems: Filling the Atmospheric Data Gap. Master’s Thesis, The University of Oklahoma, Norman, OK, USA, 2018.

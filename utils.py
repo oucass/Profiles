@@ -10,6 +10,7 @@ import numpy as np
 import sys
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import pandas as pd
 from datetime import timedelta
 from numpy import sin, cos
 from pandas.plotting import register_matplotlib_converters
@@ -19,7 +20,7 @@ from pint import UnitStrippedWarning
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("error", category=UnitStrippedWarning)
 register_matplotlib_converters()
-
+coefs = None
 
 def regrid_base(base=None, base_times=None, new_res=None, ascent=True,
                 units=None):
@@ -117,324 +118,7 @@ def regrid_data(data=None, data_times=None, gridded_times=None, units=None):
     return (gridded_data)
 
 
-def regrid(base=None, base_times=None, data=None, data_times=None,
-           new_res=None, ascent=True, units=None):
-    """ Returns data interpolated to an evenly spaced array with resolution
-    new_res.
-
-    :param np.array<Quantity> base: Measurements of the variable serving as \
-       the vertical coordinate
-    :param np.array<Datetime> base_times: Times coresponding to base
-    :param np.array<Quantity> data: Measurements of the dependent variable
-    :param np.array<Datetime> data_times: Times coresponding to data
-    :param Quantity new_res: The resolution to which base should be gridded. \
-       This must have the same dimension as base.
-    :param bool ascent: True if data from ascending leg of profile is to be \
-       analyzed, false if descending
-    :param pint.UnitRegistry units: The unit registry defined in Profile
-    :cite: https://www.geeksforgeeks.org/python-get-the-index-of-first- \
-       element-greater-than-k/
-    :rtype: tuple
-    :return: (new_base, new_times, new_data)
-    """
-
-    # Sanity check
-    if len(base) == 0:
-        print("Empty base passed to regrid")
-        return
-
-    # Set variables passed as params
-    base_units = base.units
-    data_units = data.units
-    data = data.to_base_units()
-    base = base.to(new_res.units)
-
-    # Declare bounding indices
-    data_seg_start_ind = None
-    data_seg_end_ind = None
-    base_seg_start_ind = None
-    base_seg_end_ind = None
-
-
-    # TODO decide the fate of sloppy_regrid
-    # Check if data and base are already aligned (i.e. they are always
-    # reported at the same time)
-    if(np.abs(len(data)-len(base)) <= 1):
-        print("Data temporally aligned. Using sloppy_regrid for variable "
-              + "with units " + str(data_units))
-        minlen = min([len(data), len(base)])
-        return sloppy_regrid(base[0:minlen-1], data[0:minlen-1],
-                             base_times[0:minlen-1], new_res, ascent,
-                             units, base_units, data_units)
-
-    # Use negative pressure so that the max of the data list is the peak
-    if new_res.dimensionality == units.Pa.dimensionality:
-        base = -1*base
-
-    # Create new base list if the one given has not already been regridded
-    # Inside if-statement is VERY TIME CONSUMING - only use once per data set.
-    # Note: Start is always near the ground, even when analyzing descent
-    if(np.abs(base[1]-base[0]) != new_res):
-        print("Gridding base")
-
-    # Find a starting base index at least 1 res step above the ground.
-    for x, val in enumerate(base):
-        if ascent and val > base[0] + new_res:
-            base_start_ind = x
-        if not ascent and val < base[-1] + new_res:
-            base_start_ind = x
-
-    # Round the starting index to a multiple of new_res.
-    base_start_val = new_res * round(base[base_start_ind] / new_res)
-
-    # move starting index to match base_start_val
-    for x, val in enumerate(base):
-        if ascent and val > base_start_val:
-            base_start_ind = x
-        if not ascent and val < base_start_val:
-            base_start_ind = x
-
-    # find highest usable index
-    for x, val in enumerate(base):
-        if ascent and val > max(base) - 2*new_res:
-            base_end_ind = x
-        if not ascent and val < max(base) - 2*new_res:
-            base_end_ind = x
-
-    # round highest usable alt
-    base_end_val = new_res * round(base[base_end_ind] / new_res)
-
-    # Create new base array using start and end vals and res
-    if ascent:
-        new_base = np.arange(base_start_val.magnitude,
-                             base_end_val.magnitude,
-                             new_res.magnitude) * new_res.units
-    else:
-        new_base = np.arange(base_end_val.magnitude,
-                             base_start_val.magnitude,
-                             -1*new_res.magnitude) * new_res.units
-
-    #
-    # Find corresponding times
-    #
-    new_times = []
-    for elem in new_base:
-        # Find the index of the base just past level elem - greater than
-        # on ascent, less than on descent
-        for x, val in enumerate(base):
-            if ascent and val > elem:
-                closest_base_val_ind = x
-                break
-            elif not ascent and val < elem:
-                closest_base_val_ind = x
-                break
-        new_times.append(base_times[closest_base_val_ind])
-
-    new_base = base
-    new_times = base_times
-
-    #
-    # Average around selected points
-    #
-
-    # prepare for 1st iteration of data averaging
-    if ascent:
-        for x, val in enumerate(base):
-            if val > new_base[0] - 0.5 * new_res:
-                base_seg_start_ind = x
-                break
-        for x, val in enumerate(data_times):
-            if val > base_times[base_seg_start_ind]:
-                data_seg_start_ind = x
-                break
-
-    else:
-        for x, val in enumerate(base):
-            if val < new_base[0] + 0.5 * new_res:
-                base_seg_start_ind = x
-                break
-        for x, val in enumerate(data_times):
-            if val > base_times[base_seg_start_ind]:
-                data_seg_start_ind = x
-                break
-
-    new_data = []
-    for i in range(len(new_times)):
-        level = new_base[i]
-        data_seg_end_ind = None
-        base_seg_end_ind = None
-        # prepare for this iteration
-        # The try blocks are needed because the index location algorithm
-        # can't handle data that fits perfectly.
-        if ascent:
-            for x, val in enumerate(base):
-                if base_seg_end_ind is not None:
-                    break
-                if val >= level + 0.4999 * new_res:
-                    base_seg_end_ind = x
-                    break
-
-        else:
-            for x, val in enumerate(base):
-                if base_seg_end_ind is not None:
-                    break
-                if val <= level - 0.4999 * new_res:
-                    base_seg_end_ind = x
-                    break
-
-        for x, val in enumerate(data_times):
-            if data_seg_end_ind is not None:
-                break
-            if base_seg_end_ind is None:
-                # The end of the data has been reached. Use whatever's left
-                data_seg_end_ind = -1
-                break
-            elif val > base_times[base_seg_end_ind]:
-                data_seg_end_ind = x
-                break
-
-        #
-        #
-        new_data.append(np.nanmean(data.magnitude[data_seg_start_ind:
-                                   data_seg_end_ind]))
-        #
-        #
-
-        # prepare for next iteration
-        base_seg_start_ind = base_seg_end_ind
-        data_seg_start_ind = data_seg_end_ind
-
-    new_data = np.array(new_data) * data_units
-
-    if new_res.dimensionality == units.Pa.dimensionality:
-        new_base = -1*new_base
-
-    new_base = new_base.to(base_units)
-    new_data = new_data.to(data_units)
-    return (new_base, new_times, new_data)
-
-
-def sloppy_regrid(base, data, times, new_res, ascent, units, base_units,
-                  data_units):
-    """ Significanly faster way to regrid data to be used when data and base
-    have the same (+/- 1) length. Assumes that data and base align temporally
-
-    :param list-like<Quantity> base: Measurements of the variable serving as \
-       the vertical coordinate
-    :param list-like<Quantity> data: Measurements of the dependent variable
-    :param list-like<Datetime> times: Times coresponding to data (same as to \
-        time)
-    :param Quantity new_res: The resolution to which base should be gridded. \
-       This must have the same dimension as base.
-    :param bool ascent: True if data from ascending leg of profile is to be \
-       analyzed, false if descending
-    :param pint.UnitRegistry units: The unit registry defined in Profile
-    :rtype: tuple
-    :return: (new_base, new_times, new_data)
-    """
-
-    # Use negative pressure so that the max of the data list is the peak
-    if new_res.dimensionality == units.Pa.dimensionality:
-        base = -1*base
-
-    # Regrid base
-    if ascent:
-        new_base = np.arange((base[0] + 0.5*new_res).magnitude, (max(base) -
-                             0.5*new_res).magnitude,
-                             new_res.magnitude)
-    else:
-        new_base = np.arange((base[0] - 0.5*new_res).magnitude, (min(base) +
-                             0.5*new_res).magnitude,
-                             -1*new_res.magnitude)
-    new_base = np.array(new_base) * base_units
-
-    # Find times corresponding to regridded base
-    new_times = []
-    for elem in new_base:
-        if ascent:
-            closest_base_val_ind = next(x for x, val in enumerate(base)
-                                        if val > elem)
-        else:
-            closest_base_val_ind = next(x for x, val in enumerate(base)
-                                        if val < elem)
-        new_times.append(times[closest_base_val_ind])
-
-    # Grid data
-    new_data = []
-
-    # Prepare for first iteration of data averaging by declaring
-    # base_seg_start_ind, base_seg_end_ind, data_seg_start_ind, and
-    # data_seg_end_ind.
-    base_seg_end_ind = None
-    data_seg_end_ind = None
-    if ascent:
-        base_seg_start_ind = next(x for x, val in enumerate(base)
-                                  if val.to_base_units() >
-                                  new_base[0].to_base_units() - 0.5 * new_res)
-        data_seg_start_ind = next(x for x, val in enumerate(times)
-                                  if val > times[base_seg_start_ind])
-    else:
-        base_seg_start_ind = next(x for x, val in enumerate(base)
-                                  if val.to_base_units() <
-                                  new_base[0].to_base_units() + 0.5 * new_res)
-        data_seg_start_ind = next(x for x, val in enumerate(times)
-                                  if val > times[base_seg_start_ind])
-
-    # Begin data averaging
-    for i in range(len(new_times)):
-        # Prepare for this iteration
-        level = new_base[i]
-        data_seg_end_ind = None
-        base_seg_end_ind = None
-
-        # Determine bounding indices for base based resolution
-        if ascent:
-            for x, val in enumerate(base):
-                if base_seg_end_ind is not None:
-                    break
-                if val >= level + 0.4999 * new_res:
-                    base_seg_end_ind = x
-                    break
-
-        else:
-            for x, val in enumerate(base):
-                if base_seg_end_ind is not None:
-                    break
-                if val <= level - 0.4999 * new_res:
-                    base_seg_end_ind = x
-                    break
-
-        # Determine bounding indices for data based on bounding times of base
-        for x, val in enumerate(times):
-            if data_seg_end_ind is not None:
-                break
-            if base_seg_end_ind is None:
-                # The end of the data has been reached. Use whatever's left
-                data_seg_end_ind = -1
-                break
-            elif val > times[base_seg_end_ind]:
-                data_seg_end_ind = x
-                break
-
-        #
-        #
-        new_data.append(np.nanmean(data.magnitude[data_seg_start_ind:
-                                   data_seg_end_ind]))
-        #
-        #
-
-        # prepare for next iteration
-        base_seg_start_ind = base_seg_end_ind
-        data_seg_start_ind = data_seg_end_ind
-
-    if new_res.dimensionality == units.Pa.dimensionality:
-        new_base = -1*new_base
-    new_data = np.array(new_data) * data_units
-
-    return(new_base, new_times, new_data)
-
-
-def temp_calib(resistance, nnumber):
+def temp_calib(resistance, sn):
     """ Converts voltage to temperatures using the given coefficients.
 
     :param list<Quantity> resistance: resistances recorded by temperature \
@@ -445,13 +129,15 @@ def temp_calib(resistance, nnumber):
     :return: list of temperatures in K
     """
 
-    print("Temperature calculated from resistance using coefficients ",
-          coeff[nnumber])
+    coefs = pd.read_csv('./MasterCoefList.csv')
+    a = float(coefs.A[coefs.SerialNumber == sn])
+    b = float(coefs.B[coefs.SerialNumber == sn])
+    c = float(coefs.C[coefs.SerialNumber == sn])
+    print("Temperature calculated from resistance using coefficients \n",
+          coefs[coefs.SerialNumber == sn])
 
-    return np.pow(np.add(np.add(np.multiply(np.log(resistance),
-                                            coeff[nnumber][1])),
-                         np.multiply(np.pow(resistance, 3),
-                                     coeff[nnumber][2])), -1)
+    return np.power(np.add(np.add(b * np.log(resistance.magnitude), a),
+                    c * np.power(np.log(resistance.magnitude), 3)), -1)
 
 
 def rotate(u, v, w, yaw, pitch, roll):
