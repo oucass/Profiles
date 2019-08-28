@@ -22,10 +22,11 @@ class Wind_Profile():
 
     def __init__(self, wind_dict, resolution, gridded_times=None,
                  indices=(None, None), ascent=True, units=None, filepath='',
-                 vertical_coord_times=[], tail_number=None):
+                 vertical_coord_times=[]):
         """ Creates Wind_Profile object based on rotation data at the specified
         resolution.
         """
+        # TODO add tail_number to wind_dict
 
         self.gridded_times = gridded_times
 
@@ -37,43 +38,35 @@ class Wind_Profile():
             self._read_netCDF(filepath_nc)
             return
         else:
-            time_raw = wind_dict["time"]
             # If no indices given, use entire file
             if not indices[0] is None:
                 # trim profile
 
-                selection = np.where(np.array(time_raw) > indices[0],
-                                     np.array(time_raw) < indices[1], False)
+                selection = np.where(np.array(wind_dict["time"]) > indices[0],
+                                     np.array(wind_dict["time"]) < indices[1],
+                                     False)
 
-                roll = np.array(wind_dict["roll"].magnitude)[selection] * \
+                wind_dict["roll"] = \
+                    np.array(wind_dict["roll"].magnitude)[selection] * \
                     wind_dict["roll"].units
-                pitch = np.array(wind_dict["pitch"].magnitude)[selection] * \
+                wind_dict["pitch"] = \
+                    np.array(wind_dict["pitch"].magnitude)[selection] * \
                     wind_dict["pitch"].units
-                yaw = np.array(wind_dict["yaw"].magnitude)[selection] * \
+                wind_dict["yaw"] = \
+                    np.array(wind_dict["yaw"].magnitude)[selection] * \
                     wind_dict["yaw"].units
-                vE = np.array(wind_dict["speed_east"].magnitude)[selection] * \
+                wind_dict["speed_east"] = \
+                    np.array(wind_dict["speed_east"].magnitude)[selection] * \
                     wind_dict["speed_east"].units
-                vN = np.array(wind_dict["speed_north"].magnitude)[selection] \
+                wind_dict["speed_north"] = \
+                    np.array(wind_dict["speed_north"].magnitude)[selection] \
                     * wind_dict["speed_north"].units
-                vD = np.array(wind_dict["speed_down"].magnitude)[selection] * \
+                wind_dict["speed_down"] = \
+                    np.array(wind_dict["speed_down"].magnitude)[selection] * \
                     wind_dict["speed_down"].units
-                time_raw = np.array(time_raw)[selection]
-            else:
-                roll = wind_dict["roll"]
-                pitch = wind_dict["pitch"]
-                yaw = wind_dict["yaw"]
-                vE = wind_dict["speed_east"]
-                vN = wind_dict["speed_north"]
-                vD = wind_dict["speed_down"]
+                wind_dict["time"] = np.array(wind_dict["time"])[selection]
 
-        wind_data = {'roll': roll,
-                     'pitch': pitch,
-                     'yaw': yaw,
-                     'vE': vE,
-                     'vN': vN,
-                     'vD': vD}
-
-        direction, speed, time = self._calc_winds(wind_data, tail_number)
+        direction, speed, time = self._calc_winds(wind_dict)
 
         #
         # Regrid to res
@@ -91,7 +84,7 @@ class Wind_Profile():
         #
         self._save_NetCDF()
 
-    def _calc_winds(self, wind_data, tail_num):
+    def _calc_winds(self, wind_data):
         """ Calculate wind direction, speed, u, and v. Currently, this only
         works when the craft is HORIZONTALLY STATIONARY.
         :param dict wind_data: dictionary from Raw_Profile.get_wind_data()
@@ -102,6 +95,7 @@ class Wind_Profile():
 
         # TODO find a way to do this with a fixed-wing
         # TODO account for moving platform
+        # TODO get tail_num from wind_dict
         units = wind_data["units"]
 
         # psi and az represent the copter's direction in spherical coordinates

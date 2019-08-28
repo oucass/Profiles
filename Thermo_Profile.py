@@ -27,7 +27,7 @@ class Thermo_Profile():
 
     def __init__(self, temp_dict, resolution, gridded_times=None,
                  indices=(None, None), ascent=True, units=None,
-                 filepath=None, nnumber=None):
+                 filepath=None):
         """ Creates Thermo_Profile object from raw data at the specified
         resolution.
 

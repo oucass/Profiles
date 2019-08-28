@@ -130,11 +130,15 @@ def temp_calib(resistance, sn):
     """
 
     coefs = pd.read_csv('./MasterCoefList.csv')
-    a = float(coefs.A[coefs.SerialNumber == sn])
-    b = float(coefs.B[coefs.SerialNumber == sn])
-    c = float(coefs.C[coefs.SerialNumber == sn])
+    a = float(coefs.A[coefs.SerialNumber == sn
+                      and 'IMet' in coefs.ShortSensorID])
+    b = float(coefs.B[coefs.SerialNumber == sn
+                      and 'IMet' in coefs.ShortSensorID])
+    c = float(coefs.C[coefs.SerialNumber == sn
+                      and 'IMet' in coefs.ShortSensorID])
     print("Temperature calculated from resistance using coefficients \n",
-          coefs[coefs.SerialNumber == sn])
+          coefs[coefs.SerialNumber == sn
+                and 'IMet' in coefs.ShortSensorID])
 
     return np.power(np.add(np.add(b * np.log(resistance.magnitude), a),
                     c * np.power(np.log(resistance.magnitude), 3)), -1)
