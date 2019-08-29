@@ -1,37 +1,22 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Aug 28 12:58:46 2019
+
+@author: jessica
+"""
 from Profile_Set import Profile_Set
 from Profile import Profile
 import matplotlib.pyplot as plt
 from metpy.plots import Hodograph
+import os
 
-"""
-Read data. The raw data will be read in any case because ".json" was specified,
-but pre-processed data can be read by replacing ".json" with ".nc".
-
-You will be asked for a profile start height. This is the altidute above which
-the data should be considered valid and part of a distinct profile. If multiple
-profiles are flown in one flight, this profile start height MUST be above the
-altitude the craft flies down to at the end of each profile.
-   No units are needed, simply enter the appropriate y-value from the chart
-of altitude vs. time shown, then hit "enter". You will be asked to confirm the
-times that the profile selection algorithm has chosen for the start, peak, and
-end of the profile. Simply hit "enter" if the times were correctly identified.
-If they were not identified correctly, you will be asked to try again using a
-different profile start height.
-   Parameters:
-       filepath
-       vertical resolution desired as an integer
-       units for vertical resolution specified
-       profile number - this should be 1 unless your file contains multiple
-          profiles
-       dev should be False IFF (you are processing operational data AND not
-                                working on code development)
-       ascent - if True, data from the ascending leg of the flight will be
-          used. If False, data from the descending leg will be used.
-"""
-
+datadir = '/home/jessica/GitHub/data_templates/DL_Data_20190627_to_20190628'
 # Example using Profiles
-a = Profile_Set()
-a.add_all_profiles("/home/jessica/GitHub/data_templates/00000010.JSON")
+a = Profile_Set(resolution=10, res_units='m', ascent=True, dev=True, confirm_bounds=False)
+for file_name in os.listdir(datadir):
+    if '.json' in file_name or '.JSON' in file_name:
+        a.add_all_profiles(os.path.join(datadir, file_name))
 
 
 '''

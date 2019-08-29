@@ -7,6 +7,5 @@ utils
 
 .. autofunction:: utils.identify_profile
 .. autofunction:: utils.qc
-.. autofunction:: utils.rotate
 .. autofunction:: utils.temp_calib
 

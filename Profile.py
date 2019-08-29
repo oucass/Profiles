@@ -115,7 +115,7 @@ class Profile():
                 Wind_Profile(wind_data, self.resolution,
                              gridded_times=self.gridded_times,
                              indices=self.indices, ascent=self.ascent,
-                             units=self._units, filepath=self.file_path)
+                             units=self._units, file_path=self.file_path)
         return self._wind_profile
 
     def get_thermo_profile(self):

@@ -11,6 +11,8 @@ import numpy as np
 import netCDF4
 import os
 
+# T1 [0x48]	T2 [0x49] T3 [0x4a]
+
 
 class Thermo_Profile():
     """ Contains data from one file.

@@ -130,48 +130,15 @@ def temp_calib(resistance, sn):
     """
 
     coefs = pd.read_csv('./MasterCoefList.csv')
-    a = float(coefs.A[coefs.SerialNumber == sn
-                      and 'IMet' in coefs.ShortSensorID])
-    b = float(coefs.B[coefs.SerialNumber == sn
-                      and 'IMet' in coefs.ShortSensorID])
-    c = float(coefs.C[coefs.SerialNumber == sn
-                      and 'IMet' in coefs.ShortSensorID])
+    a = float(coefs.A[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
+    b = float(coefs.B[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
+    c = float(coefs.C[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
     print("Temperature calculated from resistance using coefficients \n",
           coefs[coefs.SerialNumber == sn
                 and 'IMet' in coefs.ShortSensorID])
 
     return np.power(np.add(np.add(b * np.log(resistance.magnitude), a),
                     c * np.power(np.log(resistance.magnitude), 3)), -1)
-
-
-def rotate(u, v, w, yaw, pitch, roll):
-    ''' Calculate the value of u, v, and w after a specified axis rotation
-
-    :param list<number> u: U component of the wind
-    :param list<number> v: V component of the wind
-    :param list<number> w: W component of the wind
-    :param list<number> yaw: Rotation about the Z axis
-    :param list<number> pitch: Rotation about the X axis
-    :param list<number> roll: Rotation about the Y axis
-    :rtype: np.array
-    :return: 3D array of the new U, V, and W fields after the rotation
-    '''
-
-    rot_matrix = np.asarray(
-        [[cos(yaw) * cos(pitch),
-          cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll),
-          cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll)],
-         [sin(yaw) * cos(pitch),
-          sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll),
-          sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll)],
-         [-sin(pitch),
-          cos(pitch) * sin(roll), cos(pitch) * cos(roll)]])
-
-    vel_matrix = np.asarray([[u], [v], [w]]).transpose()
-
-    result = np.dot(vel_matrix, rot_matrix)
-
-    return result
 
 
 def qc(data, max_bias, max_variance):
@@ -309,6 +276,8 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
        (time_start, time_max_height, time_end)
     """
 
+    isDone = False
+
     # Get the starting height from the user
     if profile_start_height is None:
         fig1 = plt.figure()
@@ -397,37 +366,8 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
                         if end_ind_des is None:
                             print("Could not find end time des (LineTag B)")
                             return
-                        # Add the profile if it is not already in to_return
-                        pending_profile = (alt_times[start_ind_asc],
-                                           alt_times[peak_ind],
-                                           alt_times[end_ind_des])
-                        if not _profile_in(pending_profile, to_return):
-                            to_return.append((alt_times[start_ind_asc],
-                                              alt_times[peak_ind],
-                                              alt_times[end_ind_des]))
-
-                            print("Profile from ", alt_times[start_ind_asc],
-                                  "to", alt_times[end_ind_des], "added")
-                        # Check if more profiles in file
-                        if ind + 500 < len(alts) \
-                           and max(alts[ind + 500::]) > \
-                           (profile_start_height + alts[600] - alts[500]):
-                            # There is another profile before the end of the
-                            # file - find it.
-                            a = profile_start_height
-                            to_return =\
-                             identify_profile(alts, alt_times,
-                                              confirm_bounds=confirm_bounds,
-                                              profile_start_height=a,
-                                              to_return=to_return,
-                                              ind=ind + 500)
-                            # Break because the rest of the file will be
-                            # processed by the previous call.
-                            break
-
-                        ind += 1
-                        return to_return
-
+                        isDone = True
+                        break
                     elif valid in "nNnoNo":
                         plt.close()
                         to_return = identify_profile(alts, alt_times,
@@ -437,6 +377,36 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
                         plt.close()
                         to_return = identify_profile(alts, alt_times,
                                                      to_return)
+                else:
+                    isDone = True
+
+                ind += 1
+
+    if(isDone):
+        # Add the profile if it is not already in to_return
+        pending_profile = (alt_times[start_ind_asc],
+                           alt_times[peak_ind],
+                           alt_times[end_ind_des])
+        if not _profile_in(pending_profile, to_return):
+            to_return.append((alt_times[start_ind_asc],
+                              alt_times[peak_ind],
+                              alt_times[end_ind_des]))
+
+            print("Profile from ", alt_times[start_ind_asc],
+                  "to", alt_times[end_ind_des], "added")
+        # Check if more profiles in file
+        if ind + 500 < len(alts) \
+           and max(alts[ind + 500::]) > \
+           (profile_start_height + alts[600] - alts[500]):
+            # There is another profile before the end of the
+            # file - find it.
+            a = profile_start_height
+            to_return =\
+                identify_profile(alts, alt_times,
+                                 confirm_bounds=confirm_bounds,
+                                 profile_start_height=a,
+                                 to_return=to_return,
+                                 ind=ind + 500)
 
     return to_return
 
@@ -471,7 +441,6 @@ def calc_winds(wind_data, isCopter=True):
     """
 
     # TODO find a way to do this with a fixed-wing
-
 
     units = wind_data["units"]
 
