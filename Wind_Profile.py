@@ -111,17 +111,17 @@ class Wind_Profile():
         tail_num = 0
 
         # psi and az represent the copter's direction in spherical coordinates
-        psi = np.zeros(len(wind_data["roll"])) * self._units.deg
-        az = np.zeros(len(wind_data["roll"])) * self._units.deg
+        psi = np.zeros(len(wind_data["roll"])) * self._units.rad
+        az = np.zeros(len(wind_data["roll"])) * self._units.rad
 
         for i in range(len(wind_data["roll"])):
             # croll is cos(roll), sroll is sin(roll)...
-            croll = np.cos(wind_data["roll"][i] * np.pi / 180.)
-            sroll = np.sin(wind_data["roll"][i] * np.pi / 180.)
-            cpitch = np.cos(wind_data["pitch"][i] * np.pi / 180.)
-            spitch = np.sin(wind_data["pitch"][i] * np.pi / 180.)
-            cyaw = np.cos(wind_data["yaw"][i] * np.pi / 180.)
-            syaw = np.sin(wind_data["yaw"][i] * np.pi / 180.)
+            croll = np.cos(wind_data["roll"][i])
+            sroll = np.sin(wind_data["roll"][i])
+            cpitch = np.cos(wind_data["pitch"][i])
+            spitch = np.sin(wind_data["pitch"][i])
+            cyaw = np.cos(wind_data["yaw"][i])
+            syaw = np.sin(wind_data["yaw"][i])
 
             Rx = np.matrix([[1, 0, 0],
                             [0, croll, sroll],
@@ -134,8 +134,8 @@ class Wind_Profile():
                             [0, 0, 1]])
             R = Rz * Ry * Rx
 
-            psi[i] = np.arccos(R[2, 2]) * 180. / np.pi
-            az[i] = np.arctan2(R[1, 2], R[0, 2]) * 180. / np.pi
+            psi[i] = np.arccos(R[2, 2])
+            az[i] = np.arctan2(R[1, 2], R[0, 2])
 
         coefs = pd.read_csv('./MasterCoefList.csv')
         a_spd = float(coefs.A[coefs.SerialNumber == tail_num]
@@ -143,13 +143,14 @@ class Wind_Profile():
         b_spd = float(coefs.B[coefs.SerialNumber == tail_num]
                       [coefs.SensorType == "Wind"])
 
-        speed = a_spd * np.sqrt(np.tan(psi * np.pi / 180.)) + b_spd
+        speed = a_spd * np.sqrt(np.tan(psi)) + b_spd
         print("147 speed is: ", speed)
         speed = speed * self._units.m / self._units.s
         # Throw out negative speeds
         speed[speed.magnitude < 0.] = np.nan
 
         # Fix negative angles
+        az = az.to(self._units.deg)
         iNeg = np.squeeze(np.where(az.magnitude < 0.))
         az[iNeg] = az[iNeg] + 360. * self._units.deg
 
