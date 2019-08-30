@@ -10,6 +10,8 @@ import netCDF4
 import numpy as np
 from datetime import datetime as dt
 from metpy.units import units
+import mavlogdump_Profiles
+import os
 
 units.define('percent = 0.01*count = %')
 
@@ -48,8 +50,11 @@ class Raw_Profile():
         self.baro = "BARO"
         if "json" in file_path or "JSON" in file_path:
             self._read_JSON(file_path)
-        elif ".nc" in file_path:
+        elif ".nc" in file_path or ".NC" in file_path:
             self._read_netCDF(file_path)
+        elif ".bin" in file_path or ".BIN" in file_path:
+            mavlogdump_Profiles.with_args(fmt="json", file_name=file_path)
+            self._read_JSON(file_path[:-4]+".JSON")
 
     def pos_data(self):
         """ Gets data needed by the Profile constructor.
@@ -126,7 +131,7 @@ class Raw_Profile():
         to_return["speed_east"] = self.rotation[0]
         to_return["speed_north"] = self.rotation[1]
         to_return["speed_down"] = self.rotation[2]
-        to_return["roll"] = self.rotation[3]
+        to_return["roll"] = self.rotation[3]  # These are in radians
         to_return["pitch"] = self.rotation[4]
         to_return["yaw"] = self.rotation[5]
         to_return["time"] = self.rotation[6]
@@ -212,7 +217,8 @@ class Raw_Profile():
                 for key, value in sensor_names["IMET"].items():
                     try:
                         if 'Time' in key:
-                            time = dt.fromtimestamp(elem["meta"]["timestamp"])
+                            time = dt.utcfromtimestamp(elem["meta"]
+                                                       ["timestamp"])
                             if time.year < 2000:
                                 raise KeyError("Time formatted incorrectly")
                             else:
@@ -248,7 +254,7 @@ class Raw_Profile():
                 for key, value in sensor_names["RHUM"].items():
                     try:
                         if 'Time' in key:
-                            time = dt.fromtimestamp(elem["meta"]["timestamp"])
+                            time = dt.utcfromtimestamp(elem["meta"]["timestamp"])
                             if time.year < 2000:
                                 raise KeyError("Time formatted incorrectly")
                             else:
@@ -289,7 +295,7 @@ class Raw_Profile():
                 for key, value in sensor_names["POS"].items():
                     try:
                         if 'Time' in key:
-                            time = dt.fromtimestamp(elem["meta"]["timestamp"])
+                            time = dt.utcfromtimestamp(elem["meta"]["timestamp"])
                             if time.year < 2000:
                                 raise KeyError("Time formatted incorrectly")
                             else:
@@ -325,7 +331,7 @@ class Raw_Profile():
                 for key, value in sensor_names[self.baro].items():
                     try:
                         if 'Time' in key:
-                            time = dt.fromtimestamp(elem["meta"]["timestamp"])
+                            time = dt.utcfromtimestamp(elem["meta"]["timestamp"])
                             if time.year < 2000:
                                 raise KeyError("Time formatted incorrectly")
                             else:
@@ -365,7 +371,7 @@ class Raw_Profile():
                 for key, value in sensor_names["NKF1"].items():
                     try:
                         if 'Time' in key:
-                            time = dt.fromtimestamp(elem["meta"]["timestamp"])
+                            time = dt.utcfromtimestamp(elem["meta"]["timestamp"])
                             if time.year < 2000:
                                 raise KeyError("Time formatted incorrectly")
                             else:

@@ -30,8 +30,8 @@ different profile start height.
 """
 
 # Example using Profiles
-a = Profile_Set()
-a.add_all_profiles("/home/jessica/GitHub/data_templates/00000010.JSON")
+a = Profile_Set(3, 'm')
+a.add_all_profiles("/home/jessica/GitHub/data_templates/00000003.BIN")
 
 
 '''
@@ -75,9 +75,7 @@ plt.show()
 plt.figure()
 for w in aw:
     # Create a hodograph
-    h = Hodograph(component_range=5)
-    h.add_grid(increment=20)
-    h.plot(w.u, w.v)
+    plt.plot(w.speed, w.gridded_times[:-1])
 plt.show()
 
 '''

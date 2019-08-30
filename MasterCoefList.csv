@@ -1,4 +1,4 @@
-ShortSensorID,SerialNumber,ScoopID,Equation,A,B,C,D,Offset,SensorStatus
+SensorType,SerialNumber,ScoopID,Equation,A,B,C,D,Offset,SensorStatus
 Wind,944,na,E1,3.28E+01,-4.50E+00,na,na,na,Active
 Wind,946,na,E1,2.40E+01,-1.90E+00,na,na,na,Active
 Wind,955,na,E1,3.21E+01,-4.20E+00,na,na,na,Active
@@ -19,12 +19,12 @@ Imet,58814,B,E2,1.01248342E-03,2.61214144E-04,1.50257257E-07,na,na,Active
 Imet,58821,A,E2,1.00786813E-03,2.61722397E-04,1.48476183E-07,na,na,Active
 Imet,58822,B,E2,1.00761568E-03,2.61899525E-04,1.49075281E-07,na,na,Active
 Imet,0,na,E2,1.01E-03,2.62E-04,1.50E-07,na,na,na
-RH,1,A,na,na,na,na,na,2.827,Active
-RH,2,A,na,na,na,na,na,3.108,Active
-RH,3,A,na,na,na,na,na,1.843,Active
-RH,4,B,na,na,na,na,na,4.493,Active
-RH,5,B,na,na,na,na,na,1.723,Active
-RH,6,B,na,na,na,na,na,4.538,Active
-RH,7,C,na,na,na,na,na,-2.309,Spare
-RH,8,C,na,na,na,na,na,-2.256,Spare
-RH,9,C,na,na,na,na,na,3.742,Spare
+RH,1,A,na,na,na,na,na,2827,Active
+RH,2,A,na,na,na,na,na,3108,Active
+RH,3,A,na,na,na,na,na,1843,Active
+RH,4,B,na,na,na,na,na,4493,Active
+RH,5,B,na,na,na,na,na,1723,Active
+RH,6,B,na,na,na,na,na,4538,Active
+RH,7,C,na,na,na,na,na,-2309,Spare
+RH,8,C,na,na,na,na,na,-2256,Spare
+RH,9,C,na,na,na,na,na,3742,Spare
