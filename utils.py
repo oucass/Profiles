@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pandas as pd
 from datetime import timedelta
-from numpy import sin, cos
 from pandas.plotting import register_matplotlib_converters
 from pint import UnitStrippedWarning
 
@@ -21,6 +20,7 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("error", category=UnitStrippedWarning)
 register_matplotlib_converters()
 coefs = None
+
 
 def regrid_base(base=None, base_times=None, new_res=None, ascent=True,
                 units=None):

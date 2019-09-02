@@ -45,14 +45,14 @@ class Profile_Set():
         self.confirm_bounds = confirm_bounds
         self.profiles = []
 
-    def add_all_profiles(self, file_path):
+    def add_all_profiles(self, file_path, scoop_id=None):
         """ Reads a file, splits it in to several vertical profiles, and adds
         all Profiles to profiles
 
         :param string file_path: the data file
         """
         # Process altitude data for profile identification
-        raw_profile_set = Raw_Profile(file_path, self.dev)
+        raw_profile_set = Raw_Profile(file_path, self.dev, scoop_id)
         pos = raw_profile_set.pos_data()
 
         # Identify the start, peak, and end indices of each profile
@@ -72,7 +72,7 @@ class Profile_Set():
 
     def add_profile(self, file_path,
                     time=dt.datetime(dt.MINYEAR, 1, 1, tzinfo=None),
-                    profile_num=None):
+                    profile_num=None, scoop_id=None):
         """ Reads a file and creates a Profile for the first vertical profile
         after time OR for the profile_numth profile.
 
@@ -85,7 +85,7 @@ class Profile_Set():
         """
 
         # Process altitude data for profile identification
-        raw_profile = Raw_Profile(file_path, self.dev)
+        raw_profile = Raw_Profile(file_path, self.dev, scoop_id)
         pos = raw_profile.pos_data()
 
         # Identify the start, peak, and end indices of each profile
