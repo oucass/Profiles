@@ -31,7 +31,8 @@ different profile start height.
 
 # Example using Profiles
 a = Profile_Set(3, 'm')
-a.add_all_profiles("/home/jessica/GitHub/data_templates/00000003.BIN")
+a.add_all_profiles("/home/jessica/GitHub/data_templates/00000010.JSON",
+                   scoop_id='A')
 
 
 '''

@@ -32,7 +32,7 @@ class Profile():
 
     def __init__(self, file_path, resolution, res_units, profile_num,
                  ascent=True, dev=False, confirm_bounds=True,
-                 index_list=None):
+                 index_list=None, scoop_id=None, try_calib=True):
         """ Creates a Profile object.
 
         :param string fpath: data file
@@ -53,7 +53,7 @@ class Profile():
            profile was not found)
         """
 
-        self._raw_profile = Raw_Profile(file_path, dev)
+        self._raw_profile = Raw_Profile(file_path, dev, scoop_id, try_calib)
         self._units = self._raw_profile.get_units()
         self._pos = self._raw_profile.pos_data()
         self._pres = (self._raw_profile.pres[0], self._raw_profile.pres[-1])
@@ -132,7 +132,9 @@ class Profile():
                                gridded_times=self.gridded_times,
                                indices=self.indices,
                                ascent=self.ascent, units=self._units,
-                               filepath=self.file_path)
+                               filepath=self.file_path,
+                               serial_numbers=self
+                               ._raw_profile.serial_numbers)
 
         return self._thermo_profile
 

@@ -12,6 +12,7 @@ from datetime import datetime as dt
 from metpy.units import units
 import mavlogdump_Profiles
 import os
+import pandas as pd
 
 units.define('percent = 0.01*count = %')
 
@@ -31,14 +32,16 @@ class Raw_Profile():
     :var tuple rotation: UAS position data as (VE, VN, VD, roll, pitch, yaw,
                                                time)
     :var bool dev: True if the data is from a developmental flight
+    :var dict serial_numbers: Contains serial number or 0 for each sensor
     """
 
-    def __init__(self, file_path, dev=False):
+    def __init__(self, file_path, dev=False, scoop_id=None, try_calib=True):
         """ Creates a Raw_Profile object and reads in data in the appropiate
         format.
 
         :param string file_path: file name
         :param bool dev: True if the flight was developmental, false otherwise
+        :param char scoop_id: The set of sensors flown
         """
         self.temp = None
         self.rh = None
@@ -48,6 +51,7 @@ class Raw_Profile():
         self.rotation = None
         self.dev = dev
         self.baro = "BARO"
+        self.try_calib = try_calib
         if "json" in file_path or "JSON" in file_path:
             self._read_JSON(file_path)
         elif ".nc" in file_path or ".NC" in file_path:
@@ -55,6 +59,43 @@ class Raw_Profile():
         elif ".bin" in file_path or ".BIN" in file_path:
             mavlogdump_Profiles.with_args(fmt="json", file_name=file_path)
             self._read_JSON(file_path[:-4]+".JSON")
+
+        # Populate serial_numbers
+        self.serial_numbers = {}
+
+        if scoop_id is not None:
+            try:
+                coefs = pd.read_csv("./coefs/scoop" + scoop_id + ".csv")
+                coefs.validFrom = [dt.strptime(date_string, "%Y-%m-%d")
+                                   for date_string in coefs.validFrom]
+                day_flight = self.temp[-1][0]
+
+                sensor_install_date = None  # This is the last day in
+                # coefs.validFrom before the day of the flight
+                for sensor_day in coefs.validFrom:
+                    if sensor_day < day_flight:
+                        if sensor_install_date is None:
+                            sensor_install_date = sensor_day
+                        elif sensor_day > sensor_install_date:
+                            sensor_install_date = sensor_day
+
+                if sensor_install_date is None:  # the flight took place
+                    # before the start of the scoop log
+                    sensor_install_date = min(coefs.validFrom)
+
+                self.serial_numbers = coefs[coefs.validFrom ==
+                                            sensor_install_date].to_dict('records')[0]
+                print(self.serial_numbers)
+            except IOError:
+                self.try_calib = False
+                print("failed to read coefs")
+
+        # IMET
+        for sensor_number in np.add(range(int((len(self.temp)-2) / 2)), 1):
+            self.serial_numbers["imet" + str(sensor_number)] = 0
+        # RH
+        for sensor_number in np.add(range((len(self.rh)-1) // 2), 1):
+            self.serial_numbers["rh" + str(sensor_number)] = 0
 
     def pos_data(self):
         """ Gets data needed by the Profile constructor.
@@ -239,7 +280,8 @@ class Raw_Profile():
                 if rh_list is None:
                     # Create array of lists with one list per RH
                     # sensor reported in the data file, plus one for times
-                    rh_list = [[] for x in range(sum(('H' in s and 'th' not in s) 
+                    rh_list = [[] for x in range(sum(('H' in s and
+                                                      'th' not in s)
                                for s in elem["data"].keys()) * 2 + 1)]
 
                     sensor_names["RHUM"] = {}
@@ -254,7 +296,8 @@ class Raw_Profile():
                 for key, value in sensor_names["RHUM"].items():
                     try:
                         if 'Time' in key:
-                            time = dt.utcfromtimestamp(elem["meta"]["timestamp"])
+                            time = dt.utcfromtimestamp(elem["meta"]
+                                                           ["timestamp"])
                             if time.year < 2000:
                                 raise KeyError("Time formatted incorrectly")
                             else:
@@ -295,7 +338,8 @@ class Raw_Profile():
                 for key, value in sensor_names["POS"].items():
                     try:
                         if 'Time' in key:
-                            time = dt.utcfromtimestamp(elem["meta"]["timestamp"])
+                            time = dt.utcfromtimestamp(elem["meta"]
+                                                       ["timestamp"])
                             if time.year < 2000:
                                 raise KeyError("Time formatted incorrectly")
                             else:
@@ -331,7 +375,8 @@ class Raw_Profile():
                 for key, value in sensor_names[self.baro].items():
                     try:
                         if 'Time' in key:
-                            time = dt.utcfromtimestamp(elem["meta"]["timestamp"])
+                            time = dt.utcfromtimestamp(elem["meta"]
+                                                       ["timestamp"])
                             if time.year < 2000:
                                 raise KeyError("Time formatted incorrectly")
                             else:
@@ -371,7 +416,8 @@ class Raw_Profile():
                 for key, value in sensor_names["NKF1"].items():
                     try:
                         if 'Time' in key:
-                            time = dt.utcfromtimestamp(elem["meta"]["timestamp"])
+                            time = dt.utcfromtimestamp(elem["meta"]
+                                                       ["timestamp"])
                             if time.year < 2000:
                                 raise KeyError("Time formatted incorrectly")
                             else:
