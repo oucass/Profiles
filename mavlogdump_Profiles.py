@@ -79,13 +79,20 @@ parser.add_argument("log", metavar="LOG")
 
 
 def with_args(fmt, file_name):
+    """
+    :return: JSON file path
+    """
     args = parser.parse_args(['--planner', '--format', fmt,
                               '--json_out_dir', os.path.dirname(file_name),
                               file_name])
-    process(args)
+
+    return process(args)
 
 
 def process(args):
+    """
+    :return: JSON file path
+    """
     if not args.mav10:
         os.environ['MAVLINK20'] = '1'
 
@@ -255,6 +262,9 @@ def process(args):
             # Prepare the message as a single object with 'meta' and 'data'
             # keys holding the message's metadata and actual data respectively.
             meta = {"type": m.get_type(), "timestamp": timestamp}
+            if False:
+                meta["srcSystem"] = m.get_srcSystem()
+                meta["srcComponent"] = m.get_srcComponent()
             if args.show_source:
                 meta["srcSystem"] = m.get_srcSystem()
                 meta["srcComponent"] = m.get_srcComponent()
@@ -262,7 +272,7 @@ def process(args):
 
             # TODO - Make this more pretty
             # Now print out this object with stringified properly.
-            print(json.dumps(outMsg) + '\n')
+            # print(json.dumps(outMsg) + '\n')
 
             # Super hacky stuff added by Tyler Bell in Feb 19
             if json_output is not None:
@@ -275,7 +285,7 @@ def process(args):
                     json_output = \
                         open(os.path
                              .join(args.json_out_dir,
-                                   dt.strftime("%Y%m%d_%H%M_{}.json"
+                                   dt.strftime("%Y%m%d_%H%M.json"
                                                .format(args.log
                                                        .split('/')[-1]
                                                        .split('.')[0]))),
@@ -333,3 +343,12 @@ def process(args):
     if args.show_types:
         for msgType in available_types:
             print(msgType)
+
+    print( str(os.path.join(args.json_out_dir,
+                            dt.strftime("%Y%m%d_%H%M.json"
+                                        .format(args.log.split('/')[-1]
+                                                .split('.')[0])))))
+    return str(os.path.join(args.json_out_dir,
+                            dt.strftime("%Y%m%d_%H%M.json"
+                                        .format(args.log.split('/')[-1]
+                                                .split('.')[0]))))

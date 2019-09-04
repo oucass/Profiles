@@ -54,8 +54,9 @@ class Raw_Profile():
         elif ".nc" in file_path or ".NC" in file_path:
             self._read_netCDF(file_path)
         elif ".bin" in file_path or ".BIN" in file_path:
-            mavlogdump_Profiles.with_args(fmt="json", file_name=file_path)
-            self._read_JSON(file_path[:-4]+".JSON")
+            file_path = mavlogdump_Profiles.with_args(fmt="json",
+                                                      file_name=file_path)
+            self._read_JSON(file_path)
 
         # Populate serial_numbers
         self.serial_numbers = {}
@@ -94,7 +95,6 @@ class Raw_Profile():
                 # RH
                 for sensor_number in np.add(range((len(self.rh)-1) // 2), 1):
                     self.serial_numbers["rh" + str(sensor_number)] = 0
-
 
     def pos_data(self):
         """ Gets data needed by the Profile constructor.
