@@ -30,10 +30,12 @@ different profile start height.
 """
 
 # Example using Profiles
-a = Profile_Set(3, 'm')
-a.add_all_profiles("/home/jessica/GitHub/data_templates/00000010.JSON",
+a = Profile_Set(3, 'm', confirm_bounds=False)
+a.add_profile("/home/jessica/GitHub/data_templates/00000010.JSON",
                    scoop_id='A')
 
+#b = Profile("/home/jessica/GitHub/data_templates/00000010.JSON", 3, 'm', 1,
+#            confirm_bounds=False, scoop_id='A')
 
 '''
 # Example using Profile (singular)
@@ -50,14 +52,17 @@ same vertical resolution AND the same value of ascent (True/False) was used,
 the pre-processed netCDF is read to save time and avoid redundant calculations.
 """
 
+
 # Example using Profiles
 at = []
 for p in a.profiles:
+    print(p)
     at.append(p.get_thermo_profile())
 
 aw = []
 for p in a.profiles:
     aw.append(p.get_wind_profile())
+
 
 # Example using Profile
 # bt = b.get_thermo_profile()
@@ -72,19 +77,19 @@ plt.figure()
 for t in at:
     plt.plot(t.temp, t.alt)
 plt.show()
-
+'''
 plt.figure()
 for w in aw:
     # Create a hodograph
     plt.plot(w.speed, w.gridded_times[:-1])
 plt.show()
-
 '''
+"""
 # Example using Profile
 plt.figure()
 plt.plot(bt.temp, bt.alt)
 plt.show()
-'''
+"""
 """
 Now look in your data directory. There are .nc files that can be processed
 faster than .json for the same result. Try replacing .json with .nc in lines

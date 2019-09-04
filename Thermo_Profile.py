@@ -29,7 +29,7 @@ class Thermo_Profile():
 
     def __init__(self, temp_dict, resolution, gridded_times=None,
                  indices=(None, None), ascent=True, units=None,
-                 filepath=None, serial_numbers=None):
+                 filepath=None):
         """ Creates Thermo_Profile object from raw data at the specified
         resolution.
 
@@ -39,7 +39,8 @@ class Thermo_Profile():
             "rh1":, "rh2":, ..., "rhk":, "time_rh":, \
             "temp_rh1":, "temp_rh2":, ..., "temp_rhk":, \
             "pres":, "temp_pres":, "ground_temp_pres":, \
-            "alt_pres":, "time_pres"}, which is returned by \
+            "alt_pres":, "time_pres":, "serial_numbers":}, \
+            which is returned by \
             Raw_Profile.thermo_data
         :param Quantity resoltion: vertical resolution in units of time,
            altitude, or pressure to which the data should be calculated
@@ -87,10 +88,12 @@ class Thermo_Profile():
                     temp_raw.append(temp_dict[key].magnitude)
 
         # Process resistance if needed
+        serial_numbers = temp_dict["serial_numbers"]
         if use_resistance:
             for i in range(len(temp_raw)):
                 temp_raw[i] = utils.temp_calib(temp_raw[i],
-                                               serial_numbers["T" + i.itos()])
+                                               serial_numbers
+                                               ["imet" + str(i+1)])
         # End if-else blocks
 
         rh_raw = []

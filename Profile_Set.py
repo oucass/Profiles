@@ -66,7 +66,8 @@ class Profile_Set():
                                          self.res_units, profile_num,
                                          self.ascent, self.dev,
                                          self.confirm_bounds,
-                                         index_list=index_list))
+                                         index_list=index_list,
+                                         raw_profile=raw_profile_set))
         print(len(self.profiles), "profiles including those added from file",
               file_path)
 
@@ -84,6 +85,7 @@ class Profile_Set():
         :return: True if a profile was found and added
         """
 
+
         # Process altitude data for profile identification
         raw_profile = Raw_Profile(file_path, self.dev, scoop_id)
         pos = raw_profile.pos_data()
@@ -95,10 +97,11 @@ class Profile_Set():
 
         if(profile_num is None):
             self.profiles.append(Profile(file_path, self.resolution,
-                                         self.res_units, profile_num,
+                                         self.res_units, 1,
                                          self.ascent, self.dev,
                                          self.confirm_bounds,
-                                         index_list=index_list))
+                                         index_list=index_list,
+                                         raw_profile=raw_profile))
         else:
             for profile_num_guess in range(len(index_list)):
                 # Check if this profile is the first to start after time
@@ -108,7 +111,8 @@ class Profile_Set():
                                          self.res_units, profile_num,
                                          self.ascent, self.dev,
                                          self.confirm_bounds,
-                                         index_list=index_list))
+                                         index_list=index_list,
+                                         raw_profile=raw_profile))
 
                 # No need to add any more profiles from this file
                 break

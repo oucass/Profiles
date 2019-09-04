@@ -11,12 +11,9 @@ import numpy as np
 from datetime import datetime as dt
 from metpy.units import units
 import mavlogdump_Profiles
-import os
 import pandas as pd
 
 units.define('percent = 0.01*count = %')
-
-# TODO read sensor and tail numbers - pass to Thermo and Wind_Profiles
 
 
 class Raw_Profile():
@@ -35,7 +32,7 @@ class Raw_Profile():
     :var dict serial_numbers: Contains serial number or 0 for each sensor
     """
 
-    def __init__(self, file_path, dev=False, scoop_id=None, try_calib=True):
+    def __init__(self, file_path, dev=False, scoop_id=None):
         """ Creates a Raw_Profile object and reads in data in the appropiate
         format.
 
@@ -43,6 +40,7 @@ class Raw_Profile():
         :param bool dev: True if the flight was developmental, false otherwise
         :param char scoop_id: The set of sensors flown
         """
+        print("init Raw_Profile: ", self)
         self.temp = None
         self.rh = None
         self.co2 = None
@@ -51,7 +49,6 @@ class Raw_Profile():
         self.rotation = None
         self.dev = dev
         self.baro = "BARO"
-        self.try_calib = try_calib
         if "json" in file_path or "JSON" in file_path:
             self._read_JSON(file_path)
         elif ".nc" in file_path or ".NC" in file_path:
@@ -79,23 +76,25 @@ class Raw_Profile():
                         elif sensor_day > sensor_install_date:
                             sensor_install_date = sensor_day
 
-                if sensor_install_date is None:  # the flight took place
-                    # before the start of the scoop log
-                    sensor_install_date = min(coefs.validFrom)
+                    if sensor_install_date is None:  # the flight took place
+                        # before the start of the scoop log
+                        sensor_install_date = min(coefs.validFrom)
+                self.serial_numbers = \
+                    coefs[coefs.validFrom ==
+                          sensor_install_date].to_dict('records')[0]
 
-                self.serial_numbers = coefs[coefs.validFrom ==
-                                            sensor_install_date].to_dict('records')[0]
-                print(self.serial_numbers)
             except IOError:
-                self.try_calib = False
+
                 print("failed to read coefs")
 
-        # IMET
-        for sensor_number in np.add(range(int((len(self.temp)-2) / 2)), 1):
-            self.serial_numbers["imet" + str(sensor_number)] = 0
-        # RH
-        for sensor_number in np.add(range((len(self.rh)-1) // 2), 1):
-            self.serial_numbers["rh" + str(sensor_number)] = 0
+                # IMET
+                for sensor_number in np.add(range(int((len(self.temp)-2)
+                                                  / 2)), 1):
+                    self.serial_numbers["imet" + str(sensor_number)] = 0
+                # RH
+                for sensor_number in np.add(range((len(self.rh)-1) // 2), 1):
+                    self.serial_numbers["rh" + str(sensor_number)] = 0
+
 
     def pos_data(self):
         """ Gets data needed by the Profile constructor.
@@ -149,6 +148,8 @@ class Raw_Profile():
         to_return["ground_temp_pres"] = self.pres[2]
         to_return["alt_pres"] = self.pres[3]
         to_return["time_pres"] = self.pres[-1]
+
+        to_return["serial_numbers"] = self.serial_numbers
 
         return to_return
 

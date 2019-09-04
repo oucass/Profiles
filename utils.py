@@ -129,16 +129,15 @@ def temp_calib(resistance, sn):
     :return: list of temperatures in K
     """
 
-    coefs = pd.read_csv('./MasterCoefList.csv')
+    coefs = pd.read_csv('coefs/MasterCoefList.csv')
     a = float(coefs.A[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
     b = float(coefs.B[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
     c = float(coefs.C[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
     print("Temperature calculated from resistance using coefficients \n",
-          coefs[coefs.SerialNumber == sn
-                and 'IMet' in coefs.ShortSensorID])
+          a, b, c)
 
-    return np.power(np.add(np.add(b * np.log(resistance.magnitude), a),
-                    c * np.power(np.log(resistance.magnitude), 3)), -1)
+    return np.power(np.add(np.add(b * np.log(resistance), a),
+                    c * np.power(np.log(resistance), 3)), -1)
 
 
 def qc(data, max_bias, max_variance):
