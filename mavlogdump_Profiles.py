@@ -262,9 +262,15 @@ def process(args):
             # Prepare the message as a single object with 'meta' and 'data'
             # keys holding the message's metadata and actual data respectively.
             meta = {"type": m.get_type(), "timestamp": timestamp}
+
+            # -------------------------- CITE ---------------------------------
+            # This fix was suggested by Peter Barker of Canberra, Australia
+            # https://github.com/peterbarker
             if False:
                 meta["srcSystem"] = m.get_srcSystem()
                 meta["srcComponent"] = m.get_srcComponent()
+            # -----------------------------------------------------------------
+
             if args.show_source:
                 meta["srcSystem"] = m.get_srcSystem()
                 meta["srcComponent"] = m.get_srcComponent()

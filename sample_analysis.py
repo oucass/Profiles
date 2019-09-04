@@ -30,12 +30,13 @@ different profile start height.
 """
 
 # Example using Profiles
-# a = Profile_Set(3, 'm', confirm_bounds=False)
-# a.add_profile("/home/jessica/GitHub/data_templates/00000010.JSON",
-#                   scoop_id='A')
+# a = Profile_Set(resolution=10, res_units='m', ascent=True, dev=True,
+#                 confirm_bounds=False, profile_start_height=400)
+# a.add_all_profiles("/home/jessica/GitHub/data_templates/BIN/00000010.BIN",
+#                    scoop_id='A')
 
-b = Profile("/home/jessica/GitHub/data_templates/00000003.BIN", 3, 'm', 1,
-            confirm_bounds=False, scoop_id='A')
+b = Profile("/home/jessica/GitHub/data_templates/BIN/00000010.BIN", 3, 'm', 1,
+            confirm_bounds=False)
 
 '''
 # Example using Profile (singular)
@@ -86,10 +87,12 @@ for w in aw:
 plt.show()
 '''
 
+'''
 # Example using Profile
 plt.figure()
 plt.plot(bt.temp, bt.alt)
 plt.show()
+'''
 
 """
 Now look in your data directory. There are .nc files that can be processed

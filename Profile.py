@@ -6,6 +6,7 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 2019
 """
 import utils
+import sys
 from Raw_Profile import Raw_Profile
 from Thermo_Profile import Thermo_Profile
 from Wind_Profile import Wind_Profile
@@ -32,8 +33,8 @@ class Profile():
 
     def __init__(self, file_path, resolution, res_units, profile_num,
                  ascent=True, dev=False, confirm_bounds=True,
-                 index_list=None, scoop_id=None, raw_profile=None):
-        print("init Profile: ", self)
+                 index_list=None, scoop_id=None, raw_profile=None,
+                 profile_start_height=None):
         """ Creates a Profile object.
 
         :param string fpath: data file
@@ -53,7 +54,6 @@ class Profile():
         :return a Profile object or None (if halt_if_fail and the requested \
            profile was not found)
         """
-
         if raw_profile is not None:
             self._raw_profile = raw_profile
         else:
@@ -66,7 +66,9 @@ class Profile():
             if index_list is None:
                 index_list = \
                  utils.identify_profile(self._pos["alt_MSL"].magnitude,
-                                        self._pos["time"], confirm_bounds)
+                                        self._pos["time"], confirm_bounds,
+                                        profile_start_height=\
+                                        profile_start_height)
             indices = index_list[profile_num - 1]
         except IndexError:
             print("Analysis shows that the given file has few than " +
@@ -91,6 +93,11 @@ class Profile():
             self.file_path = file_path[:-3]
         elif ".json" in file_path or ".JSON" in file_path:
             self.file_path = file_path[:-5]
+        elif ".bin" in file_path or ".BIN" in file_path:
+            self.file_path = file_path[:-3]
+        else:
+            print("File type not recognized")
+            sys.exit(0)
 
         if(self.resolution.dimensionality ==
            self._units.get_dimensionality('m')):

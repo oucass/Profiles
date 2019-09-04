@@ -40,7 +40,6 @@ class Raw_Profile():
         :param bool dev: True if the flight was developmental, false otherwise
         :param char scoop_id: The set of sensors flown
         """
-        print("init Raw_Profile: ", self)
         self.temp = None
         self.rh = None
         self.co2 = None
@@ -95,6 +94,14 @@ class Raw_Profile():
                 # RH
                 for sensor_number in np.add(range((len(self.rh)-1) // 2), 1):
                     self.serial_numbers["rh" + str(sensor_number)] = 0
+        else:
+            # IMET
+            for sensor_number in np.add(range(int((len(self.temp)-2)
+                                                  / 2)), 1):
+                self.serial_numbers["imet" + str(sensor_number)] = 0
+            # RH
+            for sensor_number in np.add(range((len(self.rh)-1) // 2), 1):
+                self.serial_numbers["rh" + str(sensor_number)] = 0
 
     def pos_data(self):
         """ Gets data needed by the Profile constructor.

@@ -6,17 +6,16 @@ Created on Wed Aug 28 12:58:46 2019
 @author: jessica
 """
 from Profile_Set import Profile_Set
-from Profile import Profile
 import matplotlib.pyplot as plt
 from metpy.plots import Hodograph
 import os
 
-datadir = '/home/jessica/GitHub/data_templates/DL_Data_20190627_to_20190628'
+datadir = '/home/jessica/GitHub/data_templates/BIN'
 # Example using Profiles
-a = Profile_Set(resolution=10, res_units='m', ascent=True, dev=True, confirm_bounds=False)
+a = Profile_Set(resolution=10, res_units='m', ascent=True, dev=True,
+                confirm_bounds=False, profile_start_height=400)
 for file_name in os.listdir(datadir):
-    if '.json' in file_name or '.JSON' in file_name:
-        a.add_all_profiles(os.path.join(datadir, file_name))
+    a.add_all_profiles(os.path.join(datadir, file_name))
 
 
 '''

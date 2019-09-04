@@ -25,7 +25,7 @@ class Profile_Set():
     """
 
     def __init__(self, resolution=10, res_units='m', ascent=True,
-                 dev=False, confirm_bounds=True):
+                 dev=False, confirm_bounds=True, profile_start_height=None):
         """ Creates a Profiles object.
 
         :param Quantity resolution: resolution to which data should be
@@ -44,6 +44,7 @@ class Profile_Set():
         self.dev = dev
         self.confirm_bounds = confirm_bounds
         self.profiles = []
+        self.profile_start_height = profile_start_height
 
     def add_all_profiles(self, file_path, scoop_id=None):
         """ Reads a file, splits it in to several vertical profiles, and adds
@@ -58,7 +59,9 @@ class Profile_Set():
         # Identify the start, peak, and end indices of each profile
         index_list = utils.identify_profile(pos["alt_MSL"].magnitude,
                                             pos["time"], self.confirm_bounds,
-                                            to_return=[])
+                                            to_return=[],
+                                            profile_start_height=self
+                                            .profile_start_height)
 
         # Create a Profile object for each profile identified
         for profile_num in np.add(range(len(index_list)), 1):
@@ -67,8 +70,10 @@ class Profile_Set():
                                          self.ascent, self.dev,
                                          self.confirm_bounds,
                                          index_list=index_list,
-                                         raw_profile=raw_profile_set))
-        print(len(self.profiles), "profiles including those added from file",
+                                         raw_profile=raw_profile_set,
+                                         profile_start_height=self
+                                         .profile_start_height))
+        print(len(self.profiles), "profile(s) including those added from file",
               file_path)
 
     def add_profile(self, file_path,
@@ -85,7 +90,6 @@ class Profile_Set():
         :return: True if a profile was found and added
         """
 
-
         # Process altitude data for profile identification
         raw_profile = Raw_Profile(file_path, self.dev, scoop_id)
         pos = raw_profile.pos_data()
@@ -101,7 +105,9 @@ class Profile_Set():
                                          self.ascent, self.dev,
                                          self.confirm_bounds,
                                          index_list=index_list,
-                                         raw_profile=raw_profile))
+                                         raw_profile=raw_profile,
+                                         profile_start_height=self
+                                         .profile_start_height))
         else:
             for profile_num_guess in range(len(index_list)):
                 # Check if this profile is the first to start after time
@@ -112,7 +118,9 @@ class Profile_Set():
                                          self.ascent, self.dev,
                                          self.confirm_bounds,
                                          index_list=index_list,
-                                         raw_profile=raw_profile))
+                                         raw_profile=raw_profile,
+                                         profile_start_height=self
+                                         .profile_start_height))
 
                 # No need to add any more profiles from this file
                 break
