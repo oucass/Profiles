@@ -77,7 +77,7 @@ class Wind_Profile():
                 wind_dict["time"] = np.array(wind_dict["time"])[selection]
 
         direction, speed, time = self._calc_winds(wind_dict)
-        print("80 speed is: ", speed)
+
         direction = direction % (2*np.pi)
 
         #
@@ -144,7 +144,7 @@ class Wind_Profile():
                       [coefs.SensorType == "Wind"])
 
         speed = a_spd * np.sqrt(np.tan(psi)) + b_spd
-        print("147 speed is: ", speed)
+
         speed = speed * self._units.m / self._units.s
         # Throw out negative speeds
         speed[speed.magnitude < 0.] = np.nan

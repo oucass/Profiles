@@ -36,7 +36,7 @@ different profile start height.
 #                    scoop_id='A')
 
 b = Profile("/home/jessica/GitHub/data_templates/BIN/00000010.BIN", 3, 'm', 1,
-            confirm_bounds=False)
+            confirm_bounds=False, profile_start_height=400)
 
 '''
 # Example using Profile (singular)
@@ -67,6 +67,8 @@ for p in a.profiles:
 
 # Example using Profile
 bt = b.get_thermo_profile()
+bw = b.get_wind_profile()
+plt.plot(bw.speed, bw.gridded_times[:-1])
 
 """
 Here's an example of one way to view the processed data. See the docs for a
