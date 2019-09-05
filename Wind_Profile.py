@@ -6,7 +6,11 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 2019
 """
 import numpy as np
+import pandas as pd
 import os
+import utils
+import metpy.calc
+import netCDF4
 
 
 class Wind_Profile():
@@ -18,70 +22,83 @@ class Wind_Profile():
     """
 
     def __init__(self, wind_dict, resolution, gridded_times=None,
-                 indices=(None, None), ascent=True, units=None, filepath='',
-                 vertical_coord_times=[]):
+                 indices=(None, None), ascent=True, units=None, file_path=''):
         """ Creates Wind_Profile object based on rotation data at the specified
         resolution.
         """
+        # TODO add tail_number to wind_dict
 
         self.gridded_times = gridded_times
+        self.resolution = resolution
+        self.gridded_times = gridded_times
+        self.indices = indices
+        self.ascent = ascent
+        self._units = units
+        if ascent:
+            self._ascent_filename_tag = "Ascending"
+        else:
+            self._ascent_filename_tag = "Descending"
 
-        filepath_nc = filepath + "wind_" + str(resolution.magnitude) + \
+        self._datadir = os.path.dirname(file_path + ".json")
+        filepath_nc = file_path + "wind_" + str(resolution.magnitude) + \
             str(resolution.units) + self._ascent_filename_tag + ".nc"
 
         if os.path.basename(filepath_nc) in os.listdir(self._datadir):
             print("Reading wind_profile from pre-processed netCDF")
-            self._read_netCDF(filepath_nc)
+            self._read_netCDF(file_path)
             return
         else:
-            time_raw = wind_dict["time"]
             # If no indices given, use entire file
             if not indices[0] is None:
                 # trim profile
 
-                selection = np.where(np.array(time_raw) > indices[0],
-                                     np.array(time_raw) < indices[1], False)
+                selection = np.where(np.array(wind_dict["time"]) > indices[0],
+                                     np.array(wind_dict["time"]) < indices[1],
+                                     False)
 
-                roll = np.array(wind_dict["roll"].magnitude)[selection] * \
+                wind_dict["roll"] = \
+                    np.array(wind_dict["roll"].magnitude)[selection] * \
                     wind_dict["roll"].units
-                pitch = np.array(wind_dict["pitch"].magnitude)[selection] * \
+                wind_dict["pitch"] = \
+                    np.array(wind_dict["pitch"].magnitude)[selection] * \
                     wind_dict["pitch"].units
-                yaw = np.array(wind_dict["yaw"].magnitude)[selection] * \
+                wind_dict["yaw"] = \
+                    np.array(wind_dict["yaw"].magnitude)[selection] * \
                     wind_dict["yaw"].units
-                vE = np.array(wind_dict["speed_east"].magnitude)[selection] * \
+                wind_dict["speed_east"] = \
+                    np.array(wind_dict["speed_east"].magnitude)[selection] * \
                     wind_dict["speed_east"].units
-                vN = np.array(wind_dict["speed_north"].magnitude)[selection] \
+                wind_dict["speed_north"] = \
+                    np.array(wind_dict["speed_north"].magnitude)[selection] \
                     * wind_dict["speed_north"].units
-                vD = np.array(wind_dict["speed_down"].magnitude)[selection] * \
+                wind_dict["speed_down"] = \
+                    np.array(wind_dict["speed_down"].magnitude)[selection] * \
                     wind_dict["speed_down"].units
-                time_raw = np.array(time_raw)[selection]
-            else:
-                roll = wind_dict["roll"]
-                pitch = wind_dict["pitch"]
-                yaw = wind_dict["yaw"]
-                vE = wind_dict["speed_east"]
-                vN = wind_dict["speed_north"]
-                vD = wind_dict["speed_down"]
+                wind_dict["time"] = np.array(wind_dict["time"])[selection]
 
+        direction, speed, time = self._calc_winds(wind_dict)
+
+        direction = direction % (2*np.pi)
 
         #
-        # TODO call _calc_winds
+        # Regrid to res
         #
+        self.dir = utils.regrid_data(data=direction, data_times=time,
+                                     gridded_times=self.gridded_times,
+                                     units=self._units)
+        self.speed = utils.regrid_data(data=speed, data_times=time,
+                                       gridded_times=self.gridded_times,
+                                       units=self._units)
+        self.u, self.v = metpy.calc.wind_components(self.speed, self.dir)
 
         #
-        # TODO Regrid to res
+        # save NC
         #
-
-        #
-        # TODO make instance vars
-        #
-
-        #
-        # TODO save NC
-        #
+        self._save_netCDF(file_path)
 
     def _calc_winds(self, wind_data):
-        """ Calculate wind direction, speed, u, and v
+        """ Calculate wind direction, speed, u, and v. Currently, this only
+        works when the craft is HORIZONTALLY STATIONARY.
         :param dict wind_data: dictionary from Raw_Profile.get_wind_data()
         :param bool isCopter: True if rotor-wing, false if fixed-wing
         :rtype: tuple<list>
@@ -89,20 +106,22 @@ class Wind_Profile():
         """
 
         # TODO find a way to do this with a fixed-wing
-        units = wind_data["units"]
+        # TODO account for moving platform
+        # TODO get tail_num from wind_dict
+        tail_num = 0
 
         # psi and az represent the copter's direction in spherical coordinates
-        psi = np.zeros(len(wind_data["roll"])) * units.deg
-        az = np.zeros(len(wind_data["roll"])) * units.deg
+        psi = np.zeros(len(wind_data["roll"])) * self._units.rad
+        az = np.zeros(len(wind_data["roll"])) * self._units.rad
 
         for i in range(len(wind_data["roll"])):
             # croll is cos(roll), sroll is sin(roll)...
-            croll = np.cos(wind_data["roll"][i] * np.pi / 180.)
-            sroll = np.sin(wind_data["roll"][i] * np.pi / 180.)
-            cpitch = np.cos(wind_data["pitch"][i] * np.pi / 180.)
-            spitch = np.sin(wind_data["pitch"][i] * np.pi / 180.)
-            cyaw = np.cos(wind_data["yaw"][i] * np.pi / 180.)
-            syaw = np.sin(wind_data["yaw"][i] * np.pi / 180.)
+            croll = np.cos(wind_data["roll"][i])
+            sroll = np.sin(wind_data["roll"][i])
+            cpitch = np.cos(wind_data["pitch"][i])
+            spitch = np.sin(wind_data["pitch"][i])
+            cyaw = np.cos(wind_data["yaw"][i])
+            syaw = np.sin(wind_data["yaw"][i])
 
             Rx = np.matrix([[1, 0, 0],
                             [0, croll, sroll],
@@ -115,29 +134,91 @@ class Wind_Profile():
                             [0, 0, 1]])
             R = Rz * Ry * Rx
 
-            psi[i] = np.arccos(R[2, 2]) * 180. / np.pi
-            az[i] = np.arctan2(R[1, 2], R[0, 2]) * 180. / np.pi
+            psi[i] = np.arccos(R[2, 2])
+            az[i] = np.arctan2(R[1, 2], R[0, 2])
 
-        # TODO read calibration values from file
-        a_spd = 34.5
-        b_spd = -6.4
+        coefs = pd.read_csv('coefs/MasterCoefList.csv')
+        a_spd = float(coefs.A[coefs.SerialNumber == tail_num]
+                      [coefs.SensorType == "Wind"])
+        b_spd = float(coefs.B[coefs.SerialNumber == tail_num]
+                      [coefs.SensorType == "Wind"])
 
-        speed = a_spd * np.sqrt(np.tan(psi * np.pi / 180.)) + b_spd
-        speed = speed * units.mps
+        speed = a_spd * np.sqrt(np.tan(psi)) + b_spd
+
+        speed = speed * self._units.m / self._units.s
         # Throw out negative speeds
         speed[speed.magnitude < 0.] = np.nan
 
         # Fix negative angles
+        az = az.to(self._units.deg)
         iNeg = np.squeeze(np.where(az.magnitude < 0.))
-        az[iNeg] = az[iNeg] + 360. * units.deg
+        az[iNeg] = az[iNeg] + 360. * self._units.deg
 
         # az is the wind direction, speed is the wind speed
         return (az, speed, wind_data["time"])
 
-    def _read_NetCDF(self, filepath_nc):
-        # TODO make real version
-        print("Finish implementing Wind_Profile")
+    def _save_netCDF(self, file_path):
+        """ Save a NetCDF file to facilitate future processing if a .JSON was
+        read.
 
-    def _save_NetCDF(self, filepath):
-        # TODO make real version
-        print("Finish implementing Wind_Profile")
+        :param string file_path: file name
+        """
+        main_file = netCDF4.Dataset(file_path + "wind_" +
+                                    str(self.resolution.magnitude) +
+                                    str(self.resolution.units) +
+                                    self._ascent_filename_tag + ".nc", "w",
+                                    format="NETCDF4", mmap=False)
+
+        main_file.createDimension("time", None)
+        # DIRECTION
+        dir_var = main_file.createVariable("dir", "f8", ("time",))
+        dir_var[:] = self.dir.magnitude
+        dir_var.units = str(self.dir.units)
+        # SPEED
+        spd_var = main_file.createVariable("speed", "f8", ("time",))
+        spd_var[:] = self.speed.magnitude
+        spd_var.units = str(self.speed.units)
+        # U
+        u_var = main_file.createVariable("u", "f8", ("time",))
+        u_var[:] = self.u.magnitude
+        u_var.units = str(self.u.units)
+        # V
+        v_var = main_file.createVariable("v", "f8", ("time",))
+        v_var[:] = self.v.magnitude
+        v_var.units = str(self.v.units)
+
+        # TIME
+        time_var = main_file.createVariable("time", "f8", ("time",))
+        time_var[:] = netCDF4.date2num(self.gridded_times,
+                                       units='microseconds since \
+                                       2010-01-01 00:00:00:00')
+        time_var.units = 'microseconds since 2010-01-01 00:00:00:00'
+
+        main_file.close()
+
+    def _read_netCDF(self, file_path):
+        """ Reads data from a NetCDF file. Called by the constructor.
+
+        :param string file_path: file name
+        """
+        main_file = netCDF4.Dataset(file_path + "wind_" +
+                                    str(self.resolution.magnitude) +
+                                    str(self.resolution.units) +
+                                    self._ascent_filename_tag + ".nc", "r",
+                                    format="NETCDF4", mmap=False)
+        # Note: each data chunk is converted to an np array. This is not a
+        # superfluous conversion; a Variable object is incompatible with pint.
+
+        self.dir = np.array(main_file.variables["dir"])[:-2] * \
+            self._units.parse_expression(main_file.variables["dir"].units)
+        self.speed = np.array(main_file.variables["speed"])[:-2] * \
+            self._units.parse_expression(main_file.variables["speed"].units)
+        self.u = np.array(main_file.variables["u"])[:-2] * \
+            self._units.parse_expression(main_file.variables["u"].units)
+        self.v = np.array(main_file.variables["v"])[:-2] * \
+            self._units.parse_expression(main_file.variables["v"].units)
+        self.gridded_times = \
+            np.array(netCDF4.num2date(main_file.variables["time"][:-2],
+                                      units=main_file.variables["time"].units))
+
+        main_file.close()

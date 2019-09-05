@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pandas as pd
 from datetime import timedelta
-from numpy import sin, cos
 from pandas.plotting import register_matplotlib_converters
 from pint import UnitStrippedWarning
 
@@ -21,6 +20,7 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("error", category=UnitStrippedWarning)
 register_matplotlib_converters()
 coefs = None
+
 
 def regrid_base(base=None, base_times=None, new_res=None, ascent=True,
                 units=None):
@@ -129,45 +129,15 @@ def temp_calib(resistance, sn):
     :return: list of temperatures in K
     """
 
-    coefs = pd.read_csv('./MasterCoefList.csv')
-    a = float(coefs.A[coefs.SerialNumber == sn])
-    b = float(coefs.B[coefs.SerialNumber == sn])
-    c = float(coefs.C[coefs.SerialNumber == sn])
+    coefs = pd.read_csv('coefs/MasterCoefList.csv')
+    a = float(coefs.A[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
+    b = float(coefs.B[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
+    c = float(coefs.C[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
     print("Temperature calculated from resistance using coefficients \n",
-          coefs[coefs.SerialNumber == sn])
+          a, b, c)
 
-    return np.power(np.add(np.add(b * np.log(resistance.magnitude), a),
-                    c * np.power(np.log(resistance.magnitude), 3)), -1)
-
-
-def rotate(u, v, w, yaw, pitch, roll):
-    ''' Calculate the value of u, v, and w after a specified axis rotation
-
-    :param list<number> u: U component of the wind
-    :param list<number> v: V component of the wind
-    :param list<number> w: W component of the wind
-    :param list<number> yaw: Rotation about the Z axis
-    :param list<number> pitch: Rotation about the X axis
-    :param list<number> roll: Rotation about the Y axis
-    :rtype: np.array
-    :return: 3D array of the new U, V, and W fields after the rotation
-    '''
-
-    rot_matrix = np.asarray(
-        [[cos(yaw) * cos(pitch),
-          cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll),
-          cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll)],
-         [sin(yaw) * cos(pitch),
-          sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll),
-          sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll)],
-         [-sin(pitch),
-          cos(pitch) * sin(roll), cos(pitch) * cos(roll)]])
-
-    vel_matrix = np.asarray([[u], [v], [w]]).transpose()
-
-    result = np.dot(vel_matrix, rot_matrix)
-
-    return result
+    return np.power(np.add(np.add(b * np.log(resistance), a),
+                    c * np.power(np.log(resistance), 3)), -1)
 
 
 def qc(data, max_bias, max_variance):
@@ -305,6 +275,8 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
        (time_start, time_max_height, time_end)
     """
 
+    isDone = False
+
     # Get the starting height from the user
     if profile_start_height is None:
         fig1 = plt.figure()
@@ -393,37 +365,8 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
                         if end_ind_des is None:
                             print("Could not find end time des (LineTag B)")
                             return
-                        # Add the profile if it is not already in to_return
-                        pending_profile = (alt_times[start_ind_asc],
-                                           alt_times[peak_ind],
-                                           alt_times[end_ind_des])
-                        if not _profile_in(pending_profile, to_return):
-                            to_return.append((alt_times[start_ind_asc],
-                                              alt_times[peak_ind],
-                                              alt_times[end_ind_des]))
-
-                            print("Profile from ", alt_times[start_ind_asc],
-                                  "to", alt_times[end_ind_des], "added")
-                        # Check if more profiles in file
-                        if ind + 500 < len(alts) \
-                           and max(alts[ind + 500::]) > \
-                           (profile_start_height + alts[600] - alts[500]):
-                            # There is another profile before the end of the
-                            # file - find it.
-                            a = profile_start_height
-                            to_return =\
-                             identify_profile(alts, alt_times,
-                                              confirm_bounds=confirm_bounds,
-                                              profile_start_height=a,
-                                              to_return=to_return,
-                                              ind=ind + 500)
-                            # Break because the rest of the file will be
-                            # processed by the previous call.
-                            break
-
-                        ind += 1
-                        return to_return
-
+                        isDone = True
+                        break
                     elif valid in "nNnoNo":
                         plt.close()
                         to_return = identify_profile(alts, alt_times,
@@ -433,6 +376,36 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
                         plt.close()
                         to_return = identify_profile(alts, alt_times,
                                                      to_return)
+                else:
+                    isDone = True
+
+                ind += 1
+
+    if(isDone):
+        # Add the profile if it is not already in to_return
+        pending_profile = (alt_times[start_ind_asc],
+                           alt_times[peak_ind],
+                           alt_times[end_ind_des])
+        if not _profile_in(pending_profile, to_return):
+            to_return.append((alt_times[start_ind_asc],
+                              alt_times[peak_ind],
+                              alt_times[end_ind_des]))
+
+            print("Profile from ", alt_times[start_ind_asc],
+                  "to", alt_times[end_ind_des], "added")
+        # Check if more profiles in file
+        if ind + 500 < len(alts) \
+           and max(alts[ind + 500::]) > \
+           (profile_start_height + alts[600] - alts[500]):
+            # There is another profile before the end of the
+            # file - find it.
+            a = profile_start_height
+            to_return =\
+                identify_profile(alts, alt_times,
+                                 confirm_bounds=confirm_bounds,
+                                 profile_start_height=a,
+                                 to_return=to_return,
+                                 ind=ind + 500)
 
     return to_return
 
@@ -454,56 +427,3 @@ def _profile_in(indices, all_indices):
         if indices[1] > profile_n[0] and indices[1] < profile_n[2]:
             return True
     return False
-
-
-def calc_winds(wind_data, isCopter=True):
-    """ MUST BE COPTER
-    Calculates wind data based on roll, pitch, and yaw of copter
-
-    :param dict wind_data: dictionary from Raw_Profile.get_wind_data()
-    :param bool isCopter: True if rotor-wing, false if fixed-wing
-    :rtype: tuple<list>
-    :return: (direction, speed)
-    """
-
-    # TODO find a way to do this with a fixed-wing
-
-
-    units = wind_data["units"]
-
-    # psi and az represent the copter's direction in spherical coordinates
-    psi = np.zeros(len(wind_data["roll"])) * units.deg
-    az = np.zeros(len(wind_data["roll"])) * units.deg
-
-    for i in range(len(wind_data["roll"])):
-        # croll is cos(roll), sroll is sin(roll)...
-        croll = np.cos(wind_data["roll"][i] * np.pi / 180.)
-        sroll = np.sin(wind_data["roll"][i] * np.pi / 180.)
-        cpitch = np.cos(wind_data["pitch"][i] * np.pi / 180.)
-        spitch = np.sin(wind_data["pitch"][i] * np.pi / 180.)
-        cyaw = np.cos(wind_data["yaw"][i] * np.pi / 180.)
-        syaw = np.sin(wind_data["yaw"][i] * np.pi / 180.)
-
-        Rx = np.matrix([[1, 0, 0], [0, croll, sroll], [0, -sroll, croll]])
-        Ry = np.matrix([[cpitch, 0, -spitch], [0, 1, 0], [spitch, 0, cpitch]])
-        Rz = np.matrix([[cyaw, -syaw, 0], [syaw, cyaw, 0], [0, 0, 1]])
-        R = Rz * Ry * Rx
-
-        psi[i] = np.arccos(R[2, 2]) * 180. / np.pi
-        az[i] = np.arctan2(R[1, 2], R[0, 2]) * 180. / np.pi
-
-    # TODO read calibration values from file
-    a_spd = 34.5
-    b_spd = -6.4
-
-    speed = a_spd * np.sqrt(np.tan(psi * np.pi / 180.)) + b_spd
-    speed = speed * units.mps
-    # Throw out negative speeds
-    speed[speed.magnitude < 0.] = np.nan
-
-    # Fix negative angles
-    iNeg = np.squeeze(np.where(az.magnitude < 0.))
-    az[iNeg] = az[iNeg] + 360. * units.deg
-
-    # az is the wind direction, speed is the wind speed
-    return (az, speed)

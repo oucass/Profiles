@@ -110,39 +110,6 @@ sensor flagged for response time.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="utils.regrid">
-<code class="descclassname">utils.</code><code class="descname">regrid</code><span class="sig-paren">(</span><em>base=None</em>, <em>base_times=None</em>, <em>data=None</em>, <em>data_times=None</em>, <em>new_res=None</em>, <em>ascent=True</em>, <em>units=None</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.regrid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns data interpolated to an evenly spaced array with resolution
-new_res.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>base</strong> (<em>np.array&lt;Quantity&gt;</em>) – Measurements of the variable serving as        the vertical coordinate</li>
-<li><strong>base_times</strong> (<em>np.array&lt;Datetime&gt;</em>) – Times coresponding to base</li>
-<li><strong>data</strong> (<em>np.array&lt;Quantity&gt;</em>) – Measurements of the dependent variable</li>
-<li><strong>data_times</strong> (<em>np.array&lt;Datetime&gt;</em>) – Times coresponding to data</li>
-<li><strong>new_res</strong> (<em>Quantity</em>) – The resolution to which base should be gridded.        This must have the same dimension as base.</li>
-<li><strong>ascent</strong> (<em>bool</em>) – True if data from ascending leg of profile is to be        analyzed, false if descending</li>
-<li><strong>units</strong> (<em>pint.UnitRegistry</em>) – The unit registry defined in Profile</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Cite:</th><td class="field-body"><p class="first"><a class="reference external" href="https://www.geeksforgeeks.org/python-get-the-index-of-first">https://www.geeksforgeeks.org/python-get-the-index-of-first</a>-        element-greater-than-k/</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">tuple</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(new_base, new_times, new_data)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
 <dt id="utils.rotate">
 <code class="descclassname">utils.</code><code class="descname">rotate</code><span class="sig-paren">(</span><em>u</em>, <em>v</em>, <em>w</em>, <em>yaw</em>, <em>pitch</em>, <em>roll</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.rotate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the value of u, v, and w after a specified axis rotation</p>
@@ -171,37 +138,8 @@ new_res.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="utils.sloppy_regrid">
-<code class="descclassname">utils.</code><code class="descname">sloppy_regrid</code><span class="sig-paren">(</span><em>base</em>, <em>data</em>, <em>times</em>, <em>new_res</em>, <em>ascent</em>, <em>units</em>, <em>base_units</em>, <em>data_units</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.sloppy_regrid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Significanly faster way to regrid data to be used when data and base
-have the same (+/- 1) length. Assumes that data and base align temporally</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>base</strong> (<em>list-like&lt;Quantity&gt;</em>) – Measurements of the variable serving as        the vertical coordinate</li>
-<li><strong>data</strong> (<em>list-like&lt;Quantity&gt;</em>) – Measurements of the dependent variable</li>
-<li><strong>times</strong> (<em>list-like&lt;Datetime&gt;</em>) – Times coresponding to data (same as to         time)</li>
-<li><strong>new_res</strong> (<em>Quantity</em>) – The resolution to which base should be gridded.        This must have the same dimension as base.</li>
-<li><strong>ascent</strong> (<em>bool</em>) – True if data from ascending leg of profile is to be        analyzed, false if descending</li>
-<li><strong>units</strong> (<em>pint.UnitRegistry</em>) – The unit registry defined in Profile</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">tuple</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(new_base, new_times, new_data)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
 <dt id="utils.temp_calib">
-<code class="descclassname">utils.</code><code class="descname">temp_calib</code><span class="sig-paren">(</span><em>resistance</em>, <em>nnumber</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.temp_calib" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">utils.</code><code class="descname">temp_calib</code><span class="sig-paren">(</span><em>resistance</em>, <em>sn</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.temp_calib" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts voltage to temperatures using the given coefficients.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
