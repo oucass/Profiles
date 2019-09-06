@@ -71,7 +71,6 @@ class Wind_Profile():
             # If no indices given, use entire file
             if not indices[0] is None:
                 # trim profile
-
                 selection = np.where(np.array(wind_dict["time"]) > indices[0],
                                      np.array(wind_dict["time"]) < indices[1],
                                      False)
@@ -125,10 +124,8 @@ class Wind_Profile():
         :return: (direction, speed)
         """
 
-        # TODO find a way to do this with a fixed-wing
         # TODO account for moving platform
-        # TODO get tail_num from wind_dict
-        tail_num = 0
+        tail_num = wind_data["serial_numbers"]["wind"]
 
         # psi and az represent the copter's direction in spherical coordinates
         psi = np.zeros(len(wind_data["roll"])) * self._units.rad
@@ -183,6 +180,10 @@ class Wind_Profile():
 
         :param string file_path: file name
         """
+        minlen = min([len(self.u), len(self.v), len(self.dir),
+                           len(self.speed), len(self.alt), len(self.pres),
+                           len(self.gridded_times)])
+
         main_file = netCDF4.Dataset(file_path + "wind_" +
                                     str(self.resolution.magnitude) +
                                     str(self.resolution.units) +
@@ -192,24 +193,32 @@ class Wind_Profile():
         main_file.createDimension("time", None)
         # DIRECTION
         dir_var = main_file.createVariable("dir", "f8", ("time",))
-        dir_var[:] = self.dir.magnitude
+        dir_var[:] = self.dir[:minlen-1].magnitude
         dir_var.units = str(self.dir.units)
         # SPEED
         spd_var = main_file.createVariable("speed", "f8", ("time",))
-        spd_var[:] = self.speed.magnitude
+        spd_var[:] = self.speed[:minlen-1].magnitude
         spd_var.units = str(self.speed.units)
         # U
         u_var = main_file.createVariable("u", "f8", ("time",))
-        u_var[:] = self.u.magnitude
+        u_var[:] = self.u[:minlen-1].magnitude
         u_var.units = str(self.u.units)
         # V
         v_var = main_file.createVariable("v", "f8", ("time",))
-        v_var[:] = self.v.magnitude
+        v_var[:] = self.v[:minlen-1].magnitude
         v_var.units = str(self.v.units)
+        # ALT
+        alt_var = main_file.createVariable("alt", "f8", ("time",))
+        alt_var[:] = self.alt[:minlen-1].magnitude
+        alt_var.units = str(self.alt.units)
+        # PRES
+        pres_var = main_file.createVariable("pres", "f8", ("time",))
+        pres_var[:] = self.pres[:minlen-1].magnitude
+        pres_var.units = str(self.pres.units)
 
         # TIME
         time_var = main_file.createVariable("time", "f8", ("time",))
-        time_var[:] = netCDF4.date2num(self.gridded_times,
+        time_var[:] = netCDF4.date2num(self.gridded_times[:minlen-1],
                                        units='microseconds since \
                                        2010-01-01 00:00:00:00')
         time_var.units = 'microseconds since 2010-01-01 00:00:00:00'
@@ -237,6 +246,10 @@ class Wind_Profile():
             self._units.parse_expression(main_file.variables["u"].units)
         self.v = np.array(main_file.variables["v"])[:-2] * \
             self._units.parse_expression(main_file.variables["v"].units)
+        self.alt = np.array(main_file.variables["alt"])[:-2] * \
+            self._units.parse_expression(main_file.variables["alt"].units)
+        self.pres = np.array(main_file.variables["pres"])[:-2] * \
+            self._units.parse_expression(main_file.variables["pres"].units)
         self.gridded_times = \
             np.array(netCDF4.num2date(main_file.variables["time"][:-2],
                                       units=main_file.variables["time"].units))
