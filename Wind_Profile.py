@@ -14,25 +14,45 @@ import netCDF4
 
 
 class Wind_Profile():
-    """ Contains data from one file.
+    """ Processes and holds wind data from one vertical profile
 
     :var list<Quantity> u: U component of wind
     :var list<Quantity> v: V-component of wind
+    :var list<Quantity> dir: wind direction
+    :var list<Quantity> speed: wind speed
+    :var list<Quantity> pres: air pressure
+    :var list<Quantity> alt: altitude
     :var list<Datetime> gridded_times: time of each point
+    :var Quantity resolution: the vertical resolution of the processed data
+    :var bool ascent: is data from the ascending leg of the flight processed?\
+       If not, False.
     """
 
     def __init__(self, wind_dict, resolution, gridded_times=None,
                  indices=(None, None), ascent=True, units=None, file_path=''):
         """ Creates Wind_Profile object based on rotation data at the specified
-        resolution.
+        resolution
+
+        :param dict wind_dict: the dictionary produced by \
+           Raw_Profile.get_wind_data()
+        :param Quantity resolution: vertical resolution of the processed data
+        :param List<Datetime> gridded_times: times for which Profile has \
+           requested wind data
+        :param tuple<int> indices: if applicable, the user-defined bounds of \
+           the profile
+        :param bool ascent: is data from the ascending leg of the flight \
+           processed? If not, False.
+        :param metpy.units units: the units defined by Raw_Profile
+        :param str file_path: the original file passed to the package
         """
-        # TODO add tail_number to wind_dict
 
         self.gridded_times = gridded_times
         self.resolution = resolution
         self.gridded_times = gridded_times
-        self.indices = indices
         self.ascent = ascent
+        self.pres = wind_dict["pres"]
+        self.alt = wind_dict["alt"]
+        self._indices = indices
         self._units = units
         if ascent:
             self._ascent_filename_tag = "Ascending"

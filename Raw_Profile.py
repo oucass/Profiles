@@ -183,6 +183,8 @@ class Raw_Profile():
         to_return["roll"] = self.rotation[3]  # These are in radians
         to_return["pitch"] = self.rotation[4]
         to_return["yaw"] = self.rotation[5]
+        to_return["alt"] = self.pres[3]
+        to_return["pres"] = self.pres[0]
         to_return["time"] = self.rotation[6]
 
         return to_return
