@@ -24,9 +24,9 @@ copyright = '2019, Jessica Wiedemeier, Tyler Bell, Brian Green, Gus Azevedo'
 author = 'Jessica Wiedemeier, Tyler Bell, Brian Green, Gus Azevedo'
 
 # The short X.Y version
-version = ''
+version = '1.0'
 # The full version, including alpha/beta/rc tags
-release = '0.0'
+release = '1.0.0'
 
 
 # -- General configuration ---------------------------------------------------

@@ -1,9 +1,11 @@
 """
 Manages data from a collection of flights or profiles at a specific location
 
-Authors Brian Greene, Jessica Wiedemeier, Tyler Bell, Gus Azevedo \n
+Authors Brian Greene, Jessica Blunt, Tyler Bell, Gus Azevedo \n
 Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 2019
+
+Component of Profiles v1.0.0
 """
 import utils
 import datetime as dt
@@ -18,18 +20,23 @@ class Profile_Set():
 
     :var Location location: information about the location of the flights
     :var list<Profile> profiles: list of Profile objects at this location
-    :var bool descent: True if
-       a) data is to be trimmed to single vertical profiles, and
-       b) data from the descending (rather than ascending) leg is to be used.
+    :var bool ascent: True if data from the ascending leg of the profile is \
+       to be used. If False, the descending leg will be processed instead
     :var bool dev: True if data from developmental flights is to be uploaded
+    :var int resolution: the vertical resolution desired
+    :var str res_units: the units in which the vertical resolution is given
+    :var bool confirm_bounds: if True, the user will be asked to verify the \
+       automatically-determined start, peak, and end times of each profile
+    :var int profile_start_height: either passed to the constructor or provided\
+       by the user during processing
     """
 
     def __init__(self, resolution=10, res_units='m', ascent=True,
                  dev=False, confirm_bounds=True, profile_start_height=None):
         """ Creates a Profiles object.
 
-        :param Quantity resolution: resolution to which data should be
-           calculated in units of time, altitude, or pressure
+        :param int resolution: resolution to which data should be
+           calculated in units of altitude or pressure
         :param str res_units: units of resolution in a format which can \
            be parsed by pint
         :param bool ascent: True to use ascending leg of flight, False to use \
@@ -37,6 +44,11 @@ class Profile_Set():
         :param bool dev: True if data is from a developmental flight
         :param confirm_bounds: False to bypass user confirmation of \
            automatically identified start, peak, and end times
+        :param int profile_start_height: if provided, the user will not be \
+           prompted to enter the starting height for each profile separately.\
+           This can be usefull when processing many profiles from the same \
+           mission, but at least one profile should be processed without this \
+           parameter to determine its correct value.
         """
         self.resolution = resolution
         self.res_units = res_units
@@ -50,7 +62,8 @@ class Profile_Set():
         """ Reads a file, splits it in to several vertical profiles, and adds
         all Profiles to profiles
 
-        :param string file_path: the data file
+        :param str file_path: the data file
+        :param str scoop_id: the identifier of the sensor package used
         """
         # Process altitude data for profile identification
         raw_profile_set = Raw_Profile(file_path, self.dev, scoop_id)
@@ -86,8 +99,7 @@ class Profile_Set():
         :param datetime time: the time after which the profile begins
            (used only if profile_num is not specified)
         :param int profile_num: use the nth profile in the file
-        :rtype: bool
-        :return: True if a profile was found and added
+        :param str scoop_id: the identifier of the sensor package used
         """
 
         # Process altitude data for profile identification
@@ -128,24 +140,11 @@ class Profile_Set():
         print(len(self.profiles), "profiles including profile number ",
               str(profile_num), " added from file", file_path)
 
-    def add_flight(self, file_path):
-        """ Reads a file and adds a Profile object, which may not be a vertical
-        profile, which contains all data after the sensors stablize. COMING
-        SOON
-
-        :param string file_path: the data file
-        :rtype: bool
-        :return: True if a Profile object was succesfully added
-        """
-
     def merge(self, to_add):
         """ Loads all Profile objects from a pre-existing Profiles into this
         Profiles. All flights must be from the same location. COMING SOON
 
         :param Profiles to_add: the Profiles object to be merged in
-        :rtype: bool
-        :return: True if all Profile objects from to_add are successfully
-           copied over
         """
 
     def read_netCDF(self, file_path):
@@ -153,9 +152,6 @@ class Profile_Set():
         COMING SOON
 
         :param string file_path: the NetCDF file
-        :rtype: bool
-        :return: True if no errors were encountered and all information was
-           successfully copied
         """
 
     def save_netCDF(self, file_path):
@@ -164,14 +160,4 @@ class Profile_Set():
 
         :param string file_path: the file name to which attributes should be
            saved
-        :rtype: bool
-        :return: True if no issues were encountered
-        """
-
-    def make_skewT(self):
-        """ Create a Skew-T diagram using all available data. COMING SOON
-        (after plotting)
-
-        :rtype: matplotlib.Figure
-        :return: the Skew-T diagram
         """

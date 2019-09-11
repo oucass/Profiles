@@ -1,9 +1,11 @@
 """
 Reads data file (JSON or netCDF) and stores the raw data
 
-Authors Brian Greene, Jessica Wiedemeier, Tyler Bell, Gus Azevedo \n
+Authors Brian Greene, Jessica Blunt, Tyler Bell, Gus Azevedo \n
 Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 2019
+
+Component of Profiles v1.0.0
 """
 import json
 import netCDF4
@@ -21,7 +23,6 @@ class Raw_Profile():
 
     :var tuple temp: temperature as (Temp1, Resi1, Temp2, Resi2, ..., time)
     :var tuple rh: relative humidity as (rh1, T1, rh2, T2, ..., time)
-    :var tuple co2: CO2 data as (CO2, CO2, ..., time)
     :var tuple pos: GPS data as (lat, lon, alt_MSL, alt_rel_home,
                                  alt_rel_orig, time)
     :var tuple pres: barometer data as (pres, temp, ground_temp, alt_AGL,
@@ -29,6 +30,7 @@ class Raw_Profile():
     :var tuple rotation: UAS position data as (VE, VN, VD, roll, pitch, yaw,
                                                time)
     :var bool dev: True if the data is from a developmental flight
+    :var str baro: contains 4-letter code for the type of barometric sensor used
     :var dict serial_numbers: Contains serial number or 0 for each sensor
     """
 
@@ -42,7 +44,6 @@ class Raw_Profile():
         """
         self.temp = None
         self.rh = None
-        self.co2 = None
         self.pos = None
         self.pres = None
         self.rotation = None
@@ -92,16 +93,20 @@ class Raw_Profile():
                                                   / 2)), 1):
                     self.serial_numbers["imet" + str(sensor_number)] = 0
                 # RH
-                for sensor_number in np.add(range((len(self.rh)-1) // 2), 1):
+                for sensor_number in np.add(range((len(self.rh)-2) // 2), 1):
                     self.serial_numbers["rh" + str(sensor_number)] = 0
+                # WIND
+                self.serial_numbers["wind"] = 0
         else:
             # IMET
             for sensor_number in np.add(range(int((len(self.temp)-2)
                                                   / 2)), 1):
                 self.serial_numbers["imet" + str(sensor_number)] = 0
             # RH
-            for sensor_number in np.add(range((len(self.rh)-1) // 2), 1):
+            for sensor_number in np.add(range((len(self.rh)-2) // 2), 1):
                 self.serial_numbers["rh" + str(sensor_number)] = 0
+            # WIND
+                self.serial_numbers["wind"] = 0
 
     def pos_data(self):
         """ Gets data needed by the Profile constructor.
@@ -160,13 +165,6 @@ class Raw_Profile():
 
         return to_return
 
-    def co2_data(self):
-        """ Gets data needed by the CO2_Profile constructor.
-
-        rtype: list
-        return: [co2, temp, rh]
-        """
-
     def wind_data(self):
         """ Gets data needed by the Wind_Profile constructor.
 
@@ -186,6 +184,8 @@ class Raw_Profile():
         to_return["alt"] = self.pres[3]
         to_return["pres"] = self.pres[0]
         to_return["time"] = self.rotation[6]
+
+        to_return["serial_numbers"] = self.serial_numbers
 
         return to_return
 
@@ -225,7 +225,6 @@ class Raw_Profile():
         """
         temp_list = None
         rh_list = None
-        co2_list = None
         pos_list = None
         pres_list = None
         rotation_list = None
@@ -318,12 +317,6 @@ class Raw_Profile():
                             rh_list[value].append(elem["data"][key])
                     except KeyError:
                         rh_list[value].append(np.nan)
-
-            # CO2
-            elif elem["meta"]["type"] == "CO2":
-                # TODO
-                if co2_list is None:
-                    co2_list = []
 
             # POS
             elif elem["meta"]["type"] == "POS":
@@ -631,7 +624,8 @@ class Raw_Profile():
         # Other Attributes
         #
         self.baro = main_file.baro
-        self.dev = "True" in main_file.dev
+        self.dev = "True" in main_file.dev  # if main_file.dev contains the
+        # string "True", then this is a developmental flight.
 
         main_file.close()
 

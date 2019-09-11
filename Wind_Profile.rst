@@ -1,4 +1,4 @@
-Wind_Profile (COMING SOON)
+Wind_Profile
 ===================================================================================
 
 .. automodule:: Wind_Profile

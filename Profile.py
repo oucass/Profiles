@@ -1,9 +1,11 @@
 """
 Manages data from a single flight or profile
 
-Authors Brian Greene, Jessica Wiedemeier, Tyler Bell, Gus Azevedo \n
+Authors Brian Greene, Jessica Blunt, Tyler Bell, Gus Azevedo \n
 Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 2019
+
+Component of Profiles v1.0.0
 """
 import utils
 import sys
@@ -21,14 +23,18 @@ class Profile():
        alt_msl: list<Quantity>, gps_time: list<Datetime>)
     :var bool dev: True if data is from developmental flights
     :var Location location: information about the flight location
-    :var Quantity resolution: resolution of the data in units of time,
-       altitude, or pressure
-    :var tuple indices:
-    :var bool dev:
-    :var bool ascent:
-    :var String file_path:
-    :var np.Array<Datetime> gridded_times:
-    :var np.Array<Quantity> gridded_base:
+    :var Quantity resolution: resolution of the data in units of altitude or \
+       pressure
+    :var tuple indices: the bounds of the profile to be processed as\
+       (start_time, end_time)
+    :var bool dev: True if this is a non-operational flight
+    :var bool ascent: True if data from the ascending leg should be processed,\
+       otherwise the descending leg will be processed instead
+    :var String file_path: the path to you .bin, .json, or .nc data file
+    :var np.Array<Datetime> gridded_times: the times at which data points are \
+       generated
+    :var np.Array<Quantity> gridded_base: the value of the vertical coordinate \
+       at each data point
     """
 
     def __init__(self, file_path, resolution, res_units, profile_num,
@@ -37,9 +43,9 @@ class Profile():
                  profile_start_height=None):
         """ Creates a Profile object.
 
-        :param string fpath: data file
-        :param Quantity resolution: resolution to which data should be
-           calculated in units of time, altitude, or pressure
+        :param string file_path: data file
+        :param int resolution: resolution to which data should be
+           calculated in units of altitude or pressure
         :param str res_units: units of resolution in a format which can \
            be parsed by pint
         :param int profile_num: 1 or greater. Identifies profile when file \
@@ -51,8 +57,12 @@ class Profile():
            automatically identified start, peak, and end times
         :param list<tuple> index_list: Profile start, peak, and end indices if\
            known - leave as None in most cases
-        :return a Profile object or None (if halt_if_fail and the requested \
-           profile was not found)
+        :param str scoop_id: the sensor package used, if known
+        :param Raw_Profile raw_profile: the partially-processed file - use this\
+           if you have it, there's no need to make the computer do extra work.
+        :param int profile_start_height: if given, replaces prompt to user \
+           asking for starting height of a profile. Recommended value is None\
+           if you're only processing one profile.
         """
         if raw_profile is not None:
             self._raw_profile = raw_profile
@@ -86,7 +96,6 @@ class Profile():
         self._thermo_profile = None
         self._co2_profile = None
         self.dev = dev
-        self.location = None
         self.resolution = resolution * self._units.parse_expression(res_units)
         self.ascent = ascent
         if ".nc" in file_path or ".NC" in file_path:
@@ -146,14 +155,3 @@ class Profile():
                                filepath=self.file_path)
 
         return self._thermo_profile
-
-    def get_co2_profile(self):
-        """ If a CO2_Profile object does not already exist, it is created when
-        this method is called.
-
-        :return: the CO2_Profile object
-        :rtype: CO2_Profile
-        """
-        if self._co2_profile is None:
-            a = 2  # TODO Calculate it
-        return self._co2_profile

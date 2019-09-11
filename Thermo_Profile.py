@@ -1,9 +1,11 @@
 """
 Calculates and stores basic thermodynamic parameters
 
-Authors Brian Greene, Jessica Wiedemeier, Tyler Bell, Gus Azevedo \n
+Authors Brian Greene, Jessica Blunt, Tyler Bell, Gus Azevedo \n
 Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 2019
+
+Component of Profiles v1.0.0
 """
 from metpy import calc
 import utils
@@ -27,9 +29,8 @@ class Thermo_Profile():
            altitude, or pressure to which the data is calculated
     """
 
-    def __init__(self, temp_dict, resolution, gridded_times=None,
-                 indices=(None, None), ascent=True, units=None,
-                 filepath=None):
+    def __init__(self, temp_dict, resolution, filepath=None, gridded_times=None,
+                 ascent=True, units=None):
         """ Creates Thermo_Profile object from raw data at the specified
         resolution.
 
@@ -42,10 +43,15 @@ class Thermo_Profile():
             "alt_pres":, "time_pres":, "serial_numbers":}, \
             which is returned by \
             Raw_Profile.thermo_data
-        :param Quantity resoltion: vertical resolution in units of time,
-           altitude, or pressure to which the data should be calculated
+        :param Quantity resoltion: vertical resolution in units of altitude \
+           or pressure to which the data should be calculated
         :param str filepath: the path to the original data file WITHOUT the \
            suffix .nc or .json
+        :param np.Array<Datetime> gridded_times: times at which data points \
+           should be calculated
+        :param bool ascent: True if data should be processed for the ascending \
+           leg of the flight, False if descending
+        :param metpy.Units units: the unit registry created by Profile
         """
         self.resolution = resolution
         self.gridded_times = gridded_times
@@ -54,7 +60,7 @@ class Thermo_Profile():
         self.temp = None
         self.alt = None
         self._units = units
-        self._sb_CAPE = None  # calculate upon access
+        self._sb_CAPE = None  # calculate upon access TODO
         self._datadir = os.path.dirname(filepath + ".json")
         if ascent:
             self._ascent_filename_tag = "Ascending"
@@ -108,35 +114,9 @@ class Thermo_Profile():
         pres = np.array(temp_dict["pres"].magnitude)\
             * temp_dict["pres"].units
 
-        # If no indices given, use entire file
-        if not indices[0] is None:
-            # trim rh, temp_dict["time_rh"], pres, temp_dict["time_pres"],
-            # temp, temp_dict["time_temp"], alt
-            time_rh = temp_dict["time_rh"]
-            selection_rh = np.where(np.array(time_rh) > indices[0],
-                                    np.array(time_rh) < indices[1], False)
-            rh_raw = np.array(rh_raw)[:, selection_rh] * temp_dict["rh1"].units
-            time_rh = np.array(time_rh)[selection_rh]
-
-            time_pres = temp_dict["time_pres"]
-            selection_pres = np.where(np.array(time_pres) > indices[0],
-                                      np.array(time_pres) < indices[1],
-                                      False)
-            pres = np.array(pres.magnitude)[selection_pres] * pres.units
-            alts = np.array(alts.magnitude)[selection_pres] * alts.units
-            time_pres = np.array(time_pres)[selection_pres]
-
-            time_temp = temp_dict["time_temp"]
-            selection_temp = np.where(np.array(time_temp) > indices[0],
-                                      np.array(time_temp) < indices[1],
-                                      False)
-            temp_raw = np.array(temp_raw)[:, selection_temp] * \
-                temp_dict["temp1"].units
-            time_temp = np.array(time_temp)[selection_temp]
-        else:
-            time_rh = temp_dict["time_rh"]
-            time_pres = temp_dict["time_pres"]
-            time_temp = temp_dict["time_temp"]
+        time_rh = temp_dict["time_rh"]
+        time_pres = temp_dict["time_pres"]
+        time_temp = temp_dict["time_temp"]
         # Determine bad sensors
         rh_flags = utils.qc(rh_raw, 0.4, 0.2)  # TODO read these from file
 
@@ -198,7 +178,7 @@ class Thermo_Profile():
                                       units=self._units)
 
         minlen = min(len(self.alt), len(self.gridded_times), len(self.rh),
-                     len(self.pres), len(self.temp), len(self.alt))
+                     len(self.pres), len(self.temp))
         self.pres = self.pres[0:minlen-1]
         self.temp = self.temp[0:minlen-1]
         self.rh = self.rh[0:minlen-1]

@@ -1,9 +1,11 @@
 """
 Calculates and stores wind parameters
 
-Authors Brian Greene, Jessica Wiedemeier, Tyler Bell, Gus Azevedo \n
+Authors Brian Greene, Jessica Blunt, Tyler Bell, Gus Azevedo \n
 Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 2019
+
+Component of Profiles v1.0.0
 """
 import numpy as np
 import pandas as pd
@@ -46,7 +48,6 @@ class Wind_Profile():
         :param str file_path: the original file passed to the package
         """
 
-        self.gridded_times = gridded_times
         self.resolution = resolution
         self.gridded_times = gridded_times
         self.ascent = ascent

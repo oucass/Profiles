@@ -8,7 +8,7 @@ Thermo_Profile
    :exclude-members: __weakref__
 
 Temperature Calibration
-=======================
+-----------------------
 
 Resistance (R) to temperature (T)
 
@@ -18,6 +18,6 @@ Resistance (R) to temperature (T)
    T &= \frac{1}{A + B (log{R}) + C (log{R})^3}
    \end{aligned}
 
-Coefficients are pulled from ./coefs.csv on your computer.
+Coefficients are pulled from ./coefs/MasterCoefList.csv on your computer.
 
 Equation from: Greene, B.R. Boundary Layer Profiling Using Rotary-Wing Unmanned Aircraft Systems: Filling the Atmospheric Data Gap. Master’s Thesis, The University of Oklahoma, Norman, OK, USA, 2018.

@@ -1,8 +1,11 @@
 """
 Utils contains misc. functions to aid in data analysis.
 
-Authors Brian Greene, Jessica Wiedemeier, Tyler Bell
-Copyright U of Oklahoma Center for Autonomous Sensing and Sampling 2019
+Authors Brian Greene, Jessica Blunt, Tyler Bell, Gus Azevedo \n
+Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
+2019
+
+Component of Profiles v1.0.0
 """
 
 import warnings
@@ -19,24 +22,24 @@ from pint import UnitStrippedWarning
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("error", category=UnitStrippedWarning)
 register_matplotlib_converters()
-coefs = None
 
 
 def regrid_base(base=None, base_times=None, new_res=None, ascent=True,
                 units=None):
     """ Calculates times at which data means should be calculated.
 
-    :param np.array<Quantity> base: Measurements of the variable serving as \
+    :param np.Array<Quantity> base: Measurements of the variable serving as \
        the vertical coordinate
-    :param np.array<Datetime> base_times: Times coresponding to base
+    :param np.Array<Datetime> base_times: Times coresponding to base
     :param Quantity new_res: The resolution to which base should be gridded. \
-       This must have the same dimension as base.
+       This must have the same dimension (i.e. both length or both pressure) \
+       as base.
     :param bool ascent: True if data from ascending leg of profile is to be \
        analyzed, false if descending
     :param pint.UnitRegistry units: The unit registry defined in Profile
-    :rtype: (np.Array<Datetime>, np.Array<Quantity>)
-    :return: times at which the craft is at vertical points z*res above \
-       ground and the corrosponding base values
+    :rtype: tuple(np.Array<Datetime>, np.Array<Quantity>)
+    :return: times at which the craft is at vertical points n*res above \
+       the profile starting height and the corrosponding base values
     """
 
     # Use negative pressure so that the max of the data list is the peak
@@ -71,12 +74,11 @@ def regrid_data(data=None, data_times=None, gridded_times=None, units=None):
     """ Returns data interpolated to an evenly spaced array based on
     gridded_times.
 
-    :param np.array<Quantity> data: Measurements of the dependent variable
-    :param np.array<Datetime> data_times: Times coresponding to data
+    :param np.Array<Quantity> data: a non-base variable (i.e. not yor chosen \
+       vertical coordinate)
+    :param np.Array<Datetime> data_times: Times coresponding to data
     :param pint.UnitRegistry units: The unit registry defined in Profile
     :param np.Array<Datetime> gridded_times: The times returned by regrid_base
-    :cite: https://www.geeksforgeeks.org/python-get-the-index-of-first- \
-       element-greater-than-k/
     :rtype: np.Array<Quantity>
     :return: gridded_data
     """
@@ -119,12 +121,13 @@ def regrid_data(data=None, data_times=None, gridded_times=None, units=None):
 
 
 def temp_calib(resistance, sn):
-    """ Converts voltage to temperatures using the given coefficients.
+    """ Converts resistance to temperature using the coefficients for the \
+       sensor specified OR generalized coefficients if the serial number (sn)\
+       is not recognized.
 
     :param list<Quantity> resistance: resistances recorded by temperature \
        sensors
-    :param str nnumber: The platform identifier, used to determine which \
-       coefficients should be pulled from the database
+    :param int sn: the serial number of the sensor reporting
     :rtype: list<Quantity>
     :return: list of temperatures in K
     """
@@ -154,7 +157,7 @@ def qc(data, max_bias, max_variance):
        standard deviation of one sensor and the standard deviation of all \
        sensors of that type. This should be determined experimentally for \
        each type of sensor.
-    :rtype: list of length len(data)
+    :rtype: list<int> of length len(data)
     :return: list containing 0 in the position of each "good" sensor, 2 in the
        position of each sensor flagged for bias, and 3 in the position of each
        sensor flagged for response time.
@@ -179,7 +182,7 @@ def _bias(data, max_abs_error):
     """ This method identifies sensors with excessive biases and returns a
     list flagging sensors determined to be questionable.
 
-    :param np.array<Quantity> data: a list containing one list for each sensor
+    :param np.Array<Quantity> data: a list containing one list for each sensor
        in the ensemble, i.e. all external RH sensors
     :param Quantity max_abs_error: sensors with means more than
        max_abs_error from the mean of sensor means will be flagged
@@ -222,10 +225,10 @@ def _s_dev(data, max_abs_error):
     variabilities and returns a list flagging sensors determined to be
     questionable.
 
-    :param np.array<Quantity> data: a list containing one list for each sensor
+    :param np.Array<Quantity> data: a list containing one list for each sensor
        in the ensemble, i.e. all external RH sensors
-    :param Quantity max_abs_error: sensors with standard deviations will be
-       flagged.
+    :param Quantity max_abs_error: sensors with standard deviations farther \
+       from the average standard deviation will be flagged.
     :rtype: list of length len(data)
     :return: list containing 0s by default and 3 in the position of each sensor
        flagged for variability.
@@ -270,6 +273,18 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
     * The craft does not go above profile_start_height after the last
     profile is ended.
 
+    :param np.Array<Quantity> alts: recorded altitudes; units don't matter
+    :param np.Array<Datetime> alt_times: times coresponding to alts
+    :param bool confirm_bounds: if True, will ask user for verification that \
+       the start, peak, and end times of the profile have been properly \
+       identified
+    :param int profile_start_height: if this is given, the user will not be \
+       prompted to enter a start height for each profile. This is recommended \
+       when processing many profiles from the same mission. At least one \
+       profile should be processed without this option to determine the correct\
+       value.
+    :param int ind: used privately for recurrsion - leave this alone
+    :param list to_return: used privately for recurrsion - leave this alone
     :rtype: list<tuple>
     :return: a list of times defining the profiles in the format \
        (time_start, time_max_height, time_end)
@@ -413,6 +428,9 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
 def _profile_in(indices, all_indices):
     """ Helper function for identify_profile to ensure similar or overlapping
     profiles not included
+
+    :param tuple indices: the identifying tuple for the profile to look for
+    :param list<tuple> all_indices: identifying tuples for all included profiles
     """
     for profile_n in all_indices:
         # Check for similar

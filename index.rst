@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Profile_Set's documentation!
+Profiles: powered by CASS
 =======================================
 
 .. toctree::
@@ -15,9 +15,6 @@ Welcome to Profile_Set's documentation!
    Raw_Profile
    Thermo_Profile
    utils
-   CO2_Profile
-   Location
-   plotting
    Profile_Set
    Wind_Profile
 
