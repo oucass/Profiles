@@ -87,7 +87,7 @@ ax1.set_rticks(np.arange(0, 20, 2.5))
 ax1.set_rlabel_position(270)
 ax1.tick_params('y', labelrotation=-45, labelsize='x-small')
 ax1.yaxis.set_label_coords(-0.15, 0.5)
-ax1.plot(bw.dir * snp.pi/180, bw.speed, lw=2.5)
+ax1.plot(bw.dir * np.pi/180, bw.speed, lw=2.5)
 plt.show()
 
 """

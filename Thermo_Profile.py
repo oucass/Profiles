@@ -29,8 +29,8 @@ class Thermo_Profile():
            altitude, or pressure to which the data is calculated
     """
 
-    def __init__(self, temp_dict, resolution, filepath=None, \
-                 gridded_times=None, ascent=True, units=None):
+    def __init__(self, temp_dict, resolution, file_path=None,
+                 gridded_times=None, ascent=True, units=None, nc_level='low'):
         """ Creates Thermo_Profile object from raw data at the specified
         resolution.
 
@@ -52,45 +52,62 @@ class Thermo_Profile():
         :param bool ascent: True if data should be processed for the ascending\
            leg of the flight, False if descending
         :param metpy.Units units: the unit registry created by Profile
+        :param str nc_level: either 'low', or 'none'. This parameter \
+           is used when processing non-NetCDF files to determine which types \
+           of NetCDF files will be generated. For individual files for each \
+           Raw, Thermo, \
+           and Wind Profile, specify 'low'. For no NetCDF files, specify \
+           'none'.
         """
-        self.resolution = resolution
-        self.gridded_times = gridded_times
-        self.rh = None
-        self.pres = None
-        self.temp = None
-        self.alt = None
+
         self._units = units
-        self._datadir = os.path.dirname(filepath + ".json")
+
+        try:
+            self._read_netCDF(file_path)
+            return
+        except Exception:
+            self.resolution = resolution
+            self.gridded_times = gridded_times
+            self.rh = None
+            self.pres = None
+            self.temp = None
+            self.alt = None
+            self._units = units
+            self._datadir = os.path.dirname(file_path + ".json")
+
         if ascent:
             self._ascent_filename_tag = "Ascending"
         else:
             self._ascent_filename_tag = "Descending"
+
+        # If a .json or .bin was given, checks for corrosponding .nc
+        if os.path.basename(file_path + "thermo_" +
+                            str(self.resolution.magnitude) +
+                            str(self.resolution.units) +
+                            self._ascent_filename_tag + ".nc") \
+           in os.listdir(self._datadir):
+            print("Reading thermo_profile from pre-processed netCDF")
+            self._read_netCDF(file_path)
+            return
+
         temp = []
         rh = []
 
-        if os.path.basename(filepath + "thermo_" + str(resolution.magnitude) +
-                            str(resolution.units) + self._ascent_filename_tag +
-                            ".nc") in os.listdir(self._datadir):
-            print("Reading thermo_profile from pre-processed netCDF")
-            self._read_netCDF(filepath)
-            return
+        temp_raw = []  # List of lists, each containing data from a sensor
 
-        else:
-            temp_raw = []  # List of lists, each containing data from a sensor
-
-            # Fill temp_raw
-            use_resistance = False
-            use_temp = False
-            for key in temp_dict.keys():
-                if "resi" in key:
-                    use_resistance = True
-                    if use_temp:
-                        use_temp = False
-                        temp_raw = []
-                    temp_raw.append(temp_dict[key].magnitude)
-                if "temp" in key and "_" not in key and not use_resistance:
-                    use_temp = True
-                    temp_raw.append(temp_dict[key].magnitude)
+        # Fill temp_raw
+        use_resistance = False
+        use_temp = False
+        for key in temp_dict.keys():
+            if "resi" in key:
+                use_resistance = True
+                if use_temp:
+                    use_temp = False
+                    temp_raw = []
+                temp_raw.append(temp_dict[key].magnitude)
+            if "temp" in key and "_" not in key and not use_resistance:
+                use_temp = True
+                temp_raw.append(temp_dict[key].magnitude)
 
         # Process resistance if needed
         serial_numbers = temp_dict["serial_numbers"]
@@ -188,7 +205,11 @@ class Thermo_Profile():
                             np.divide(self.rh.magnitude, 100), self.temp,
                             self.pres)
 
-        self._save_netCDF(filepath)
+        if nc_level in 'low':
+            self._save_netCDF(file_path + "thermo_" +
+                              str(self.resolution.magnitude) +
+                              str(self.resolution.units) +
+                              self._ascent_filename_tag + ".nc")
 
     def _save_netCDF(self, file_path):
         """ Save a NetCDF file to facilitate future processing if a .JSON was
@@ -196,10 +217,7 @@ class Thermo_Profile():
 
         :param string file_path: file name
         """
-        main_file = netCDF4.Dataset(file_path + "thermo_" +
-                                    str(self.resolution.magnitude) +
-                                    str(self.resolution.units) +
-                                    self._ascent_filename_tag + ".nc", "w",
+        main_file = netCDF4.Dataset(file_path, "w",
                                     format="NETCDF4", mmap=False)
 
         main_file.createDimension("time", None)
@@ -237,10 +255,7 @@ class Thermo_Profile():
 
         :param string file_path: file name
         """
-        main_file = netCDF4.Dataset(file_path + "thermo_" +
-                                    str(self.resolution.magnitude) +
-                                    str(self.resolution.units) +
-                                    self._ascent_filename_tag + ".nc", "r",
+        main_file = netCDF4.Dataset(file_path, "r",
                                     format="NETCDF4", mmap=False)
         # Note: each data chunk is converted to an np array. This is not a
         # superfluous conversion; a Variable object is incompatible with pint.
@@ -263,9 +278,9 @@ class Thermo_Profile():
 
     def __str__(self):
         to_return = "\t\tThermo_Profile" \
-                    + "\n\t\talt:          " + str(type(self.alt)) \
-                    + "\n\t\tpres:         " + str(type(self.pres)) \
-                    + "\n\t\trh:           " + str(type(self.rh)) \
-                    + "\n\t\ttemp:         " + str(type(self.temp)) \
-                    + "\n\t\tmixing_ratio: " + str(type(self.mixing_ratio))
+                    + "\n\t\t\talt:          " + str(type(self.alt)) \
+                    + "\n\t\t\tpres:         " + str(type(self.pres)) \
+                    + "\n\t\t\trh:           " + str(type(self.rh)) \
+                    + "\n\t\t\ttemp:         " + str(type(self.temp)) \
+                    + "\n\t\t\tmixing_ratio: " + str(type(self.mixing_ratio))
         return to_return

@@ -35,13 +35,19 @@ class Raw_Profile():
     :var dict serial_numbers: Contains serial number or 0 for each sensor
     """
 
-    def __init__(self, file_path, dev=False, scoop_id=None):
+    def __init__(self, file_path, dev=False, scoop_id=None, nc_level='low'):
         """ Creates a Raw_Profile object and reads in data in the appropiate
         format.
 
         :param string file_path: file name
         :param bool dev: True if the flight was developmental, false otherwise
         :param char scoop_id: The set of sensors flown
+        :param str nc_level: either 'low', or 'none'. This parameter \
+           is used when processing non-NetCDF files to determine which types \
+           of NetCDF files will be generated. For individual files for each \
+           Raw, Thermo, \
+           and Wind Profile, specify 'low'. For no NetCDF files, specify \
+           'none'.
         """
 
         self.temp = None
@@ -56,13 +62,13 @@ class Raw_Profile():
                os.listdir(os.path.dirname(file_path)):
                 self._read_netCDF(file_path[:-5] + ".nc")
             else:
-                self._read_JSON(file_path)
+                self._read_JSON(file_path, nc_level=nc_level)
         elif ".nc" in file_path or ".NC" in file_path:
             self._read_netCDF(file_path)
         elif ".bin" in file_path or ".BIN" in file_path:
             file_path = mavlogdump_Profiles.with_args(fmt="json",
                                                       file_name=file_path)
-            self._read_JSON(file_path)
+            self._read_JSON(file_path, nc_level=nc_level)
 
         # Populate serial_numbers
         self.serial_numbers = {}
@@ -195,10 +201,16 @@ class Raw_Profile():
 
         return to_return
 
-    def _read_JSON(self, file_path):
+    def _read_JSON(self, file_path, nc_level='low'):
         """ Reads data from a .JSON file. Called by the constructor.
 
         :param string file_path: file name
+        :param str nc_level: either 'low', or 'none'. This parameter \
+           is used when processing non-NetCDF files to determine which types \
+           of NetCDF files will be generated. For individual files for each \
+           Raw, Thermo, \
+           and Wind Profile, specify 'low'. For no NetCDF files, specify \
+           'none'.
         """
 
         # Read the file into a list which pandas can normalize and read
@@ -491,7 +503,8 @@ class Raw_Profile():
         self.pres = tuple(pres_list)
         self.rotation = tuple(rotation_list)
 
-        self._save_netCDF(file_path)
+        if nc_level in 'low':
+            self._save_netCDF(file_path)
 
     def _read_netCDF(self, file_path):
         """ Reads data from a NetCDF file. Called by the constructor.

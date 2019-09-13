@@ -31,7 +31,8 @@ class Wind_Profile():
     """
 
     def __init__(self, wind_dict, resolution, gridded_times=None,
-                 indices=(None, None), ascent=True, units=None, file_path=''):
+                 indices=(None, None), ascent=True, units=None, file_path='',
+                 nc_level='low'):
         """ Creates Wind_Profile object based on rotation data at the specified
         resolution
 
@@ -46,6 +47,12 @@ class Wind_Profile():
            processed? If not, False.
         :param metpy.units units: the units defined by Raw_Profile
         :param str file_path: the original file passed to the package
+        :param str nc_level: either 'low', or 'none'. This parameter \
+           is used when processing non-NetCDF files to determine which types \
+           of NetCDF files will be generated. For individual files for each \
+           Raw, Thermo, \
+           and Wind Profile, specify 'low'. For no NetCDF files, specify \
+           'none'.
         """
 
         self.resolution = resolution
@@ -114,7 +121,8 @@ class Wind_Profile():
         #
         # save NC
         #
-        self._save_netCDF(file_path)
+        if nc_level in 'low':
+            self._save_netCDF(file_path)
 
     def _calc_winds(self, wind_data):
         """ Calculate wind direction, speed, u, and v. Currently, this only
@@ -182,8 +190,8 @@ class Wind_Profile():
         :param string file_path: file name
         """
         minlen = min([len(self.u), len(self.v), len(self.dir),
-                           len(self.speed), len(self.alt), len(self.pres),
-                           len(self.gridded_times)])
+                      len(self.speed), len(self.alt), len(self.pres),
+                      len(self.gridded_times)])
 
         main_file = netCDF4.Dataset(file_path + "wind_" +
                                     str(self.resolution.magnitude) +
@@ -258,11 +266,11 @@ class Wind_Profile():
         main_file.close()
 
     def __str__(self):
-        to_return = "\tWind_Profile" \
-                    + "\n\t\tdir:   " + str(type(self.dir)) \
-                    + "\n\t\tspeed: " + str(type(self.speed)) \
-                    + "\n\t\tu:     " + str(type(self.u)) \
-                    + "\n\t\tv:     " + str(type(self.v)) \
-                    + "\n\t\talt:   " + str(type(self.alt)) \
-                    + "\n\t\tpres:  " + str(type(self.pres)) + "\n"
+        to_return = "\t\tWind_Profile" \
+                    + "\n\t\t\tdir:   " + str(type(self.dir)) \
+                    + "\n\t\t\tspeed: " + str(type(self.speed)) \
+                    + "\n\t\t\tu:     " + str(type(self.u)) \
+                    + "\n\t\t\tv:     " + str(type(self.v)) \
+                    + "\n\t\t\talt:   " + str(type(self.alt)) \
+                    + "\n\t\t\tpres:  " + str(type(self.pres)) + "\n"
         return to_return

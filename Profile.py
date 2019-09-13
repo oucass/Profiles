@@ -34,10 +34,14 @@ class Profile():
        at each data point
     """
 
-    def __init__(self, file_path, resolution, res_units, profile_num,
-                 ascent=True, dev=False, confirm_bounds=True,
-                 index_list=None, scoop_id=None, raw_profile=None,
-                 profile_start_height=None):
+    def __init__(self, *args, **kwargs):
+        if len([*args]) > 0:
+            self._init2(*args, **kwargs)
+
+    def _init2(self, file_path, resolution, res_units, profile_num,
+               ascent=True, dev=False, confirm_bounds=True,
+               index_list=None, scoop_id=None, raw_profile=None,
+               profile_start_height=None, nc_level='low'):
         """ Creates a Profile object.
 
         :param string file_path: data file
@@ -61,14 +65,22 @@ class Profile():
         :param int profile_start_height: if given, replaces prompt to user \
            asking for starting height of a profile. Recommended value is None\
            if you're only processing one profile.
+        :param str nc_level: either 'low', or 'none'. This parameter \
+           is used when processing non-NetCDF files to determine which types \
+           of NetCDF files will be generated. For individual files for each \
+           Raw, Thermo, \
+           and Wind Profile, specify 'low'. For no NetCDF files, specify \
+           'none'.
         """
         if raw_profile is not None:
             self._raw_profile = raw_profile
         else:
-            self._raw_profile = Raw_Profile(file_path, dev, scoop_id)
+            self._raw_profile = Raw_Profile(file_path, dev, scoop_id,
+                                            nc_level=nc_level)
         self._units = self._raw_profile.get_units()
         self._pos = self._raw_profile.pos_data()
         self._pres = (self._raw_profile.pres[0], self._raw_profile.pres[-1])
+        self._nc_level = nc_level
 
         try:
             if index_list is None:
@@ -132,7 +144,8 @@ class Profile():
                 Wind_Profile(wind_data, self.resolution,
                              gridded_times=self.gridded_times,
                              indices=self.indices, ascent=self.ascent,
-                             units=self._units, file_path=self.file_path)
+                             units=self._units, file_path=self.file_path,
+                             nc_level=self._nc_level)
         return self._wind_profile
 
     def get_thermo_profile(self):
@@ -148,7 +161,8 @@ class Profile():
                 Thermo_Profile(thermo_data, self.resolution,
                                gridded_times=self.gridded_times,
                                ascent=self.ascent, units=self._units,
-                               filepath=self.file_path)
+                               filepath=self.file_path,
+                               nc_level=self._nc_level)
 
         return self._thermo_profile
 
