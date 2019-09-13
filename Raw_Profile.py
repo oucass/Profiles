@@ -14,6 +14,7 @@ from datetime import datetime as dt
 from metpy.units import units
 import mavlogdump_Profiles
 import pandas as pd
+import os
 
 units.define('percent = 0.01*count = %')
 
@@ -30,7 +31,7 @@ class Raw_Profile():
     :var tuple rotation: UAS position data as (VE, VN, VD, roll, pitch, yaw,
                                                time)
     :var bool dev: True if the data is from a developmental flight
-    :var str baro: contains 4-letter code for the type of barometric sensor used
+    :var str baro: contains 4-letter code for the type of barom sensor used
     :var dict serial_numbers: Contains serial number or 0 for each sensor
     """
 
@@ -42,6 +43,7 @@ class Raw_Profile():
         :param bool dev: True if the flight was developmental, false otherwise
         :param char scoop_id: The set of sensors flown
         """
+
         self.temp = None
         self.rh = None
         self.pos = None
@@ -50,7 +52,11 @@ class Raw_Profile():
         self.dev = dev
         self.baro = "BARO"
         if "json" in file_path or "JSON" in file_path:
-            self._read_JSON(file_path)
+            if os.path.basename(file_path)[:-5] + ".nc" in \
+               os.listdir(os.path.dirname(file_path)):
+                self._read_netCDF(file_path[:-5] + ".nc")
+            else:
+                self._read_JSON(file_path)
         elif ".nc" in file_path or ".NC" in file_path:
             self._read_netCDF(file_path)
         elif ".bin" in file_path or ".BIN" in file_path:
@@ -492,8 +498,10 @@ class Raw_Profile():
 
         :param string file_path: file name
         """
+
         main_file = netCDF4.Dataset(file_path, "r", format="NETCDF4",
                                     mmap=False)
+
         # Note: each data chunk is converted to an np array. This is not a
         # superfluous conversion; a Variable object is incompatible with pint.
 
@@ -502,7 +510,7 @@ class Raw_Profile():
         #
         pos_list = []
         # lat
-        pos_list.append(main_file["pos"].variables["lat"])
+        pos_list.append(main_file.groups["pos"].variables["lat"])
         pos_list[0] = np.array(pos_list[0]) * units.deg
         # lng
         pos_list.append(main_file["pos"].variables["lng"])
@@ -760,6 +768,7 @@ class Raw_Profile():
         # Assign global attributes and close the file
         main_file.baro = self.baro
         main_file.dev = str(self.dev)
+
         main_file.close()
 
     def is_equal(self, other):

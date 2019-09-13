@@ -29,8 +29,8 @@ class Thermo_Profile():
            altitude, or pressure to which the data is calculated
     """
 
-    def __init__(self, temp_dict, resolution, filepath=None, gridded_times=None,
-                 ascent=True, units=None):
+    def __init__(self, temp_dict, resolution, filepath=None, \
+                 gridded_times=None, ascent=True, units=None):
         """ Creates Thermo_Profile object from raw data at the specified
         resolution.
 
@@ -49,7 +49,7 @@ class Thermo_Profile():
            suffix .nc or .json
         :param np.Array<Datetime> gridded_times: times at which data points \
            should be calculated
-        :param bool ascent: True if data should be processed for the ascending \
+        :param bool ascent: True if data should be processed for the ascending\
            leg of the flight, False if descending
         :param metpy.Units units: the unit registry created by Profile
         """
@@ -60,7 +60,6 @@ class Thermo_Profile():
         self.temp = None
         self.alt = None
         self._units = units
-        self._sb_CAPE = None  # calculate upon access TODO
         self._datadir = os.path.dirname(filepath + ".json")
         if ascent:
             self._ascent_filename_tag = "Ascending"
@@ -123,14 +122,14 @@ class Thermo_Profile():
         # Remove bad sensors
         for flags_ind in range(len(rh_flags)):
             if rh_flags[flags_ind] != 0:
-                rh_raw[flags_ind] = np.NaN
+                rh_raw[flags_ind] = np.full(len(rh_raw[flags_ind]), np.NaN)
 
         # Average the sensors
         for i in range(len(rh_raw[0])):
-            rh.append(np.nanmean([rh_raw[a][i].magnitude for a in
+            rh.append(np.nanmean([rh_raw[a][i] for a in
                                   range(len(rh_raw))]))
 
-        rh = np.array(rh) * rh_raw.units
+        rh = np.array(rh) * units.percent
 
         # Determine which sensors are "bad"
         temp_flags = utils.qc(temp_raw, 0.25, 0.1)
@@ -141,17 +140,17 @@ class Thermo_Profile():
             if temp_flags[flags_ind] != 0:
                 print("Temperature sensor", temp_ind + 1, "removed")
                 temp_raw[temp_ind] = \
-                    [np.nan]*len(temp_raw[temp_ind])*temp_raw.units
+                    [np.nan]*len(temp_raw[temp_ind])
             else:
                 temp_ind += 1
 
         # Average the sensors
         for i in range(len(temp_raw[0])):
 
-            temp.append(np.nanmean([temp_raw[a][i].magnitude for a in
+            temp.append(np.nanmean([temp_raw[a][i] for a in
                                    range(len(temp_raw))]))
 
-        temp = np.array(temp) * temp_raw.units
+        temp = np.array(temp) * units.kelvin
 
         #
         # Regrid to match times specified by Profile
@@ -261,3 +260,12 @@ class Thermo_Profile():
                                       units=main_file.variables["time"].units))
 
         main_file.close()
+
+    def __str__(self):
+        to_return = "\t\tThermo_Profile" \
+                    + "\n\t\talt:          " + str(type(self.alt)) \
+                    + "\n\t\tpres:         " + str(type(self.pres)) \
+                    + "\n\t\trh:           " + str(type(self.rh)) \
+                    + "\n\t\ttemp:         " + str(type(self.temp)) \
+                    + "\n\t\tmixing_ratio: " + str(type(self.mixing_ratio))
+        return to_return

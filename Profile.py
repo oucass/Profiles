@@ -19,10 +19,7 @@ class Profile():
     is specified under resolution) or flight (if the resolution is in units
     of time)
 
-    :var tuple gps: location info as tuple(lat: list<float>, lon: list<float>,
-       alt_msl: list<Quantity>, gps_time: list<Datetime>)
     :var bool dev: True if data is from developmental flights
-    :var Location location: information about the flight location
     :var Quantity resolution: resolution of the data in units of altitude or \
        pressure
     :var tuple indices: the bounds of the profile to be processed as\
@@ -33,7 +30,7 @@ class Profile():
     :var String file_path: the path to you .bin, .json, or .nc data file
     :var np.Array<Datetime> gridded_times: the times at which data points are \
        generated
-    :var np.Array<Quantity> gridded_base: the value of the vertical coordinate \
+    :var np.Array<Quantity> gridded_base: the value of the vertical coordinate\
        at each data point
     """
 
@@ -58,8 +55,9 @@ class Profile():
         :param list<tuple> index_list: Profile start, peak, and end indices if\
            known - leave as None in most cases
         :param str scoop_id: the sensor package used, if known
-        :param Raw_Profile raw_profile: the partially-processed file - use this\
-           if you have it, there's no need to make the computer do extra work.
+        :param Raw_Profile raw_profile: the partially-processed file - use \
+           this if you have it, there's no need to make the computer do extra \
+           work.
         :param int profile_start_height: if given, replaces prompt to user \
            asking for starting height of a profile. Recommended value is None\
            if you're only processing one profile.
@@ -94,7 +92,6 @@ class Profile():
             self.indices = (indices[1], indices[2])
         self._wind_profile = None
         self._thermo_profile = None
-        self._co2_profile = None
         self.dev = dev
         self.resolution = resolution * self._units.parse_expression(res_units)
         self.ascent = ascent
@@ -150,8 +147,19 @@ class Profile():
             self._thermo_profile = \
                 Thermo_Profile(thermo_data, self.resolution,
                                gridded_times=self.gridded_times,
-                               indices=self.indices,
                                ascent=self.ascent, units=self._units,
                                filepath=self.file_path)
 
         return self._thermo_profile
+
+    def __str__(self):
+        if self._wind_profile is not None:
+            wind_str = str(self._wind_profile)
+        else:
+            wind_str = ""
+        if self._thermo_profile is not None:
+            thermo_str = str(self._thermo_profile)
+        else:
+            thermo_str = ""
+        return "Profile object:\n\t\tLocation data: " + str(type(self._pos)) \
+               + "\n" + wind_str + thermo_str

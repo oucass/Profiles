@@ -27,8 +27,8 @@ class Profile_Set():
     :var str res_units: the units in which the vertical resolution is given
     :var bool confirm_bounds: if True, the user will be asked to verify the \
        automatically-determined start, peak, and end times of each profile
-    :var int profile_start_height: either passed to the constructor or provided\
-       by the user during processing
+    :var int profile_start_height: either passed to the constructor or \
+       provided by the user during processing
     """
 
     def __init__(self, resolution=10, res_units='m', ascent=True,
@@ -142,10 +142,91 @@ class Profile_Set():
 
     def merge(self, to_add):
         """ Loads all Profile objects from a pre-existing Profiles into this
-        Profiles. All flights must be from the same location. COMING SOON
+        Profiles. All flights must be from the same location.
 
         :param Profiles to_add: the Profiles object to be merged in
         """
+
+        if to_add.resolution != self.resolution or \
+           to_add.res_units != self.res_units:
+            print("NOTICE: All future Profiles added will have resolution "
+                  + str(self.resolution*self.res_units))
+
+        if to_add.ascent != self.ascent:
+            if self.ascent:
+                print("NOTICE: All future Profiles added will be treated as \
+                      ascending")
+            else:
+                print("NOTICE: All future Profiles added will be treated as \
+                      descending")
+
+        if to_add.profile_start_height != self.profile_start_height:
+            print("NOTICE: All future Profiles added will start at height "
+                  + str(self.profile_start_height))
+
+        if to_add.dev != self.dev:
+            if self.dev:
+                print("NOTICE: All future Profiles added will be considered \
+                      developmental")
+            else:
+                print("NOTICE: All future Profiles added will be considered \
+                      operational")
+
+        if len(self.profiles) > 0:
+            units = self.profiles[0]._units
+
+        for new_profile in to_add.profiles:
+
+            new_profile._pos["alt_MSL"] = new_profile._pos["alt_MSL"]\
+                .to_base_units().magnitude * units.m
+            new_profile._pos["units"] = units
+            if new_profile.resolution.to_base_units().units == \
+               new_profile._units.m:
+                new_profile.resolution = \
+                   new_profile.resolution.to_base_units().magnitude \
+                   * units.m
+
+            else:
+                new_profile.resolution = \
+                   new_profile.resolution.to_base_units().magnitude \
+                   * units.N / units.m / units.m
+
+            new_profile.gridded_base = new_profile.gridded_base\
+                .to_base_units().magnitude * new_profile.resolution.units
+
+            if new_profile._wind_profile is not None:
+                new_w = new_profile._wind_profile
+                new_w.u = new_w.u.to_base_units().magnitude \
+                    * units.m / units.s
+                new_w.v = new_w.v.to_base_units().magnitude \
+                    * units.m / units.s
+                new_w.dir = new_w.dir.to(new_w._units.deg)\
+                    .magnitude * units.deg
+                new_w.speed = new_w.speed.to_base_units()\
+                    .magnitude * units.m / units.s
+                new_w.pres = new_w.pres.to_base_units().magnitude \
+                    * units.N / units.m / units.m
+                new_w.alt = new_w.alt.to_base_units().magnitude \
+                    * units.m
+                new_w.resolution = new_profile.resolution
+                new_w._units = units
+                new_profile._wind_profile = new_w
+
+            if new_profile._thermo_profile is not None:
+                new_t = new_profile._thermo_profile
+                new_t.resolution = new_profile.resolution
+                new_t.rh = new_t.rh.magnitude * units.percent
+                new_t.pres = new_t.pres.magnitude * units.N / units.m / units.m
+                new_t.temp = new_t.temp.to_base_units().magnitude \
+                    * units.kelvin
+                new_t.alt = new_w.alt.to_base_units().magnitude \
+                    * units.m
+                new_t._units = units
+                new_profile._thermo_profile = new_t
+
+            new_profile._units = units
+
+            self.profiles.append(new_profile)
 
     def read_netCDF(self, file_path):
         """ Re-creates a Profiles object which has been saved as a NetCDF
@@ -161,3 +242,11 @@ class Profile_Set():
         :param string file_path: the file name to which attributes should be
            saved
         """
+
+    def __str__(self):
+        to_return = "=====================================================\n" \
+                    + "Profile Set with " + str(len(self.profiles)) + \
+                    " Profiles\n"
+        for profile in self.profiles:
+            to_return = to_return + "\t" + str(profile) + "\n"
+        return to_return

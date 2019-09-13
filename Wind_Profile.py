@@ -256,3 +256,13 @@ class Wind_Profile():
                                       units=main_file.variables["time"].units))
 
         main_file.close()
+
+    def __str__(self):
+        to_return = "\tWind_Profile" \
+                    + "\n\t\tdir:   " + str(type(self.dir)) \
+                    + "\n\t\tspeed: " + str(type(self.speed)) \
+                    + "\n\t\tu:     " + str(type(self.u)) \
+                    + "\n\t\tv:     " + str(type(self.v)) \
+                    + "\n\t\talt:   " + str(type(self.alt)) \
+                    + "\n\t\tpres:  " + str(type(self.pres)) + "\n"
+        return to_return

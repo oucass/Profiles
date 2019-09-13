@@ -28,7 +28,7 @@ a.add_all_profiles("/home/jessica/GitHub/data_templates/BIN/00000010.BIN",
 
 
 # Example using Profile
-b = Profile("/home/jessica/GitHub/data_templates/00000003.JSON", 10, 'm', 1,
+b = Profile("/home/jessica/GitHub/data_templates/00000141.json", 10, 'm', 1,
             dev=True, ascent=True)
 
 """
@@ -66,7 +66,7 @@ plt.show()
 plt.figure()
 for w in aw:
     # Create a hodograph
-    plt.plot(w.speed, w.gridded_times[:-1])
+    plt.plot(w.speed, w.gridded_times)
 plt.show()
 
 
@@ -87,7 +87,7 @@ ax1.set_rticks(np.arange(0, 20, 2.5))
 ax1.set_rlabel_position(270)
 ax1.tick_params('y', labelrotation=-45, labelsize='x-small')
 ax1.yaxis.set_label_coords(-0.15, 0.5)
-ax1.plot(bw.dir*np.pi/180, bw.speed, lw=2.5)
+ax1.plot(bw.dir * snp.pi/180, bw.speed, lw=2.5)
 plt.show()
 
 """

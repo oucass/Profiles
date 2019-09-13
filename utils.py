@@ -17,6 +17,7 @@ import pandas as pd
 from datetime import timedelta
 from pandas.plotting import register_matplotlib_converters
 from pint import UnitStrippedWarning
+from metpy.units import units as u
 
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -163,6 +164,9 @@ def qc(data, max_bias, max_variance):
        sensor flagged for response time.
     """
 
+    if isinstance(data, u.Quantity):
+        data = data.magnitude
+
     # _bias: returns list of length number of sensors; 0 means data is good
     good_means = _bias(data, max_bias)
     # _s_dev: returns list of length number of sensors; 0 means data is good
@@ -190,11 +194,12 @@ def _bias(data, max_abs_error):
     :return: list containing 0s by default and 2 in the position of each sensor
        flagged for bias.
     """
+
     to_return = np.zeros(len(data))
     # Calculate the mean of each sensor
     means = np.zeros(len(data))
     for i in range(len(data)):
-        means[i] = np.nanmean(data[i].magnitude)
+        means[i] = np.nanmean(data[i])
 
     while(True):
         # Identify the sensor with the mean farthest from the mean of means
@@ -237,7 +242,7 @@ def _s_dev(data, max_abs_error):
     # Calculate the mean of each sensor
     sdevs = np.zeros(len(data))
     for i in range(len(data)):
-        sdevs[i] = np.nanstd(data[i].magnitude)
+        sdevs[i] = np.nanstd(data[i])
 
     while(True):
         # Identify the sensor with the mean farthest from the mean of means
