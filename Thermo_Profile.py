@@ -29,8 +29,12 @@ class Thermo_Profile():
            altitude, or pressure to which the data is calculated
     """
 
-    def __init__(self, temp_dict, resolution, file_path=None,
-                 gridded_times=None, ascent=True, units=None, nc_level='low'):
+    def __init__(self, *args, **kwargs):
+        if len([*args]) > 0:
+            self._init2(*args, **kwargs)
+
+    def _init2(self, temp_dict, resolution, file_path=None,
+               gridded_times=None, ascent=True, units=None, nc_level='low'):
         """ Creates Thermo_Profile object from raw data at the specified
         resolution.
 

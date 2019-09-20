@@ -161,7 +161,7 @@ class Profile():
                 Thermo_Profile(thermo_data, self.resolution,
                                gridded_times=self.gridded_times,
                                ascent=self.ascent, units=self._units,
-                               filepath=self.file_path,
+                               file_path=self.file_path,
                                nc_level=self._nc_level)
 
         return self._thermo_profile

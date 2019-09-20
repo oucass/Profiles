@@ -3,6 +3,7 @@ from Profile_Set import Profile_Set
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+
 """
 b = Profile("/home/jessica/GitHub/data_templates/"
             + "DL_Data_20190627_to_20190628/00000014.JSON", 10, 'm', 1,
@@ -26,7 +27,7 @@ ax1.plot(bw.dir*np.pi/180, bw.speed, lw=2.5)
 plt.show()
 """
 
-
+"""
 a = Profile_Set(resolution=10, res_units='m', ascent=True, dev=True,
                 confirm_bounds=False, profile_start_height=400)
 datadir_a = "/home/jessica/GitHub/data_templates/datadir_a/"
@@ -72,6 +73,7 @@ for profile in b.profiles:
     plt.plot(t.temp, t.pres)
 
 a.merge(b)
+a.save_netCDF("tester.nc")
 
 print(a)
 print("\n\n\n\n\n")
@@ -85,3 +87,25 @@ plt.figure()
 for profile in a.profiles:
     t = profile.get_thermo_profile()
     plt.plot(t.temp, t.pres)
+"""
+print("help")
+q = Profile_Set()
+print("can print")
+q.read_netCDF("/home/jessica/GitHub/data_templates/tester.nc")
+print("can still print")
+plt.figure()
+for profile in q.profiles:
+    w = profile.get_wind_profile()
+    plt.plot(w.speed, w.dir)
+for profile in q.profiles:
+    w = profile.get_wind_profile()
+    plt.plot(w.speed, w.dir)
+plt.show()
+plt.figure()
+for profile in q.profiles:
+    t = profile.get_thermo_profile()
+    plt.plot(t.temp, t.pres)
+for profile in q.profiles:
+    t = profile.get_thermo_profile()
+    plt.plot(t.temp, t.pres)
+plt.show()

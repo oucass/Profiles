@@ -7,9 +7,7 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 
 Component of Profiles v1.0.0
 """
-import os
 import sys
-import netCDF4
 import warnings
 import numpy as np
 import pandas as pd
@@ -24,60 +22,6 @@ from metpy.units import units as u
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("error", category=UnitStrippedWarning)
 register_matplotlib_converters()
-
-
-def unpack_nc_groups(file_path):
-    """ Creates a separate file (1.nc, 2.nc, ...) for each group in the .nc\
-       file found at file_path. These files should be deleted after being \
-       used - call repack_nc_groups to do this automatically.
-
-    :param str file_path: the path to the file to be unpacked
-    :rtype: dict{<str>:<str>}
-    :return: names and descriptions of temporary files
-    """
-    file = netCDF4.Dataset(file_path, "r")
-    i = 0  # temp file identification number
-    tempnames = {}  # used to direct other functions to the correct files
-    for group_name in file.groups:
-        temp_file = netCDF4.Dataset(os.path.join(os.path.dirname(filepath),
-                                                 str(i) + ".nc"), "w")
-        dimlist = []
-        group = file.groups[group_name]
-
-        # copy groups
-        for subgroup_name in group.groups:
-            subgroup = temp_file.createGroup(subgroup_name)
-            subgroup = group.groups[subgroup_name]
-
-        # copy dimensions
-        for dimname in group.dimensions:
-            temp_file.createDimension(dimname, None)
-            dimlist.append(dimname)
-
-        # Convert names of dimensions into a single tuple, which is needed
-        # to create variables.
-        if len(dimlist) > 0:
-            dimtuple = tuple(dimlist)
-        else:
-            dimtuple = None
-
-        # copy variables
-        for variablename in group.variables:
-            temp_var = temp_file.createVariable(variablename, "f8", dimtuple)
-            temp_var = group.variables[variablename]
-
-        # copy attributes
-        for attr in group.ncattrs():
-            temp_file.setncattr(attr)
-
-        # tidy up and prepare for next iteration
-        temp_file.close()
-        tempnames[os.path.join(os.path.dirname(file_path), str(i) +
-                               ".nc")] = group_name
-        i += 1
-
-    file.close()
-    return tempnames
 
 
 def regrid_base(base=None, base_times=None, new_res=None, ascent=True,

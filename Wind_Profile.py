@@ -30,9 +30,13 @@ class Wind_Profile():
        If not, False.
     """
 
-    def __init__(self, wind_dict, resolution, gridded_times=None,
-                 indices=(None, None), ascent=True, units=None, file_path='',
-                 nc_level='low'):
+    def __init__(self, *args, **kwargs):
+        if len([*args]) > 0:
+            self._init2(*args, **kwargs)
+
+    def _init2(self, wind_dict, resolution, gridded_times=None,
+                indices=(None, None), ascent=True, units=None, file_path='',
+                nc_level='low'):
         """ Creates Wind_Profile object based on rotation data at the specified
         resolution
 

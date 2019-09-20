@@ -514,6 +514,7 @@ class Raw_Profile():
 
         main_file = netCDF4.Dataset(file_path, "r", format="NETCDF4",
                                     mmap=False)
+        print(main_file)
 
         # Note: each data chunk is converted to an np array. This is not a
         # superfluous conversion; a Variable object is incompatible with pint.

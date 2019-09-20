@@ -12,9 +12,11 @@ import utils
 import netCDF4
 import datetime as dt
 import numpy as np
+from metpy.units import units
 from Profile import Profile
 from Raw_Profile import Raw_Profile
 from Thermo_Profile import Thermo_Profile
+from Wind_Profile import Wind_Profile
 
 
 class Profile_Set():
@@ -290,22 +292,92 @@ class Profile_Set():
         main_file = netCDF4.Dataset(file_path, "r", format="NETCDF4",
                                     mmap=False)
         self.dev = bool(main_file.dev)
+        self.resolution = main_file.resolution
+        self.res_units = main_file.res_units
+        self.ascent = bool(main_file.ascent)
+        groups = main_file.groups
 
-        for profile_name in main_file.groups:
-            profile_group = main_file.groups[profile_name]
-            raw_group = profile_group.groups["Raw_Profile"]
-            wind_group = profile_group.groups["Wind_Profile"]
-            thermo_group = profile_group.groups["Thermo_Profile"]
+        units.define('percent = 0.01*count = %')
 
-            self.profiles.append(Profile())  # This circumvents the real
-            # constructor - we are now responsible for ALL instance
-            # variables here.
+        for profile_name in groups:
+            if profile_name in "Profile3":
+                continue
+            print(profile_name)
+            profile_under_construction = Profile()
+            profile_source = main_file[profile_name]
 
             #
-            # Raw
+            # Thermo
             #
-            
 
+            thermo_const = Thermo_Profile()  # Thermo_Profile underconstruction
+            thermoExists = True  # Assume that there is thermo info until
+            # there is evidence otherwise.
+
+            # try:
+            thermo_const.alt = np.array(profile_source.variables["alt"]) \
+                * units.parse_expression(profile_source.variables["alt"]
+                                         .units)
+            thermo_const.pres = np.array(profile_source.variables["pres"])\
+                * units.parse_expression(profile_source.variables["pres"]
+                                         .units)
+            thermo_const.rh = np.array(profile_source.variables["rh"]) \
+                * units.parse_expression(profile_source.variables["rh"]
+                                         .units)
+            thermo_const.temp = np.array(profile_source.variables["temp"])\
+                * units.parse_expression(profile_source.variables["temp"]
+                                         .units)
+            thermo_const.mixing_ratio = \
+                np.array(profile_source.variables["mr"]) \
+                * units.parse_expression(profile_source.variables["mr"]
+                                         .units)
+            print(max(profile_source.variables["time"][:]))
+            thermo_const.gridded_times = netCDF4.num2date(
+                profile_source.variables["time"][:],
+                units=profile_source.variables["time"].units)
+
+            profile_under_construction._thermo_profile = thermo_const
+            # except Exception:
+            #    thermoExists = False
+
+            wind_const = Wind_Profile()
+            windExists = True
+
+            # try:
+            wind_const.dir = np.array(profile_source.variables["dir"]) * \
+                units.parse_expression(profile_source.
+                                       variables["dir"].units)
+            wind_const.speed = np.array(profile_source.variables["speed"])\
+                * units.parse_expression(profile_source.
+                                         variables["speed"].units)
+            wind_const.u = np.array(profile_source.variables["u"]) * \
+                units.parse_expression(profile_source.variables["u"].units)
+            wind_const.v = np.array(profile_source.variables["v"]) * \
+                units.parse_expression(profile_source.variables["v"].units)
+            wind_const.alt = np.array(profile_source.variables["alt"]) * \
+                units.parse_expression(profile_source.variables["alt"]
+                                       .units)
+            wind_const.pres = np.array(profile_source.variables["pres"]) \
+                * units.parse_expression(profile_source.variables["pres"]
+                                         .units)
+            wind_const.gridded_times = np.array(netCDF4.num2date
+                                                (profile_source
+                                                 .variables["time"][:],
+                                                 units=profile_source
+                                                 .variables["time"].units))
+            profile_under_construction._wind_profile = wind_const
+            # except Exception:
+            #    windExists = False
+
+            if thermoExists or windExists:
+                self.profiles.append(profile_under_construction)
+                print("Profile added with")
+            if thermoExists:
+                print("\tThermo_Profile")
+            if windExists:
+                print("\tWind_Profile")
+
+        main_file.close()
 
     def save_netCDF(self, file_path):
         """ Stores all attributes of this Profile_Set object as a NetCDF
@@ -315,216 +387,141 @@ class Profile_Set():
         """
         main_file = netCDF4.Dataset(os.path.join(self.root_dir, file_path),
                                     "w", format="NETCDF4", mmap=False)
+        main_file.dev = str(self.dev)
+        main_file.resolution = self.resolution
+        main_file.res_units = self.res_units
+        main_file.ascent = str(self.ascent)
 
         for i in range(len(self.profiles)):
             profile_group = main_file.createGroup("Profile" + str(i))
-            raw_group = profile_group.createGroup("Raw_Profile")
-            wind_group = profile_group.createGroup("Wind_Profile")
-            thermo_group = profile_group.createGroup("Thermo_Profile")
-
-            #
-            # Raw
-            #
-
-            raw = self.profiles[i]._raw_profile
-
-            # TEMP
-            temp_grp = raw_group.createGroup("/temp")
-            temp_grp.createDimension("temp_time", None)
-            # temp_grp.base_time = date2num(raw.temp[-1][0])
-            temp_sensor_numbers = np.add(range(int((len(raw.temp)-1)/2)), 1)
-            for num in temp_sensor_numbers:
-                new_var = temp_grp.createVariable("volt" + str(num), "f8",
-                                                  ("temp_time",))
-                try:
-                    new_var[:] = raw.temp[2*num-2].magnitude
-                except AttributeError:
-                    # This sensor didn't report
-                    continue
-                new_var.units = "mV"
-            new_var = temp_grp.createVariable("time", "f8", ("temp_time",))
-            new_var[:] = netCDF4.date2num(raw.temp[-1],
-                                          units="microseconds since \
-                                          2010-01-01 00:00:00:00")
-            new_var.units = "microseconds since 2010-01-01 00:00:00:00"
-
-            # RH
-            rh_grp = raw_group.createGroup("/rh")
-            rh_grp.createDimension("rh_time", None)
-            rh_sensor_numbers = np.add(range(int((len(raw.rh)-1)/2)), 1)
-            for num in rh_sensor_numbers:
-                new_rh = rh_grp.createVariable("rh" + str(num),
-                                               "f8", ("rh_time", ))
-                new_temp = rh_grp.createVariable("temp" + str(num),
-                                                 "f8", ("rh_time", ))
-                new_rh[:] = raw.rh[2*num-2].magnitude
-                new_temp[:] = raw.rh[2*num-1].magnitude
-                new_rh.units = "%"
-                new_temp.units = "F"
-            new_var = rh_grp.createVariable("time", "i8", ("rh_time",))
-            new_var[:] = netCDF4.date2num(raw.rh[-1],
-                                          units="microseconds since \
-                                          2010-01-01 00:00:00:00")
-            new_var.units = "microseconds since 2010-01-01 00:00:00:00"
-
-            # POS
-            pos_grp = raw_group.createGroup("/pos")
-            pos_grp.createDimension("pos_time", None)
-            lat = pos_grp.createVariable("lat", "f8", ("pos_time", ))
-            lng = pos_grp.createVariable("lng", "f8", ("pos_time", ))
-            alt = pos_grp.createVariable("alt", "f8", ("pos_time", ))
-            alt_rel_home = pos_grp.createVariable("alt_rel_home", "f8",
-                                                  ("pos_time", ))
-            alt_rel_orig = pos_grp.createVariable("alt_rel_orig", "f8",
-                                                  ("pos_time", ))
-            time = pos_grp.createVariable("time", "i8", ("pos_time",))
-
-            lat[:] = raw.pos[0].magnitude
-            lng[:] = raw.pos[1].magnitude
-            alt[:] = raw.pos[2].magnitude
-            alt_rel_home[:] = raw.pos[3].magnitude
-            alt_rel_orig[:] = raw.pos[4].magnitude
-            time[:] = netCDF4.date2num(raw.pos[-1], units="microseconds \
-                since 2010-01-01 00:00:00:00")
-
-            lat.units = "deg"
-            lng.units = "deg"
-            alt.units = "m MSL"
-            alt_rel_home.units = "m"
-            alt_rel_orig.units = "m"
-            time.units = "microseconds since 2010-01-01 00:00:00:00"
-
-            # PRES
-            pres_grp = raw_group.createGroup("/pres")
-            pres_grp.createDimension("pres_time", None)
-            pres = pres_grp.createVariable("pres", "f8", ("pres_time", ))
-            temp = pres_grp.createVariable("temp", "f8", ("pres_time", ))
-            temp_gnd = pres_grp.createVariable("temp_ground", "f8",
-                                               ("pres_time", ))
-            alt = pres_grp.createVariable("alt", "f8", ("pres_time", ))
-            time = pres_grp.createVariable("time", "i8", ("pres_time", ))
-
-            pres[:] = raw.pres[0].magnitude
-            temp[:] = raw.pres[1].magnitude
-            temp_gnd[:] = raw.pres[2].magnitude
-            alt[:] = raw.pres[3].magnitude
-            time[:] = netCDF4.date2num(raw.pres[-1], units="microseconds \
-                since 2010-01-01 00:00:00:00")
-
-            pres.units = "Pa"
-            temp.units = "F"
-            temp_gnd.units = "F"
-            alt.units = "m (MSL)"
-            time.units = "microseconds since 2010-01-01 00:00:00:00"
-
-            # ROTATION
-            rot_grp = raw_group.createGroup("/rotation")
-            rot_grp.createDimension("rot_time", None)
-            ve = rot_grp.createVariable("VE", "f8", ("rot_time", ))
-            vn = rot_grp.createVariable("VN", "f8", ("rot_time", ))
-            vd = rot_grp.createVariable("VD", "f8", ("rot_time", ))
-            roll = rot_grp.createVariable("roll", "f8", ("rot_time", ))
-            pitch = rot_grp.createVariable("pitch", "f8", ("rot_time", ))
-            yaw = rot_grp.createVariable("yaw", "f8", ("rot_time", ))
-            time = rot_grp.createVariable("time", "i8", ("rot_time", ))
-
-            ve[:] = raw.rotation[0].magnitude
-            vn[:] = raw.rotation[1].magnitude
-            vd[:] = raw.rotation[2].magnitude
-            roll[:] = raw.rotation[3].magnitude
-            pitch[:] = raw.rotation[4].magnitude
-            yaw[:] = raw.rotation[5].magnitude
-            time[:] = netCDF4.date2num(raw.rotation[-1], units="microseconds \
-                                       since 2010-01-01 00:00:00:00")
-
-            ve.units = "m/s"
-            vn.units = "m/s"
-            vd.units = "m/s"
-            roll.units = "deg"
-            pitch.units = "deg"
-            yaw.units = "deg"
-            time.units = "microseconds since 2010-01-01 00:00:00:00"
-
-            raw_group.baro = raw.baro
+            profile_group.createDimension("time", None)
 
             #
             # Thermo
             #
 
-            thermo = self.profiles[i].get_thermo_profile()
+            thermo = self.profiles[i]._thermo_profile
 
-            thermo_group.createDimension("time", None)
-            # PRES
-            pres_var = thermo_group.createVariable("pres", "f8", ("time",))
-            pres_var[:] = thermo.pres.magnitude
-            pres_var.units = str(thermo.pres.units)
-            # RH
-            rh_var = thermo_group.createVariable("rh", "f8", ("time",))
-            rh_var[:] = thermo.rh.magnitude
-            rh_var.units = str(thermo.rh.units)
-            # ALT
-            alt_var = thermo_group.createVariable("alt", "f8", ("time",))
-            alt_var[:] = thermo.alt.magnitude
-            alt_var.units = str(thermo.alt.units)
-            # TEMP
-            temp_var = thermo_group.createVariable("temp", "f8", ("time",))
-            temp_var[:] = thermo.temp.magnitude
-            temp_var.units = str(thermo.temp.units)
-            # MIXING RATIO
-            mr_var = thermo_group.createVariable("mr", "f8", ("time",))
-            mr_var[:] = thermo.mixing_ratio.magnitude
-            mr_var.units = str(thermo.mixing_ratio.units)
-            # TIME
-            time_var = thermo_group.createVariable("time", "f8", ("time",))
-            time_var[:] = netCDF4.date2num(thermo.gridded_times,
-                                           units='microseconds since \
-                                           2010-01-01 00:00:00:00')
-            time_var.units = 'microseconds since 2010-01-01 00:00:00:00'
+            if thermo is not None:
+
+                # RH
+                try:
+                    rh_var = profile_group.createVariable("rh", "f8",
+                                                          ("time",))
+                    rh_var[:] = thermo.rh.magnitude
+                    rh_var.units = str(thermo.rh.units)
+                except Exception:
+                    print("")
+                # TEMP
+                try:
+                    temp_var = profile_group.createVariable("temp", "f8",
+                                                            ("time",))
+                    temp_var[:] = thermo.temp.magnitude
+                    temp_var.units = str(thermo.temp.units)
+                except Exception:
+                    print("")
+                # MIXING RATIO
+                try:
+                    mr_var = profile_group.createVariable("mr", "f8",
+                                                          ("time",))
+                    mr_var[:] = thermo.mixing_ratio.magnitude
+                    mr_var.units = str(thermo.mixing_ratio.units)
+                except Exception:
+                    print("")
+                # TIME
+                try:
+                    time_var = profile_group.createVariable("time", "f8",
+                                                            ("time",))
+                    time_var[:] = netCDF4.date2num(thermo.gridded_times,
+                                                   units='microseconds since \
+                                                   2010-01-01 00:00:00:00')
+                    time_var.units = \
+                        'microseconds since 2010-01-01 00:00:00:00'
+                except Exception:
+                    print("")
+                # ALT
+                try:
+                    alt_var = profile_group.createVariable("alt", "f8",
+                                                           ("time",))
+                    alt_var[:] = thermo.alt.magnitude
+                    alt_var.units = str(thermo.alt.units)
+                except Exception:
+                    print("")
+                # PRES
+                try:
+                    pres_var = profile_group.createVariable("pres", "f8",
+                                                            ("time",))
+                    pres_var[:] = thermo.pres.magnitude
+                    pres_var.units = str(thermo.pres.units)
+                except Exception:
+                    print("")
 
             #
             # Wind
             #
 
-            wind = self.profiles[i].get_wind_profile()
+            wind = self.profiles[i]._wind_profile
 
-            minlen = min([len(wind.u), len(wind.v), len(wind.dir),
-                          len(wind.speed), len(wind.alt), len(wind.pres),
-                          len(wind.gridded_times)])
+            if wind is not None:
 
-            wind_group.createDimension("time", None)
-            # DIRECTION
-            dir_var = wind_group.createVariable("dir", "f8", ("time",))
-            dir_var[:] = wind.dir[:minlen-1].magnitude
-            dir_var.units = str(wind.dir.units)
-            # SPEED
-            spd_var = wind_group.createVariable("speed", "f8", ("time",))
-            spd_var[:] = wind.speed[:minlen-1].magnitude
-            spd_var.units = str(wind.speed.units)
-            # U
-            u_var = wind_group.createVariable("u", "f8", ("time",))
-            u_var[:] = wind.u[:minlen-1].magnitude
-            u_var.units = str(wind.u.units)
-            # V
-            v_var = wind_group.createVariable("v", "f8", ("time",))
-            v_var[:] = wind.v[:minlen-1].magnitude
-            v_var.units = str(wind.v.units)
-            # ALT
-            alt_var = wind_group.createVariable("alt", "f8", ("time",))
-            alt_var[:] = wind.alt[:minlen-1].magnitude
-            alt_var.units = str(wind.alt.units)
-            # PRES
-            pres_var = wind_group.createVariable("pres", "f8", ("time",))
-            pres_var[:] = wind.pres[:minlen-1].magnitude
-            pres_var.units = str(wind.pres.units)
-
-            # TIME
-            time_var = wind_group.createVariable("time", "f8", ("time",))
-            time_var[:] = netCDF4.date2num(wind.gridded_times[:minlen-1],
-                                           units='microseconds since \
-                                           2010-01-01 00:00:00:00')
-            time_var.units = 'microseconds since 2010-01-01 00:00:00:00'
-
-        main_file.dev = str(self.dev)
+                # DIRECTION
+                try:
+                    dir_var = profile_group.createVariable("dir", "f8",
+                                                           ("time",))
+                    dir_var[:] = wind.dir.magnitude
+                    dir_var.units = str(wind.dir.units)
+                except Exception:
+                    print("")
+                # SPEED
+                try:
+                    spd_var = profile_group.createVariable("speed", "f8",
+                                                           ("time",))
+                    spd_var[:] = wind.speed.magnitude
+                    spd_var.units = str(wind.speed.units)
+                except Exception:
+                    print("")
+                # U
+                try:
+                    u_var = profile_group.createVariable("u", "f8",
+                                                         ("time",))
+                    u_var[:] = wind.u.magnitude
+                    u_var.units = str(wind.u.units)
+                except Exception:
+                    print("")
+                # V
+                try:
+                    v_var = profile_group.createVariable("v", "f8", ("time",))
+                    v_var[:] = wind.v.magnitude
+                    v_var.units = str(wind.v.units)
+                except Exception:
+                    print("")
+                # PRES
+                try:
+                    pres_var = profile_group.createVariable("pres", "f8",
+                                                            ("time",))
+                    pres_var[:] = wind.pres.magnitude
+                    pres_var.units = str(wind.pres.units)
+                except Exception:
+                    print("")
+                # TIME
+                try:
+                    time_var = profile_group.createVariable("time", "f8",
+                                                            ("time",))
+                    time_var[:] = netCDF4.date2num(wind.gridded_times,
+                                                   units='microseconds since \
+                                                   2010-01-01 00:00:00:00')
+                    time_var.units = \
+                        'microseconds since 2010-01-01 00:00:00:00'
+                except Exception:
+                    print("")
+                # ALT
+                try:
+                    alt_var = profile_group.createVariable("alt", "f8",
+                                                           ("time",))
+                    alt_var[:] = wind.alt.magnitude
+                    alt_var.units = str(wind.alt.units)
+                except Exception:
+                    print("")
 
         main_file.close()
 
