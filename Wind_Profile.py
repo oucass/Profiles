@@ -13,6 +13,7 @@ import os
 import utils
 import metpy.calc
 import netCDF4
+from copy import deepcopy, copy
 
 
 class Wind_Profile():
@@ -268,6 +269,17 @@ class Wind_Profile():
                                       units=main_file.variables["time"].units))
 
         main_file.close()
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for key, value in self.__dict__.items():
+            if key in "_units":
+                setattr(result, key, copy(value))
+            else:
+                setattr(result, key, deepcopy(value, memo))
+        return result
 
     def __str__(self):
         to_return = "\t\tWind_Profile" \

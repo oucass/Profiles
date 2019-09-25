@@ -12,6 +12,7 @@ import sys
 from Raw_Profile import Raw_Profile
 from Thermo_Profile import Thermo_Profile
 from Wind_Profile import Wind_Profile
+from copy import deepcopy, copy
 
 
 class Profile():
@@ -165,6 +166,24 @@ class Profile():
                                nc_level=self._nc_level)
 
         return self._thermo_profile
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for key, value in self.__dict__.items():
+            print(key)
+            if key in "_units":
+                continue
+            if key in "_pos":
+                setattr(result, key, copy(value))
+                continue
+            try:
+                value = value.magnitude
+            except AttributeError:
+                value = value
+            setattr(result, key, deepcopy(value, memo))
+        return result
 
     def __str__(self):
         if self._wind_profile is not None:

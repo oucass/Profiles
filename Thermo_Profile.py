@@ -12,6 +12,7 @@ import utils
 import numpy as np
 import netCDF4
 import os
+from copy import deepcopy, copy
 
 # T1 [0x48]	T2 [0x49] T3 [0x4a]
 
@@ -279,6 +280,17 @@ class Thermo_Profile():
                                       units=main_file.variables["time"].units))
 
         main_file.close()
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for key, value in self.__dict__.items():
+            if key in "_units":
+                setattr(result, key, copy(value))
+            else:
+                setattr(result, key, deepcopy(value, memo))
+        return result
 
     def __str__(self):
         to_return = "\t\tThermo_Profile" \

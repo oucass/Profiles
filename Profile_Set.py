@@ -17,6 +17,8 @@ from Profile import Profile
 from Raw_Profile import Raw_Profile
 from Thermo_Profile import Thermo_Profile
 from Wind_Profile import Wind_Profile
+#from memory_profiler import profile
+from copy import deepcopy
 
 
 class Profile_Set():
@@ -232,56 +234,7 @@ class Profile_Set():
 
         for new_profile in to_add.profiles:
 
-            new_profile._pos["alt_MSL"] = new_profile._pos["alt_MSL"]\
-                .to_base_units().magnitude * units.m
-            new_profile._pos["units"] = units
-            if new_profile.resolution.to_base_units().units == \
-               new_profile._units.m:
-                new_profile.resolution = \
-                   new_profile.resolution.to_base_units().magnitude \
-                   * units.m
-
-            else:
-                new_profile.resolution = \
-                   new_profile.resolution.to_base_units().magnitude \
-                   * units.N / units.m / units.m
-
-            new_profile.gridded_base = new_profile.gridded_base\
-                .to_base_units().magnitude * new_profile.resolution.units
-
-            if new_profile._wind_profile is not None:
-                new_w = new_profile._wind_profile
-                new_w.u = new_w.u.to_base_units().magnitude \
-                    * units.m / units.s
-                new_w.v = new_w.v.to_base_units().magnitude \
-                    * units.m / units.s
-                new_w.dir = new_w.dir.to(new_w._units.deg)\
-                    .magnitude * units.deg
-                new_w.speed = new_w.speed.to_base_units()\
-                    .magnitude * units.m / units.s
-                new_w.pres = new_w.pres.to_base_units().magnitude \
-                    * units.N / units.m / units.m
-                new_w.alt = new_w.alt.to_base_units().magnitude \
-                    * units.m
-                new_w.resolution = new_profile.resolution
-                new_w._units = units
-                new_profile._wind_profile = new_w
-
-            if new_profile._thermo_profile is not None:
-                new_t = new_profile._thermo_profile
-                new_t.resolution = new_profile.resolution
-                new_t.rh = new_t.rh.magnitude * units.percent
-                new_t.pres = new_t.pres.magnitude * units.N / units.m / units.m
-                new_t.temp = new_t.temp.to_base_units().magnitude \
-                    * units.kelvin
-                new_t.alt = new_w.alt.to_base_units().magnitude \
-                    * units.m
-                new_t._units = units
-                new_profile._thermo_profile = new_t
-
-            new_profile._units = units
-
-            self.profiles.append(new_profile)
+            self.profiles.append(deepcopy(new_profile))  # this doesn't include units
 
     def read_netCDF(self, file_path):
         """ Re-creates a Profile_Set object which has been saved as a NetCDF
@@ -300,9 +253,6 @@ class Profile_Set():
         units.define('percent = 0.01*count = %')
 
         for profile_name in groups:
-            if profile_name in "Profile3":
-                continue
-            print(profile_name)
             profile_under_construction = Profile()
             profile_source = main_file[profile_name]
 
@@ -315,26 +265,33 @@ class Profile_Set():
             # there is evidence otherwise.
 
             # try:
-            thermo_const.alt = np.array(profile_source.variables["alt"]) \
+            thermo_const.alt = np.array(profile_source.variables["alt"])\
+                                   [np.array(profile_source.variables["alt"]) < 1e10] \
                 * units.parse_expression(profile_source.variables["alt"]
                                          .units)
             thermo_const.pres = np.array(profile_source.variables["pres"])\
+                                    [np.array(profile_source.variables["pres"]) < 1e10]\
                 * units.parse_expression(profile_source.variables["pres"]
                                          .units)
-            thermo_const.rh = np.array(profile_source.variables["rh"]) \
+            thermo_const.rh = np.array(profile_source.variables["rh"])\
+                                  [np.array(profile_source.variables["rh"]) < 1e10] \
                 * units.parse_expression(profile_source.variables["rh"]
                                          .units)
             thermo_const.temp = np.array(profile_source.variables["temp"])\
+                                    [np.array(profile_source.variables["temp"]) < 1e10]\
                 * units.parse_expression(profile_source.variables["temp"]
                                          .units)
             thermo_const.mixing_ratio = \
-                np.array(profile_source.variables["mr"]) \
+                np.array(profile_source.variables["mr"])[np.array(profile_source.variables["mr"]) < 1e10] \
                 * units.parse_expression(profile_source.variables["mr"]
                                          .units)
-            print(max(profile_source.variables["time"][:]))
-            thermo_const.gridded_times = netCDF4.num2date(
-                profile_source.variables["time"][:],
-                units=profile_source.variables["time"].units)
+            base_time = dt.datetime(2010, 1, 1, 0, 0, 0, 0)
+            thermo_const.gridded_times = []
+            for i in range(len(profile_source.variables["time"][:])):
+                thermo_const.gridded_times.append(base_time + \
+                                                  dt.timedelta(microseconds =
+                                                               int(profile_source.variables["time"][i])))
+                                                               # Hardcoded to microseconds since 2010-1-1
 
             profile_under_construction._thermo_profile = thermo_const
             # except Exception:
@@ -344,20 +301,26 @@ class Profile_Set():
             windExists = True
 
             # try:
-            wind_const.dir = np.array(profile_source.variables["dir"]) * \
+            wind_const.dir = np.array(profile_source.variables["dir"])\
+                                 [np.array(profile_source.variables["dir"]) < 1e10] * \
                 units.parse_expression(profile_source.
                                        variables["dir"].units)
             wind_const.speed = np.array(profile_source.variables["speed"])\
+                                 [np.array(profile_source.variables["speed"]) < 1e10]\
                 * units.parse_expression(profile_source.
                                          variables["speed"].units)
-            wind_const.u = np.array(profile_source.variables["u"]) * \
+            wind_const.u = np.array(profile_source.variables["u"])\
+                                 [np.array(profile_source.variables["u"]) < 1e10] * \
                 units.parse_expression(profile_source.variables["u"].units)
-            wind_const.v = np.array(profile_source.variables["v"]) * \
+            wind_const.v = np.array(profile_source.variables["v"])\
+                                 [np.array(profile_source.variables["v"]) < 1e10] * \
                 units.parse_expression(profile_source.variables["v"].units)
-            wind_const.alt = np.array(profile_source.variables["alt"]) * \
+            wind_const.alt = np.array(profile_source.variables["alt"])\
+                                 [np.array(profile_source.variables["alt"]) < 1e10] * \
                 units.parse_expression(profile_source.variables["alt"]
                                        .units)
-            wind_const.pres = np.array(profile_source.variables["pres"]) \
+            wind_const.pres = np.array(profile_source.variables["pres"])\
+                                 [np.array(profile_source.variables["pres"]) < 1e10] \
                 * units.parse_expression(profile_source.variables["pres"]
                                          .units)
             wind_const.gridded_times = np.array(netCDF4.num2date
