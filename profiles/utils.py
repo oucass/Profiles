@@ -8,6 +8,7 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 Component of Profiles v1.0.0
 """
 import sys
+import os
 import warnings
 import numpy as np
 import pandas as pd
@@ -17,6 +18,8 @@ from datetime import timedelta
 from pandas.plotting import register_matplotlib_converters
 from pint import UnitStrippedWarning
 from metpy.units import units as u
+
+package_path = os.path.dirname(os.path.abspath(__file__))
 
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -132,7 +135,7 @@ def temp_calib(resistance, sn):
     :return: list of temperatures in K
     """
 
-    coefs = pd.read_csv('coefs/MasterCoefList.csv')
+    coefs = pd.read_csv(os.path.join(package_path, 'coefs/MasterCoefList.csv'))
     a = float(coefs.A[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
     b = float(coefs.B[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
     c = float(coefs.C[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])

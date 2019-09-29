@@ -12,7 +12,7 @@ import netCDF4
 import numpy as np
 from datetime import datetime as dt
 from metpy.units import units
-import mavlogdump_Profiles
+import profiles.mavlogdump_Profiles as mavlogdump_Profiles
 import pandas as pd
 import os
 

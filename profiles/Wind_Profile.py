@@ -10,7 +10,7 @@ Component of Profiles v1.0.0
 import numpy as np
 import pandas as pd
 import os
-import utils
+import profiles.utils as utils
 import metpy.calc
 import netCDF4
 from copy import deepcopy, copy
@@ -168,7 +168,7 @@ class Wind_Profile():
             psi[i] = np.arccos(R[2, 2])
             az[i] = np.arctan2(R[1, 2], R[0, 2])
 
-        coefs = pd.read_csv('coefs/MasterCoefList.csv')
+        coefs = pd.read_csv(os.path.join(utils.package_path, 'coefs/MasterCoefList.csv'))
         a_spd = float(coefs.A[coefs.SerialNumber == tail_num]
                       [coefs.SensorType == "Wind"])
         b_spd = float(coefs.B[coefs.SerialNumber == tail_num]

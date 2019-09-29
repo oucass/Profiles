@@ -8,15 +8,15 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 Component of Profiles v1.0.0
 """
 import os
-import utils
 import netCDF4
 import datetime as dt
 import numpy as np
 from metpy.units import units
-from Profile import Profile
-from Raw_Profile import Raw_Profile
-from Thermo_Profile import Thermo_Profile
-from Wind_Profile import Wind_Profile
+from profiles.Profile import Profile
+from profiles.Raw_Profile import Raw_Profile
+from profiles.Thermo_Profile import Thermo_Profile
+from profiles.Wind_Profile import Wind_Profile
+import profiles.utils as utils
 #from memory_profiler import profile
 from copy import deepcopy
 

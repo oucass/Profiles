@@ -1,5 +1,5 @@
-from Profile_Set import Profile_Set
-from Profile import Profile
+from profiles.Profile_Set import Profile_Set
+from profiles.Profile import Profile
 import matplotlib.pyplot as plt
 import numpy as np
 

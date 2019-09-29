@@ -8,7 +8,7 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 Component of Profiles v1.0.0
 """
 from metpy import calc
-import utils
+import profiles.utils as utils
 import numpy as np
 import netCDF4
 import os
@@ -92,7 +92,10 @@ class Thermo_Profile():
                             self._ascent_filename_tag + ".nc") \
            in os.listdir(self._datadir):
             print("Reading thermo_profile from pre-processed netCDF")
-            self._read_netCDF(file_path)
+            self._read_netCDF(file_path + "thermo_" +
+                            str(self.resolution.magnitude) +
+                            str(self.resolution.units) +
+                            self._ascent_filename_tag + ".nc")
             return
 
         temp = []

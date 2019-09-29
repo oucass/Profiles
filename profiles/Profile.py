@@ -7,11 +7,11 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 
 Component of Profiles v1.0.0
 """
-import utils
+import profiles.utils as utils
 import sys
-from Raw_Profile import Raw_Profile
-from Thermo_Profile import Thermo_Profile
-from Wind_Profile import Wind_Profile
+from profiles.Raw_Profile import Raw_Profile
+from profiles.Thermo_Profile import Thermo_Profile
+from profiles.Wind_Profile import Wind_Profile
 from copy import deepcopy, copy
 
 
