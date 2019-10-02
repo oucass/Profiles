@@ -8,9 +8,13 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 """
 
 import os
+from typing import Dict, List
+
 from metpy.plots import SkewT, Hodograph
 import matplotlib.image as mpimg
 import matplotlib.cmocean as cmocean
+import numpy as np
+import matplotlib.pyplot as plt
 
 __all__ = ['contour_height_time', 'meteogram', 'plot_var_time', 'plot_skewT',
            'summary']
@@ -18,162 +22,8 @@ __all__ = ['contour_height_time', 'meteogram', 'plot_var_time', 'plot_skewT',
 # File path to logos added to plots
 fpath_logos = os.path.join(os.getcwd(), 'resources', 'CircleLogos.png')
 
-"""
-class plotTimeHeight():
-#     def __init__(self, t=None, z=None, z2d=None, data=None, label=None,
-#                  loc=None, **kwargs):
-#         '''
-#         t: 1d array of flight times
-#         z: 1d array of max alt range
-#         z2d: 2d array of altitudes for each flight
-#         data: 2d array of any paramater to be plotted
-#         label: data name string
-#         loc: location where data collected
-#         kwargs: data_cont: additional data to overlay with contour
-#                 data_cont_label: name of contoured data
-#         '''
-#         self.t = t
-#         self.z = z
-#         self.z2d = z2d
-#         self.data = data
-#         self.label = label
-#         self.loc = loc
-#         argDict = {'data_cont': None,
-#                    'data_cont_label': None,
-#                    't_cont': None,
-#                    'z_cont': None,
-#                    'z2d_cont': None
-#                    }
-# 
-#         argDict.update(kwargs)
-#         self.argDict = argDict
-#         labelDict = {
-#             'Potential Temperature': ['K', cmocean.cm.thermal, 1.0],
-#             'Temperature': ['$^\circ$C', cmocean.cm.thermal, 1.0],
-#             'Dewpoint Temperature': ['$^\circ$C', cmocean.cm.haline, 1.0],
-#             'Mixing Ratio': ['g Kg$^{-1}$', cmocean.cm.haline, 0.5],
-#             'Specific Humidity': ['g Kg$^{-1}$', cmocean.cm.haline, 0.5],
-#             'Relative Humidity': ['%', cmocean.cm.haline, 5.0],
-#             'Wind Speed': ['m s$^{-1}$', gist_stern_r, 5.0],
-#             'Sensible Heat Flux': ['W m$^{-2}$', cmocean.cm.balance, 50.0],
-#             'Latent Heat Flux': ['W m$^{-2}$', cmocean.cm.balance, 50.0],
-#             'Wind Direction': ['$^\circ$', cmocean.cm.phase, 360.]
-#         }
-#         self.units = labelDict[self.label][0]
-#         self.shade = labelDict[self.label][1]
-#         self.contint = labelDict[self.label][2]
-#         if self.argDict['data_cont'] is not None:
-#             self.extraContour = True
-#             self.units_extra = labelDict[self.argDict['data_cont_label']][0]
-#         else:
-#             self.extraContour = False
-#             self.units_extra = ''
-# 
-#         # interpolate new t
-#         self.dt = [mpdates.num2date(i) for i in self.t]
-#         self.dt_interp = mpdates.drange(self.dt[0], self.dt[-1],
-#                                         timedelta(seconds=60.))
-# 
-#         # interpolate t_cont
-#         if self.extraContour:
-#             self.dt_ex = [mpdates.num2date(i) for i in self.argDict['t_cont']]
-#             self.dt_ex_int = mpdates.drange(self.dt_ex[0], self.dt_ex[-1],
-#                                             timedelta(seconds=60.))
-# 
-#         # maximum altitude
-#         maxZ = []
-#         for i in range(len(self.t)):
-#             maxZ.append(np.nanmax(self.z2d[:, i]))
-#         self.maxZ = np.array(maxZ)
-# 
-#         # max altitude extra
-#         if self.extraContour:
-#             maxZex = []
-#             for i in range(len(self.argDict['t_cont'])):
-#                 maxZex.append(np.nanmax(self.argDict['z2d_cont'][:, i]))
-#             self.maxZex = np.array(maxZex)
-# 
-#     def interpTime(self):
-#         '''
-#         To preserve data from higher altitudes, do custom interpolation:
-#         At each level, create arrays data that are not nans and are spaced less
-#         than 20 minutes apart
-#         Interpolate that array in t
-#         Insert back into
-#         '''
-#         data_interp = np.full((len(self.z), len(self.dt_interp)), np.nan)
-#         for i in np.arange(len(self.z)):
-#             f = interp1d(self.t, self.data[i, :])
-#             fnew = f(self.dt_interp)
-#             data_interp[i, :] = fnew
-# 
-#         self.data_interp = ma.masked_invalid(data_interp)
-#         # mask negative wind speeds
-#         if self.label == 'Wind Speed':
-#             self.data_interp = ma.masked_where(self.data_interp < 0.,
-#                                                self.data_interp)
-# 
-#         # Interpolate contours
-#         if self.extraContour:
-#             data_interp_ex = np.full((len(self.argDict['z_cont']), len(
-#                 self.dt_ex_int)), np.nan)
-#             for i in np.arange(len(self.argDict['z_cont'])):
-#                 f_ex = interp1d(self.argDict['t_cont'],
-#                                 self.argDict['data_cont'][i, :])
-#                 fnew_ex = f_ex(self.dt_ex_int)
-#                 data_interp_ex[i, :] = fnew_ex
-# 
-#             self.data_interp_ex = ma.masked_invalid(data_interp_ex)
-# 
-#     def plot(self):
-#         self.interpTime()
-#         c_levels = np.arange(np.floor(np.nanmin(self.data_interp)),
-#                              np.ceil(np.nanmax(self.data_interp)) + 1.0, self.contint)
-# 
-#         fig, ax = plt.subplots(1, figsize=(16, 9))
-#         plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
-#         if self.extraContour:
-#             vmax = max([abs(np.nanmin(self.data_interp_ex)),
-#                         np.nanmax(self.data_interp_ex)])
-#             vmax = round(vmax, 0)
-# 
-#             cfax = ax.pcolormesh(self.dt_ex_int, self.argDict['z_cont'],
-#                                  self.data_interp_ex, cmap=cmocean.cm.balance,
-#                                  vmin=-vmax, vmax=vmax)
-#             cfax.set_edgecolor('face')
-#             cax = ax.contour(self.dt_interp, self.z, self.data_interp,
-#                              levels=c_levels, colors='k')
-#             plt.clabel(cax, fontsize=10, inline=1, fmt='%3.1f')
-#             cbar = fig.colorbar(cfax)
-#             cbar.ax.set_ylabel(self.argDict['data_cont_label'] + \
-#                                ' (' + self.units_extra + ')', fontsize=16)
-# 
-#         else:
-#             cfax = ax.pcolormesh(self.dt_interp, self.z, self.data_interp,
-#                                  cmap=self.shade)
-#             cfax.set_edgecolor('face')
-#             cax = ax.contour(self.dt_interp, self.z, self.data_interp,
-#                              levels=c_levels, colors='white', zorder=1)
-#             plt.clabel(cax, fontsize=10, inline=1, fmt='%3.1f')
-#             cbar = fig.colorbar(cfax)
-#             cbar.ax.set_ylabel(self.label + ' (' + self.units + ')', fontsize=16)
-# 
-#         ax.xaxis.set_major_locator(mpdates.MinuteLocator(byminute=[0, 30]))
-#         ax.xaxis.set_major_formatter(mpdates.DateFormatter('%H:%M'))
-#         ax.tick_params(axis='both', labelsize=14)
-#         plt.xlabel('Time UTC', fontsize=16)
-#         plt.ylabel('Altitude AGL (m)', fontsize=16)
-#         plt.title(self.label + ' ' + self.dt[0].strftime('%d %B %Y') + ' ' +
-#                   self.loc, fontsize=22)
-#         # cbar.ax.set_yticklabels(fontsize=14)
-#         [plt.axvline(t, linestyle='--', color='k') for t in self.t]
-#         [plt.plot(i, j, 'k*') for (i, j) in zip(self.t, self.maxZ)]
-# 
-#         fig.tight_layout()
-#         # return fig
-#         return fig
-"""
-def contour_height_time_helper(profiles, var1):
+
+def contour_height_time_helper(var1, time, z, shade):
     """ This creates a filled contour plot of var1 in a time-height
     coordinate system.
 
@@ -184,10 +34,35 @@ def contour_height_time_helper(profiles, var1):
     :return: the contoured plot
     """
 
+    fig, ax = plt.subplots(1, figsize=(16, 9))
+    plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+    cfax = ax.pcolormesh(time, z, var1, cmap=shade)
+    #             cfax.set_edgecolor('face')
+    #             cax = ax.contour(self.dt_interp, self.z, self.data_interp,
+    #                              levels=c_levels, colors='white', zorder=1)
+    #             plt.clabel(cax, fontsize=10, inline=1, fmt='%3.1f')
+    #             cbar = fig.colorbar(cfax)
+    #             cbar.ax.set_ylabel(self.label + ' (' + self.units + ')', fontsize=16)
+    #
+    #         ax.xaxis.set_major_locator(mpdates.MinuteLocator(byminute=[0, 30]))
+    #         ax.xaxis.set_major_formatter(mpdates.DateFormatter('%H:%M'))
+    #         ax.tick_params(axis='both', labelsize=14)
+    #         plt.xlabel('Time UTC', fontsize=16)
+    #         plt.ylabel('Altitude AGL (m)', fontsize=16)
+    #         plt.title(self.label + ' ' + self.dt[0].strftime('%d %B %Y') + ' ' +
+    #                   self.loc, fontsize=22)
+    #         # cbar.ax.set_yticklabels(fontsize=14)
+    #         [plt.axvline(t, linestyle='--', color='k') for t in self.t]
+    #         [plt.plot(i, j, 'k*') for (i, j) in zip(self.t, self.maxZ)]
+    #
+    #         fig.tight_layout()
+    #         # return fig
+    #         return fig
+
     return
 
 
-def contour_height_time(profiles, var1='temp', var2=None):
+def contour_height_time(profiles, var=['temp'], use_pres=False):
     """ contourHeightTime creates a filled contour plot of var1 in a
     time-height coordinate system. If var2 is not None, it also
     overlays unfilled contours of var2.
@@ -200,35 +75,69 @@ def contour_height_time(profiles, var1='temp', var2=None):
     :return: the contoured plot
     """
 
-    thermo_vars = {'theta': ["Potential Temperature", None],  # TODO
-                    'temp': ["Temperature", 'temp'],
-                    'T_d': ["Dewpoint Temperature", None],  # TODO
-                    'dewp': ["Dewpoint Temperature", None],  # TODO
-                    'r': ["Mixing Ratio", 'mixing_ratio'],
-                    'mr': ["Mixing Ratio", 'mixing_ratio'],
-                    'q': ["Specific Humidity", None],  # TODO
-                    'rh': ["Relative Humidity", 'rh']}
+    vars = {'theta': ["Potential Temperature", None, 'K', cmocean.cm.thermal, 1.0, 'thermo'],  # TODO
+            'temp': ["Temperature", 'temp', '$^\circ$C', cmocean.cm.thermal, 1.0, 'thermo'],
+            'T_d': ["Dewpoint Temperature", None, '$^\circ$C', cmocean.cm.haline, 1.0, 'thermo'],  # TODO
+            'dewp': ["Dewpoint Temperature", None, '$^\circ$C', cmocean.cm.haline, 1.0, 'thermo'],  # TODO
+            'r': ["Mixing Ratio", 'mixing_ratio', 'g Kg$^{-1}$', cmocean.cm.haline, 0.5, 'thermo'],
+            'mr': ["Mixing Ratio", 'mixing_ratio', 'g Kg$^{-1}$', cmocean.cm.haline, 0.5, 'thermo'],
+            'q': ["Specific Humidity", None, 'g Kg$^{-1}$', cmocean.cm.haline, 0.5, 'thermo'],  # TODO
+            'rh': ["Relative Humidity", 'rh', '%', cmocean.cm.haline, 5.0, 'thermo'],
+            'ws': ["Wind Speed", 'speed', 'm s$^{-1}$', cmocean.cm.speed, 5.0, 'wind'],
+            'u': ["U", 'u', 'm s$^{-1}$', cmocean.cm.speed, 5.0, 'wind'],
+            'v': ["V", 'v', 'm s$^{-1}$', cmocean.cm.speed, 5.0, 'wind'],
+            'dir': ["Wind Direction", 'dir', '$^\circ$', cmocean.cm.phase, 360., 'wind'],
+            'pres': ["Pressure", 'pres', None, None, None, 'all'],
+            'p': ["Pressure", 'pres', None, None, None, 'all'],
+            'alt': ["Altitude", 'alt', None, None, None, 'all']}
 
-    wind_vars = {'ws': "Wind Speed",
-                  'u': "U",
-                  'v': "V",
-                  'dir': "Wind Direction"}
-    labelDict = {
-                    'Potential Temperature': ['K', cmocean.cm.thermal, 1.0],
-                    'Temperature': ['$^\circ$C', cmocean.cm.thermal, 1.0],
-                    'Dewpoint Temperature': ['$^\circ$C', cmocean.cm.haline, 1.0],
-                    'Mixing Ratio': ['g Kg$^{-1}$', cmocean.cm.haline, 0.5],
-                    'Specific Humidity': ['g Kg$^{-1}$', cmocean.cm.haline, 0.5],
-                    'Relative Humidity': ['%', cmocean.cm.haline, 5.0],
-                    'Wind Speed': ['m s$^{-1}$', cmocean.cm.speed, 5.0],
-                    'U': ['m s$^{-1}$', cmocean.cm.speed, 5.0],
-                    'V': ['m s$^{-1}$', cmocean.cm.speed, 5.0],
-                    'Wind Direction': ['$^\circ$', cmocean.cm.phase, 360.]
-                }
-                self.units = labelDict[self.label][0]
-                self.shade = labelDict[self.label][1]
-                self.contint = labelDict[self.label][2]
-    fig = contour_height_time_helper(profiles, var1)
+    labels = []
+    attrs = []
+    units = []
+    shades = []
+    cont_ints = []
+    sources = []
+
+    for var_i in var:
+        if var in vars.keys():
+            labels.append(vars[var_i][0])
+            attrs.append(vars[var_i][1])
+            units.append(vars[var_i][2])
+            shades.append(vars[var_i][3])
+            cont_ints.append(vars[var_i][4])
+            sources.append(vars[var_i][5])
+        else:
+            print(var_i + " was not recognized. Try one of these:\n" + str(vars.keys()))
+
+    subprofiles = {}
+
+    for source in sources:
+        if source not in subprofiles.keys() and source not in 'all':
+            subprofiles[source] = []
+            for profile in profiles:
+                if source in 'wind':
+                    subprofiles[source] = profile.get_wind_profile()
+                elif source in 'thermo':
+                    subprofiles[source] = profile.get_themo_profile()
+
+    for source in sources:
+        if source in 'all':
+            if 'thermo' in subprofiles.keys():
+                source = 'thermo'
+            elif 'wind' in subprofiles.keys():
+                source = 'wind'
+            else:
+                subprofiles[source] = profile.get_thermo_profile
+
+    # Pull info from Profile objects
+    time = []
+    z = []
+    data1 = []
+    data2 = []
+    for profile in profiles:
+
+
+    fig = contour_height_time_helper(var1, time, z, shade)
 
     if var2 is not None:
         print('add overlaid contours here')

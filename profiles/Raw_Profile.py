@@ -13,6 +13,7 @@ import numpy as np
 from datetime import datetime as dt
 from metpy.units import units
 import profiles.mavlogdump_Profiles as mavlogdump_Profiles
+from profiles import utils
 import pandas as pd
 import os
 
@@ -75,7 +76,7 @@ class Raw_Profile():
 
         if scoop_id is not None:
             try:
-                coefs = pd.read_csv("./coefs/scoop" + scoop_id + ".csv")
+                coefs = pd.read_csv(utils.package_path + "/coefs/scoop" + str(scoop_id) + ".csv")
                 coefs.validFrom = [dt.strptime(date_string, "%Y-%m-%d")
                                    for date_string in coefs.validFrom]
                 day_flight = self.temp[-1][0]

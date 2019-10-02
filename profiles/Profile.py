@@ -7,6 +7,7 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 
 Component of Profiles v1.0.0
 """
+
 import profiles.utils as utils
 import sys
 from profiles.Raw_Profile import Raw_Profile

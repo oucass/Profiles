@@ -12,6 +12,7 @@ import profiles.utils as utils
 import numpy as np
 import netCDF4
 import os
+import datetime as dt
 from copy import deepcopy, copy
 
 # T1 [0x48]	T2 [0x49] T3 [0x4a]
@@ -268,19 +269,23 @@ class Thermo_Profile():
         # Note: each data chunk is converted to an np array. This is not a
         # superfluous conversion; a Variable object is incompatible with pint.
 
-        self.alt = np.array(main_file.variables["alt"])[:-2] * \
+        self.alt = np.array(main_file.variables["alt"])* \
             self._units.parse_expression(main_file.variables["alt"].units)
-        self.pres = np.array(main_file.variables["pres"])[:-2] * \
+        self.pres = np.array(main_file.variables["pres"]) * \
             self._units.parse_expression(main_file.variables["pres"].units)
-        self.rh = np.array(main_file.variables["rh"])[:-2] * \
+        self.rh = np.array(main_file.variables["rh"]) * \
             self._units.parse_expression(main_file.variables["rh"].units)
-        self.temp = np.array(main_file.variables["temp"])[:-2] * \
+        self.temp = np.array(main_file.variables["temp"]) * \
             self._units.parse_expression(main_file.variables["temp"].units)
-        self.mixing_ratio = np.array(main_file.variables["mr"])[:-2] * \
+        self.mixing_ratio = np.array(main_file.variables["mr"]) * \
             self._units.parse_expression(main_file.variables["mr"].units)
-        self.gridded_times = \
-            np.array(netCDF4.num2date(main_file.variables["time"][:-2],
-                                      units=main_file.variables["time"].units))
+        base_time = dt.datetime(2010, 1, 1, 0, 0, 0, 0)
+        self.gridded_times = []
+        for i in range(len(main_file.variables["time"][:])):
+            self.gridded_times.append(base_time + dt.timedelta(microseconds=
+                                                               int(main_file.variables
+                                                                   ["time"][i])))
+            # Hardcoded to microseconds since 2010-1-1
 
         main_file.close()
 

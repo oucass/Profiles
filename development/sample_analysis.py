@@ -23,7 +23,7 @@ different profile start height.
 # Example using Profile_Set
 a = Profile_Set(resolution=10, res_units='m', ascent=True, dev=True,
                 confirm_bounds=False, profile_start_height=400)
-a.add_all_profiles("/home/jessica/GitHub/data_templates/BIN/00000010.BIN",
+a.add_all_profiles("/home/jessica/GitHub/data_templates/00000012.JSON",
                    scoop_id='A')
 
 
@@ -66,6 +66,8 @@ plt.show()
 plt.figure()
 for w in aw:
     # Create a hodograph
+    ws = w.speed
+    wt = w.gridded_times
     plt.plot(w.speed, w.gridded_times)
 plt.show()
 

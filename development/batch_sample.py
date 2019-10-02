@@ -5,7 +5,7 @@ Created on Wed Aug 28 12:58:46 2019
 
 @author: jessica
 """
-from Profile_Set import Profile_Set
+from profiles.Profile_Set import Profile_Set
 import matplotlib.pyplot as plt
 from metpy.plots import Hodograph
 import os
