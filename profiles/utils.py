@@ -298,7 +298,6 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
     """
 
     isDone = False
-
     # Get the starting height from the user
     if profile_start_height is None:
         fig1 = plt.figure()
@@ -355,8 +354,8 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
 
                     # Now that the bounds of the profile have been found, we
                     # find the index of the maximum altitude.
-                    peak_ind = np.where(alts == np.nanmax(alts[start_ind_asc:
-                                                          end_ind_des]))[0][0]
+                    peak_ind = list(alts).index(np.nanmax(alts[start_ind_asc:end_ind_des]),
+                                                start_ind_asc, end_ind_des)
 
                 ind += 1
 
@@ -366,15 +365,10 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
                 if confirm_bounds:
                     # User verifies selection
                     fig2 = plt.figure()
-                    plt.plot(alt_times, alts, figure=fig2)
+                    plt.plot(range(len(alt_times)), alts, figure=fig2)
                     plt.grid(axis="y", which="both", figure=fig2)
 
-                    myFmt = mdates.DateFormatter('%M')
-                    fig2.gca().xaxis.set_major_formatter(myFmt)
-
-                    plt.vlines([alt_times[start_ind_asc],
-                                alt_times[peak_ind],
-                                alt_times[end_ind_des]],
+                    plt.vlines([start_ind_asc, peak_ind, end_ind_des],
                                min(alts) - 50, max(alts) + 50)
 
                     plt.show(block=False)
@@ -400,6 +394,7 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
                                                      to_return)
                 else:
                     isDone = True
+                    break
 
                 ind += 1
 
@@ -416,9 +411,10 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
             print("Profile from ", alt_times[start_ind_asc],
                   "to", alt_times[end_ind_des], "added")
         # Check if more profiles in file
-        if ind + 500 < len(alts) \
-           and max(alts[ind + 500::]) > \
-           (profile_start_height + alts[600] - alts[500]):
+        print(ind+100, len(alts))
+        print(max(alts[ind+100::]), profile_start_height)
+        if ind + 100 < len(alts) \
+           and max(alts[ind + 100::]) > profile_start_height:
             # There is another profile before the end of the
             # file - find it.
             a = profile_start_height
@@ -427,7 +423,7 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
                                  confirm_bounds=confirm_bounds,
                                  profile_start_height=a,
                                  to_return=to_return,
-                                 ind=ind + 500)
+                                 ind=ind+100)
 
     return to_return
 

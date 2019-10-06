@@ -29,8 +29,10 @@ plt.show()
 
 
 a = Profile_Set(resolution=10, res_units='m', ascent=True, dev=True,
-                confirm_bounds=False, profile_start_height=400)
-datadir_a = "/home/jessica/GitHub/data_templates/datadir_a/"
+                confirm_bounds=True, profile_start_height=350)
+a.add_all_profiles("/home/jessica/GitHub/data_templates/OfficialMany.BIN")
+
+"""
 for file_name in os.listdir(datadir_a):
     if ".json" in file_name or ".JSON" in file_name or ".BIN" in file_name:
         a.add_all_profiles(os.path.join(datadir_a, file_name))
@@ -114,3 +116,4 @@ for profile in q.profiles:
     t = profile.get_thermo_profile()
     plt.plot(t.temp, t.pres)
 plt.show()
+"""

@@ -69,7 +69,10 @@ class Thermo_Profile():
         self._units = units
 
         try:
-            self._read_netCDF(file_path)
+            self._read_netCDF(file_path + "thermo_" +
+                            str(self.resolution.magnitude) +
+                            str(self.resolution.units) +
+                            self._ascent_filename_tag + ".nc")
             return
         except Exception:
             self.resolution = resolution
@@ -286,7 +289,6 @@ class Thermo_Profile():
                                                                int(main_file.variables
                                                                    ["time"][i])))
             # Hardcoded to microseconds since 2010-1-1
-
         main_file.close()
 
     def __deepcopy__(self, memo):

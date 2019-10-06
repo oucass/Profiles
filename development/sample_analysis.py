@@ -1,5 +1,6 @@
 from profiles.Profile_Set import Profile_Set
 from profiles.Profile import Profile
+import profiles.plotting as plotting
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -22,14 +23,15 @@ different profile start height.
 
 # Example using Profile_Set
 a = Profile_Set(resolution=10, res_units='m', ascent=True, dev=True,
-                confirm_bounds=False, profile_start_height=400)
-a.add_all_profiles("/home/jessica/GitHub/data_templates/00000012.JSON",
-                   scoop_id='A')
+                confirm_bounds=False, profile_start_height=350)
+a.add_all_profiles("/home/jessica/GitHub/data_templates/OfficialMany.BIN",
+                   scoop_id='D')
+
 
 
 # Example using Profile
-b = Profile("/home/jessica/GitHub/data_templates/00000141.json", 10, 'm', 1,
-            dev=True, ascent=True)
+# b = Profile("/home/jessica/GitHub/data_templates/BIN/00000010.BIN", 10, 'm', 1,
+#             dev=True, ascent=True, scoop_id='A')
 
 """
 Calculate thermodynamic variables from raw data. The values returned have
@@ -44,53 +46,49 @@ at = []
 for p in a.profiles:
     at.append(p.get_thermo_profile())
 
+"""
 aw = []
 for p in a.profiles:
     aw.append(p.get_wind_profile())
-
-bt = b.get_thermo_profile()
-bw = b.get_wind_profile()
+"""
+# bt = b.get_thermo_profile()
+# bw = b.get_wind_profile()
 
 
 """
 Here's an example of one way to view the processed data. See the docs for a
 full list of accessible variables.
 """
-
 # Example using Profiles
-plt.figure()
-for t in at:
-    plt.plot(t.temp, t.alt)
+plotting.contour_height_time(a.profiles)  # not yet functional
 plt.show()
 
-plt.figure()
-for w in aw:
-    # Create a hodograph
-    ws = w.speed
-    wt = w.gridded_times
-    plt.plot(w.speed, w.gridded_times)
-plt.show()
+# plt.figure()
+# for w in aw:
+#     # Create a hodograph
+#     ws = w.speed
+#     wt = w.gridded_times
+#     plt.plot(w.speed, w.gridded_times)
+# plt.show()
 
 
 # Example using Profile
-plt.figure()
-plt.plot(bt.temp, bt.alt)
-plt.show()
+# plt.figure()
+# plt.plot(bt.temp, bt.alt)
+# plt.show()
 
 # Example using Profile
-bt = b.get_thermo_profile()
-bw = b.get_wind_profile()
 # Create a hodograph
-fig1 = plt.figure()
-ax1 = fig1.add_axes([0.1, 0.1, 0.8, 0.8], polar=True, theta_direction=-1,
-                    theta_offset=-np.pi/2)
-ax1.set_ylim(0, 20)
-ax1.set_rticks(np.arange(0, 20, 2.5))
-ax1.set_rlabel_position(270)
-ax1.tick_params('y', labelrotation=-45, labelsize='x-small')
-ax1.yaxis.set_label_coords(-0.15, 0.5)
-ax1.plot(bw.dir * np.pi/180, bw.speed, lw=2.5)
-plt.show()
+# fig1 = plt.figure()
+# ax1 = fig1.add_axes([0.1, 0.1, 0.8, 0.8], polar=True, theta_direction=-1,
+#                     theta_offset=-np.pi/2)
+# ax1.set_ylim(0, 20)
+# ax1.set_rticks(np.arange(0, 20, 2.5))
+# ax1.set_rlabel_position(270)
+# ax1.tick_params('y', labelrotation=-45, labelsize='x-small')
+# ax1.yaxis.set_label_coords(-0.15, 0.5)
+# ax1.plot(bw.dir * np.pi/180, bw.speed, lw=2.5)
+# plt.show()
 
 """
 Now look in your data directory. There are .nc files that can be processed

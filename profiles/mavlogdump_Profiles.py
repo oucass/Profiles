@@ -93,6 +93,8 @@ def process(args):
     """
     :return: JSON file path
     """
+
+
     if not args.mav10:
         os.environ['MAVLINK20'] = '1'
 

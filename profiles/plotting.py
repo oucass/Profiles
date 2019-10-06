@@ -12,31 +12,33 @@ from typing import Dict, List
 
 from metpy.plots import SkewT, Hodograph
 import matplotlib.image as mpimg
-import matplotlib.cmocean as cmocean
+import cmocean
 import numpy as np
 import matplotlib.pyplot as plt
 
-__all__ = ['contour_height_time', 'meteogram', 'plot_var_time', 'plot_skewT',
-           'summary']
 
 # File path to logos added to plots
 fpath_logos = os.path.join(os.getcwd(), 'resources', 'CircleLogos.png')
 
 
-def contour_height_time_helper(var1, time, z, shade):
-    """ This creates a filled contour plot of var1 in a time-height
-    coordinate system.
+def contour_height_time_helper(var_info, data, time, z, fig=None):
+    """ This creates a filled contour plot of the specified variable in a time-height
+    coordinate system or adds an unfilled contour plot to fig.
 
     :param list profiles: a list of all profiles to be included in the plot
-    :param Var var1: the name of the variable to be contoured
-    :raises TypeError: if var1 is not a valid instance of Var
+    :param list var_info: the name, color scheme, label info, etc. of the variable to be contoured
     :rtype: matplotlib.figure.Figure
     :return: the contoured plot
     """
 
-    fig, ax = plt.subplots(1, figsize=(16, 9))
-    plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
-    cfax = ax.pcolormesh(time, z, var1, cmap=shade)
+    if fig is None:
+        fig, ax = plt.subplots(1, figsize=(16, 9))
+        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+        TIME, Z = np.meshgrid(time, z)
+        print(TIME.shape)
+        print(Z.shape)
+        print(data.shape)
+        cfax = ax.pcolormesh(TIME, Z, data, cmap=var_info[3])
     #             cfax.set_edgecolor('face')
     #             cax = ax.contour(self.dt_interp, self.z, self.data_interp,
     #                              levels=c_levels, colors='white', zorder=1)
@@ -59,7 +61,7 @@ def contour_height_time_helper(var1, time, z, shade):
     #         # return fig
     #         return fig
 
-    return
+    return fig
 
 
 def contour_height_time(profiles, var=['temp'], use_pres=False):
@@ -99,15 +101,11 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
     sources = []
 
     for var_i in var:
-        if var in vars.keys():
-            labels.append(vars[var_i][0])
-            attrs.append(vars[var_i][1])
-            units.append(vars[var_i][2])
-            shades.append(vars[var_i][3])
-            cont_ints.append(vars[var_i][4])
-            sources.append(vars[var_i][5])
-        else:
+        if var_i not in vars.keys():
             print(var_i + " was not recognized. Try one of these:\n" + str(vars.keys()))
+        else:
+            if vars[var_i][-1] not in sources:
+                sources.append(vars[var_i][-1])
 
     subprofiles = {}
 
@@ -116,9 +114,9 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
             subprofiles[source] = []
             for profile in profiles:
                 if source in 'wind':
-                    subprofiles[source] = profile.get_wind_profile()
+                    subprofiles[source].append(profile.get_wind_profile())
                 elif source in 'thermo':
-                    subprofiles[source] = profile.get_themo_profile()
+                    subprofiles[source].append(profile.get_thermo_profile())
 
     for source in sources:
         if source in 'all':
@@ -127,24 +125,30 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
             elif 'wind' in subprofiles.keys():
                 source = 'wind'
             else:
-                subprofiles[source] = profile.get_thermo_profile
+                subprofiles[source].append(profile.get_thermo_profile())
 
     # Pull info from Profile objects
     time = []
     z = []
-    data1 = []
-    data2 = []
-    for profile in profiles:
-
-
-    fig = contour_height_time_helper(var1, time, z, shade)
-
-    if var2 is not None:
-        print('add overlaid contours here')
+    data = []
+    for source_type in subprofiles:
+        for subprofile in subprofiles[source_type]:
+            if len(time) <= len(data):  # don't double-add time and z when both wind and thermo vars are used
+                time.append(subprofile.gridded_times)
+                z.append(subprofile.alt)
+            for var_i in var:
+                if source_type in vars[var_i][-1]:  # get the data from where it belongs
+                    data.append(subprofile.__getattribute__(vars[var_i][1]))
+    fig = None
+    for i in range(len(var)):
+        if fig is None:
+            fig = contour_height_time_helper(vars[var[i]], data[i], time, z)
+        else:
+            fig = contour_height_time_helper(vars[var[i]], data[i], time, z, fig=fig)
 
     return fig
 
-
+    '''
 def meteogram(fpath):
     """ Graphically displays Mesonet data.
 

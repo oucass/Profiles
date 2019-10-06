@@ -122,6 +122,12 @@ class Wind_Profile():
         self.speed = utils.regrid_data(data=speed, data_times=time,
                                        gridded_times=self.gridded_times,
                                        units=self._units)
+        self.alt = utils.regrid_data(data=self.alt, data_times=time,
+                                       gridded_times=self.gridded_times,
+                                       units=self._units)
+        self.pres = utils.regrid_data(data=self.pres, data_times=time,
+                                       gridded_times=self.gridded_times,
+                                       units=self._units)
         self.u, self.v = metpy.calc.wind_components(self.speed, self.dir)
 
         minlen = min([len(self.u), len(self.v), len(self.dir),
