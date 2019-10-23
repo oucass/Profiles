@@ -28,7 +28,7 @@ register_matplotlib_converters()
 
 
 def regrid_base(base=None, base_times=None, new_res=None, ascent=True,
-                units=None):
+                units=None, indices=(None, None), base_start=None):
     """ Calculates times at which data means should be calculated.
 
     :param np.Array<Quantity> base: Measurements of the variable serving as \
@@ -44,32 +44,56 @@ def regrid_base(base=None, base_times=None, new_res=None, ascent=True,
     :return: times at which the craft is at vertical points n*res above \
        the profile starting height and the corrosponding base values
     """
-
     # Use negative pressure so that the max of the data list is the peak
     if new_res.dimensionality == units.Pa.dimensionality:
         base = -1*base
+        if base_start is not None:
+            base_start = -1*base_start
 
     # Regrid base
     if ascent:
-        new_base = np.arange((base[0] + 0.5*new_res).magnitude, (max(base) -
-                             0.5*new_res).magnitude,
-                             new_res.magnitude)
+        if base_start is None:
+            new_base = np.arange((base[0] + 0.5*new_res).magnitude, (max(base) - 0.5*new_res).magnitude,
+                                 new_res.magnitude)
+        else:
+            new_base = np.arange(base_start.magnitude, (max(base) - 0.5 * new_res).magnitude, new_res.magnitude)
     else:
-        new_base = np.arange((base[0] - 0.5*new_res).magnitude, (min(base) +
-                             0.5*new_res).magnitude,
-                             -1*new_res.magnitude)
+        if base_start is None:
+            new_base = np.arange((base[0] - 0.5*new_res).magnitude, (min(base) +
+                                 0.5*new_res).magnitude,
+                                 -1*new_res.magnitude)
+        else:
+            new_base = np.arange(base_start.magnitude, (min(base) + 0.5 * new_res).magnitude,
+                                 -1 * new_res.magnitude)
     new_base = np.array(new_base) * base.units
 
     # Find times corresponding to regridded base
     new_times = []
     for elem in new_base:
-        if ascent:
-            closest_base_val_ind = next(x for x, val in enumerate(base)
-                                        if val > elem)
+        if indices[0] is None:
+            if ascent:
+                closest_base_val_ind = next(x for x, val in enumerate(base)
+                                            if val > elem)
+            else:
+                closest_base_val_ind = next(x for x, val in enumerate(base)
+                                            if val < elem)
         else:
-            closest_base_val_ind = next(x for x, val in enumerate(base)
-                                        if val < elem)
+            if ascent:
+                closest_base_val_ind = next(x for x, val in enumerate(base)
+                                            if val > elem and base_times[x] >=
+                                            indices[0])
+            else:
+                closest_base_val_ind = next(x for x, val in enumerate(base)
+                                            if val < elem and base_times[x] >=
+                                            indices[1])
         new_times.append(base_times[closest_base_val_ind])
+
+    if new_res.dimensionality == units.Pa.dimensionality:
+        new_base = -1*new_base
+
+    # Remove duplicates:
+    # new_times, indices = np.unique(new_times, return_index=True)
+    # new_base = new_base[indices]
     return (new_times, new_base)
 
 
@@ -94,7 +118,7 @@ def regrid_data(data=None, data_times=None, gridded_times=None, units=None):
     gridded_data = []
     for i in range(len(gridded_times)-1):
         #
-        # Find the data indicies in the specified time range
+        # Find the data indices in the specified time range
         #
         start_time = gridded_times[i]
         end_time = gridded_times[i+1]
@@ -139,8 +163,8 @@ def temp_calib(resistance, sn):
     a = float(coefs.A[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
     b = float(coefs.B[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
     c = float(coefs.C[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
-    print("Temperature calculated from resistance using coefficients \n",
-          a, b, c)
+    # print("Temperature calculated from resistance using coefficients \n",
+    #      a, b, c)
 
     return np.power(np.add(np.add(b * np.log(resistance), a),
                     c * np.power(np.log(resistance), 3)), -1)
@@ -162,12 +186,19 @@ def qc(data, max_bias, max_variance):
        each type of sensor.
     :rtype: list<int> of length len(data)
     :return: list containing 0 in the position of each "good" sensor, 2 in the
-       position of each sensor flagged for bias, and 3 in the position of each
-       sensor flagged for response time.
+       position of each sensor flagged for bias, 3 in the position of each
+       sensor flagged for response time, and 4 in the position of each flagged as empty
     """
 
     if isinstance(data, u.Quantity):
         data = data.magnitude
+
+    good_nonempty = [1] * len(data)
+    for i in range(len(data)):
+        if np.nanmean(data[i]) == 0:
+            good_nonempty[i] = 4
+        else:
+            good_nonempty[i] = 0
 
     # _bias: returns list of length number of sensors; 0 means data is good
     good_means = _bias(data, max_bias)
@@ -179,7 +210,7 @@ def qc(data, max_bias, max_variance):
     # Combine good_means and good_sdevs, leaving 0 only where the sensor
     # passed both tests.
     for i in range(len(data)):
-        combined_sensor_flags[i] = max([good_means[i], good_sdevs[i]])
+        combined_sensor_flags[i] = max([good_means[i], good_sdevs[i], good_nonempty[i]])
 
     return combined_sensor_flags
 
@@ -411,8 +442,6 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
             print("Profile from ", alt_times[start_ind_asc],
                   "to", alt_times[end_ind_des], "added")
         # Check if more profiles in file
-        print(ind+100, len(alts))
-        print(max(alts[ind+100::]), profile_start_height)
         if ind + 100 < len(alts) \
            and max(alts[ind + 100::]) > profile_start_height:
             # There is another profile before the end of the

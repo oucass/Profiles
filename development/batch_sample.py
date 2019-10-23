@@ -9,13 +9,15 @@ from profiles.Profile_Set import Profile_Set
 import matplotlib.pyplot as plt
 from metpy.plots import Hodograph
 import os
+from profiles import plotting_2
 
-datadir = '/home/jessica/GitHub/data_templates/BIN'
+datadir = '/home/jessica/GitHub/data_templates/20191014'
 # Example using Profiles
-a = Profile_Set(resolution=10, res_units='m', ascent=True, dev=True,
-                confirm_bounds=False, profile_start_height=400)
+a = Profile_Set(resolution=15, res_units='Pa', ascent=True, dev=True,
+                confirm_bounds=False, profile_start_height=365)
 for file_name in os.listdir(datadir):
-    a.add_all_profiles(os.path.join(datadir, file_name))
+    if ".json" in file_name:
+        a.add_all_profiles(os.path.join(datadir, file_name))
 
 
 '''
@@ -42,36 +44,8 @@ aw = []
 for p in a.profiles:
     aw.append(p.get_wind_profile())
 
-# Example using Profile
-# bt = b.get_thermo_profile()
-
-"""
-Here's an example of one way to view the processed data. See the docs for a
-full list of accessible variables.
-"""
-
-# Example using Profiles
-plt.figure()
-for t in at:
-    plt.plot(t.temp, t.alt)
-plt.show()
-
-plt.figure()
-for w in aw:
-    # Create a hodograph
-    h = Hodograph(component_range=5)
-    h.add_grid(increment=20)
-    h.plot(w.u, w.v)
-plt.show()
-
-'''
-# Example using Profile
-plt.figure()
-plt.plot(bt.temp, bt.alt)
-plt.show()
-'''
-"""
-Now look in your data directory. There are .nc files that can be processed
-faster than .json for the same result. Try replacing .json with .nc in lines
-31-40 above.
-"""
+fig = plotting_2.contour_height_time(a.profiles,
+                                     var=['theta', 'q'],
+                                     use_pres=True)
+plt.savefig("yay2.png")
+fig.show()

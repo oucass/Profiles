@@ -36,9 +36,9 @@ class Wind_Profile():
         if len([*args]) > 0:
             self._init2(*args, **kwargs)
 
-    def _init2(self, wind_dict, resolution, gridded_times=None,
-                indices=(None, None), ascent=True, units=None, file_path='',
-                nc_level='low'):
+    def _init2(self, wind_dict, resolution, file_path=None,
+               gridded_times=None, gridded_base=None, indices=(None, None),
+               ascent=True, units=None, nc_level='low'):
         """ Creates Wind_Profile object based on rotation data at the specified
         resolution
 
@@ -115,17 +115,25 @@ class Wind_Profile():
 
         #
         # Regrid to res
-        #
+
+        # grid alt and pres
+        if (self.resolution.dimensionality ==
+                self._units.get_dimensionality('m')):
+            self.alt = gridded_base
+            self.pres = utils.regrid_data(data=self.pres, data_times=time,
+                                          gridded_times=self.gridded_times,
+                                          units=self._units)
+        elif (self.resolution.dimensionality ==
+              self._units.get_dimensionality('Pa')):
+            self.pres = gridded_base
+            self.alt = utils.regrid_data(data=self.alt, data_times=time,
+                                         gridded_times=self.gridded_times,
+                                         units=self._units)
+
         self.dir = utils.regrid_data(data=direction, data_times=time,
                                      gridded_times=self.gridded_times,
                                      units=self._units)
         self.speed = utils.regrid_data(data=speed, data_times=time,
-                                       gridded_times=self.gridded_times,
-                                       units=self._units)
-        self.alt = utils.regrid_data(data=self.alt, data_times=time,
-                                       gridded_times=self.gridded_times,
-                                       units=self._units)
-        self.pres = utils.regrid_data(data=self.pres, data_times=time,
                                        gridded_times=self.gridded_times,
                                        units=self._units)
         self.u, self.v = metpy.calc.wind_components(self.speed, self.dir)
@@ -145,6 +153,21 @@ class Wind_Profile():
         #
         if nc_level in 'low':
             self._save_netCDF(file_path)
+
+    def truncate_to(self, new_len):
+        """ Shortens arrays to have no more than new_len data points
+
+        :param new_len: The new, shorter length
+        :return: None
+        """
+
+        self.u = self.u[:new_len]
+        self.v = self.v[:new_len]
+        self.dir = self.dir[:new_len]
+        self.speed = self.speed[:new_len]
+        self.alt = self.alt[:new_len]
+        self.pres = self.pres[:new_len]
+        self.gridded_times = self.gridded_times[:new_len]
 
     def _calc_winds(self, wind_data):
         """ Calculate wind direction, speed, u, and v. Currently, this only

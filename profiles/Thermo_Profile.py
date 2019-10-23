@@ -15,14 +15,15 @@ import os
 import datetime as dt
 from copy import deepcopy, copy
 
-# T1 [0x48]	T2 [0x49] T3 [0x4a]
-
 
 class Thermo_Profile():
     """ Contains data from one file.
 
     :var np.array<Quantity> temp: QC'd and averaged temperature
     :var np.array<Quantity> mixing_ratio: calculated mixing ratio
+    :var np.array<Quantity> theta: calculated potential temperature
+    :var np.array<Quantity> T_d: calculated dewpoint temperature
+    :var np.array<Quantity> q: calculated mixing ratio
     :var np.array<Quantity> rh: QC'd and averaged relative humidity
     :var np.array<Quantity> pres: QC'd pressure
     :var np.array<Quantity> alt: altitude
@@ -36,7 +37,8 @@ class Thermo_Profile():
             self._init2(*args, **kwargs)
 
     def _init2(self, temp_dict, resolution, file_path=None,
-               gridded_times=None, ascent=True, units=None, nc_level='low'):
+               gridded_times=None, gridded_base=None, indices=(None, None),
+               ascent=True, units=None, nc_level='low'):
         """ Creates Thermo_Profile object from raw data at the specified
         resolution.
 
@@ -101,7 +103,36 @@ class Thermo_Profile():
                             str(self.resolution.units) +
                             self._ascent_filename_tag + ".nc")
             return
+        else:
+            if not indices[0] is None:
+                # trim profile
+                selection_temp = np.where(np.array(temp_dict["time_temp"]) > indices[0],
+                                          np.array(temp_dict["time_temp"]) < indices[1],
+                                          False)
+                selection_rh = np.where(np.array(temp_dict["time_rh"]) > indices[0],
+                                        np.array(temp_dict["time_rh"]) < indices[1],
+                                        False)
+                selection_pres = np.where(np.array(temp_dict["time_pres"]) > indices[0],
+                                          np.array(temp_dict["time_pres"]) < indices[1],
+                                          False)
 
+                for key in temp_dict.keys():
+                    if "time" not in key:
+                        if ("temp" in key and "rh" not in key and "pres" not in key)\
+                                or "resi" in key:
+                            temp_dict[key] = temp_dict[key].magnitude[np.where(selection_temp)] * temp_dict[key].units
+                        elif "pres" in key:
+                            temp_dict[key] = temp_dict[key].magnitude[np.where(selection_pres)] * temp_dict[key].units
+                        elif "rh" in key:
+                            temp_dict[key] = temp_dict[key].magnitude[np.where(selection_rh)] * temp_dict[key].units
+                    else:
+                         if ("temp" in key and "rh" not in key) \
+                                 or "resi" in key:
+                             temp_dict[key] = np.array(temp_dict[key])[np.where(selection_temp)]
+                         elif "pres" in key:
+                             temp_dict[key] = np.array(temp_dict[key])[np.where(selection_pres)]
+                         elif "rh" in key:
+                             temp_dict[key] = np.array(temp_dict[key])[np.where(selection_rh)]
         temp = []
         rh = []
 
@@ -185,15 +216,19 @@ class Thermo_Profile():
         # Regrid to match times specified by Profile
         #
 
-        # grid alt
-        self.alt = utils.regrid_data(data=alts, data_times=time_pres,
-                                     gridded_times=self.gridded_times,
-                                     units=self._units)
-
-        # grid pres
-        self.pres = utils.regrid_data(data=pres, data_times=time_pres,
-                                      gridded_times=self.gridded_times,
-                                      units=self._units)
+        # grid alt and pres
+        if (self.resolution.dimensionality ==
+                self._units.get_dimensionality('m')):
+            self.alt = gridded_base
+            self.pres = utils.regrid_data(data=pres, data_times=time_pres,
+                                          gridded_times=self.gridded_times,
+                                          units=self._units)
+        elif (self.resolution.dimensionality ==
+              self._units.get_dimensionality('Pa')):
+            self.pres = gridded_base
+            self.alt = utils.regrid_data(data=alts, data_times=time_pres,
+                                         gridded_times=self.gridded_times,
+                                         units=self._units)
 
         # grid RH
         self.rh = utils.regrid_data(data=rh, data_times=time_rh,
@@ -211,17 +246,36 @@ class Thermo_Profile():
         self.temp = self.temp[0:minlen-1]
         self.rh = self.rh[0:minlen-1]
         self.alt = self.alt[0:minlen-1]
+        self.gridded_times = self.gridded_times[0:minlen-1]
 
         # Calculate mixing ratio
         self.mixing_ratio = calc.mixing_ratio_from_relative_humidity(
                             np.divide(self.rh.magnitude, 100), self.temp,
                             self.pres)
 
+        self.theta = calc.potential_temperature(self.pres, self.temp)
+        self.T_d = calc.dewpoint_rh(self.temp, self.rh)
+        self.q = calc.specific_humidity_from_mixing_ratio(self.mixing_ratio) * \
+                 units.gPerKg
+
         if nc_level in 'low':
             self._save_netCDF(file_path + "thermo_" +
                               str(self.resolution.magnitude) +
                               str(self.resolution.units) +
                               self._ascent_filename_tag + ".nc")
+
+    def truncate_to(self, new_len):
+        """ Shortens arrays to have no more than new_len data points
+
+        :param new_len: The new, shorter length
+        :return: None
+        """
+
+        self.pres = self.pres[:new_len]
+        self.temp = self.temp[:new_len]
+        self.rh = self.rh[:new_len]
+        self.alt = self.alt[:new_len]
+        self.gridded_times = self.gridded_times[:new_len]
 
     def _save_netCDF(self, file_path):
         """ Save a NetCDF file to facilitate future processing if a .JSON was
@@ -253,6 +307,18 @@ class Thermo_Profile():
         mr_var = main_file.createVariable("mr", "f8", ("time",))
         mr_var[:] = self.mixing_ratio.magnitude
         mr_var.units = str(self.mixing_ratio.units)
+        # THETA
+        theta_var = main_file.createVariable("theta", "f8", ("time",))
+        theta_var[:] = self.theta.magnitude
+        theta_var.units = str(self.theta.units)
+        # T_D
+        Td_var = main_file.createVariable("Td", "f8", ("time",))
+        Td_var[:] = self.T_d.magnitude
+        Td_var.units = str(self.T_d.units)
+        # Q
+        q_var = main_file.createVariable("q", "f8", ("time",))
+        q_var[:] = self.q.magnitude
+        q_var.units = str(self.q.units)
         # TIME
         time_var = main_file.createVariable("time", "f8", ("time",))
         time_var[:] = netCDF4.date2num(self.gridded_times,
@@ -282,6 +348,12 @@ class Thermo_Profile():
             self._units.parse_expression(main_file.variables["temp"].units)
         self.mixing_ratio = np.array(main_file.variables["mr"]) * \
             self._units.parse_expression(main_file.variables["mr"].units)
+        self.theta = np.array(main_file.variables["theta"]) * \
+            self._units.parse_expression(main_file.variables["theta"].units)
+        self.T_d = np.array(main_file.variables["Td"]) * \
+            self._units.parse_expression(main_file.variables["Td"].units)
+        self.q = np.array(main_file.variables["q"]) * \
+            self._units.parse_expression(main_file.variables["q"].units)
         base_time = dt.datetime(2010, 1, 1, 0, 0, 0, 0)
         self.gridded_times = []
         for i in range(len(main_file.variables["time"][:])):

@@ -8,14 +8,17 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 """
 
 import os
+import sys
+import pandas as pd
 from typing import Dict, List
-
+from datetime import datetime as dt
 from metpy.plots import SkewT, Hodograph
 import matplotlib.image as mpimg
 import cmocean
 import numpy as np
 import matplotlib.pyplot as plt
-
+import matplotlib.dates as mdates  # use datenum TODO
+from scipy.interpolate import interp2d, griddata, interp1d
 
 # File path to logos added to plots
 fpath_logos = os.path.join(os.getcwd(), 'resources', 'CircleLogos.png')
@@ -31,15 +34,92 @@ def contour_height_time_helper(var_info, data, time, z, fig=None):
     :return: the contoured plot
     """
 
+    z = np.sort(z.magnitude)
+
+    time_ints = np.array([])
+    for time_a in time:
+        time_ints_sub = []
+        for time_b in time_a:
+            if type(time_b) != dt and np.isnan(time_b):
+                time_ints_sub.append(np.nan)
+            else:
+                time_ints_sub.append(int(time_b.hour * 3600 +
+                                         time_b.minute * 60 + time_b.second))
+        time_ints = np.append(time_ints, time_ints_sub)
+
+    time_ints = np.sort(time_ints)
+    """
+        # data and time are 2d, z is 1d
+    gridded_data = np.full_like(np.zeros((len(time_ints), len(z))), np.nan)
+
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            # z corresponds to j index, time is time_int i*len(data[i]) + j
+            gridded_data[i*len(data[i]) + j][j] = data[i][j].magnitude
+
+    # now that the data's in the grid, interpolate
+    z=z.magnitude
+    print(z.shape)
+    print(time_ints.shape)
+    print(gridded_data.shape)
+    interp_fun = interp2d(z, time_ints, gridded_data)
+    grid = interp_fun(z, time_ints)
+
+    """
+    data_unitless = np.array([])
+    for data_a in data:
+        data_unitless_sub = []
+        for data_b in data_a:
+            data_unitless_sub.append(float(data_b.magnitude))
+        data_unitless = np.append(data_unitless, data_unitless_sub)
+
+    data_interp_function = interp1d(time_ints, data_unitless, kind='linear',
+                                    fill_value="extrapolate",
+                                    bounds_error=False)
+    data_interp = data_interp_function(time_ints)
+
+    z_single = np.array(z).flatten()
+    
+    z = z_single
+    for i in range(len(data)-1):
+        z = np.append(z, z_single)
+
     if fig is None:
         fig, ax = plt.subplots(1, figsize=(16, 9))
+        time_arr = pd.to_datetime(np.linspace(pd.Timestamp(time[0][0]).value,
+                                              pd.Timestamp(time[-1][0]).value,
+                                              len(time)))
+
+        # Manually remove NaN values - Griddata doesn't like them
+        i = 0
+        while i < len(time_ints):
+            if np.isnan(time_ints[i]) or np.isnan(z[i]) or \
+                    np.isnan(data_unitless[i]):
+                time_ints = np.delete(time_ints, i)
+                z = np.delete(z, i)
+                data_unitless = np.delete(data_unitless, i)
+            else:
+                i += 1
+
+        grid_x, grid_y = np.meshgrid(time_ints, z)
+
+        grid = griddata((time_ints, z), data_unitless, (grid_x, grid_y),
+                        method='cubic')
+
         plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
-        TIME, Z = np.meshgrid(time, z)
-        print(TIME.shape)
-        print(Z.shape)
-        print(data.shape)
-        cfax = ax.pcolormesh(TIME, Z, data, cmap=var_info[3])
-    #             cfax.set_edgecolor('face')
+        cfax = ax.pcolormesh(time_ints, z, grid, cmap=var_info[3])
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
+        ax.scatter(time_ints, z, c='black')
+        locs, labels = plt.xticks()
+        plt.xticks(locs, time_arr)
+
+        plt.xticks(np.linspace(time_ints[0], time_ints[-1], 10), time_arr)
+        plt.show()
+        plt.plot(grid[0,:], z)
+        plt.show()
+        plt.plot(grid[:, 0], time_ints)
+        plt.show()
+        #cfax.set_edgecolor('face')
     #             cax = ax.contour(self.dt_interp, self.z, self.data_interp,
     #                              levels=c_levels, colors='white', zorder=1)
     #             plt.clabel(cax, fontsize=10, inline=1, fmt='%3.1f')
@@ -100,6 +180,8 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
     cont_ints = []
     sources = []
 
+    # Figure out which variables need to be plotted and which classes (i.e. ThermoProfile or WindProfile) the data
+    # needs to be retrieved from
     for var_i in var:
         if var_i not in vars.keys():
             print(var_i + " was not recognized. Try one of these:\n" + str(vars.keys()))
@@ -109,6 +191,7 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
 
     subprofiles = {}
 
+    # For each source (i.e. ThermoProfile or WindProfile), add an object to subprofiles for each profile
     for source in sources:
         if source not in subprofiles.keys() and source not in 'all':
             subprofiles[source] = []
@@ -118,6 +201,9 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
                 elif source in 'thermo':
                     subprofiles[source].append(profile.get_thermo_profile())
 
+    # At this point, subprofiles[source] should contain len(profiles) elements
+
+    # Some variables are in both sources. Decide which to use.
     for source in sources:
         if source in 'all':
             if 'thermo' in subprofiles.keys():
@@ -127,27 +213,115 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
             else:
                 subprofiles[source].append(profile.get_thermo_profile())
 
-    # Pull info from Profile objects
-    time = []
-    z = []
-    data = []
-    for source_type in subprofiles:
-        for subprofile in subprofiles[source_type]:
-            if len(time) <= len(data):  # don't double-add time and z when both wind and thermo vars are used
-                time.append(subprofile.gridded_times)
-                z.append(subprofile.alt)
+    time = [[]] * len(profiles)
+    z_uncombined = [[]] * len(profiles)
+    data = {}
+    for var_i in var:
+        data[var_i] = [[]] * len(profiles)
+
+    # gather the data for each profile
+    for source in sources:
+        for i in range(len(subprofiles[source])):
+            subprofile = subprofiles[source][i]
+            z_uncombined[i] = subprofile.alt
+            time[i] = subprofile.gridded_times
             for var_i in var:
-                if source_type in vars[var_i][-1]:  # get the data from where it belongs
-                    data.append(subprofile.__getattribute__(vars[var_i][1]))
+                data[var_i][i] = subprofile.__getattribute__(vars[var_i][1])
+
+    # determine z-values for combined array
+    z = []
+    for z_profile in z_uncombined:
+        for z_indiv in z_profile:
+            if not np.isnan(z_indiv.magnitude):
+                in_z = False
+                for z_preexisting in z:
+                    if np.isclose(z_indiv.magnitude, z_preexisting,
+                                  atol=0.1):
+                        # z1 is actually in z
+                        in_z = True
+                if not in_z:
+                    z.append(z_indiv.magnitude)
+    z = np.array(z) * z_uncombined[0][0].units
+
+    # Now pad time and data to match the length of z
+    for i in range(len(time)):
+        diff = len(z) - len(time[i])
+        if diff > 0:
+            for j in range(diff):
+                time[i].append(np.nan)
+    for var_i in var:
+        for i in range(len(data[var_i])):
+            diff = len(z) - len(data[var_i][i])
+            if diff > 0:
+                replace_with = list(data[var_i][i].magnitude)
+                for j in range(diff):
+                    replace_with.append(np.nan)
+                replace_with = np.array(replace_with) * data[var_i][i].units
+                data[var_i][i] = replace_with
+
     fig = None
-    for i in range(len(var)):
-        if fig is None:
-            fig = contour_height_time_helper(vars[var[i]], data[i], time, z)
-        else:
-            fig = contour_height_time_helper(vars[var[i]], data[i], time, z, fig=fig)
+    for var_i in var:
+        fig = contour_height_time_helper(vars[var_i], data[var_i],
+                                             time, z, fig=fig)
 
     return fig
+    """
+    # Pull info from Profile objects
+    time = []  # sub-list for each height
+    z = []
+    data = {}
 
+    # TODO force everything to match tallest z - fill in np.nan
+    for source in sources:
+        for subprofile in subprofiles[source]:
+            if len(z) == 0:
+                z = subprofile.alt
+                time = subprofile.gridded_times
+                for var_i in var:
+                    if source in vars[var_i][-1]:
+                        data[var_i] = \
+                            subprofile.__getattribute__(vars[var_i][1])
+            else:
+                for i in range(len(subprofile.alt)):
+                    z1 = subprofile.alt[i]
+                    t1 = subprofile.gridded_times[i]
+                    data1 = {}
+                    for var1 in var:
+                        if source in vars[var_i][-1]:
+                            data1[var_i] = \
+                                subprofile.__getattribute__(vars[var_i][1])[i]
+                    if not np.isnan(z1.magnitude):
+                        in_z = False
+                        for z2 in z:
+                            if np.isclose(z1.magnitude, z2.magnitude, atol=0.1):
+                                # z1 is actually in z
+                                in_z = True
+                                break
+
+                        if not in_z:
+                            # This does not need to be matched - 1D
+                            z.append(z1)
+
+                            for var_i in var:
+                                if source in vars[var_i][-1]:
+                                    if var_i not in data.keys():
+                                        data[var_i] = []
+
+                    time.append(t1)
+                    for var_i in var:
+                        if source in vars[var_i][-1]:
+                            data[var_i].append(data1[var_i])
+
+
+    fig = None
+    for var_i in var:
+        if fig is None:
+            fig = contour_height_time_helper(vars[var_i], data[var_i], time, z)
+        else:
+            fig = contour_height_time_helper(vars[var[i]], data[var[i][1]], time, z, fig=fig)
+
+    return fig
+    """
     '''
 def meteogram(fpath):
     """ Graphically displays Mesonet data.

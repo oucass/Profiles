@@ -22,9 +22,9 @@ different profile start height.
 """
 
 # Example using Profile_Set
-a = Profile_Set(resolution=10, res_units='m', ascent=True, dev=True,
+a = Profile_Set(resolution=1, res_units='m', ascent=True, dev=True,
                 confirm_bounds=False, profile_start_height=350)
-a.add_all_profiles("/home/jessica/GitHub/data_templates/OfficialMany.BIN",
+a.add_all_profiles("/home/jessica/GitHub/data_templates/20191001_2201.json",
                    scoop_id='D')
 
 

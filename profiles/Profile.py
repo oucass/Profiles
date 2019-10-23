@@ -43,7 +43,7 @@ class Profile():
     def _init2(self, file_path, resolution, res_units, profile_num,
                ascent=True, dev=False, confirm_bounds=True,
                index_list=None, scoop_id=None, raw_profile=None,
-               profile_start_height=None, nc_level='low'):
+               profile_start_height=None, nc_level='low', base_start=None):
         """ Creates a Profile object.
 
         :param string file_path: data file
@@ -131,7 +131,39 @@ class Profile():
         self.gridded_times, self.gridded_base \
             = utils.regrid_base(base=base, base_times=base_time,
                                 new_res=self.resolution, ascent=ascent,
-                                units=self._units)
+                                units=self._units, indices=self.indices,
+                                base_start=base_start)
+        self._base_start = self.gridded_base[0]
+
+    def get(self, varname):
+        """
+        Returns the requested variable, which may be in Profile or one of its
+        attributes (ex. temp is in thermo_profile)
+
+        :param str varname: the name of the requested variable
+        :return: the requested variable
+        """
+
+        try:
+            return self.__getattribute__(varname)
+        except AttributeError:
+            pass
+        if self._thermo_profile is not None:
+            try:
+                return self._thermo_profile.__getattribute__(varname)
+            except AttributeError:
+                pass
+        if self._wind_profile is not None:
+            try:
+                return self._wind_profile.__getattribute__(varname)
+            except AttributeError:
+                pass
+        try:
+            return self._raw_profile.__getattribute__(varname)
+        except AttributeError:
+            print("The requested variable does not exist. Call "
+                  "get_thermo_profile and get_wind_profile before trying "
+                  "again.")
 
     def get_wind_profile(self):
         """ If a Wind_Profile object does not already exist, it is created when
@@ -145,9 +177,21 @@ class Profile():
             self._wind_profile = \
                 Wind_Profile(wind_data, self.resolution,
                              gridded_times=self.gridded_times,
+                             gridded_base=self.gridded_base,
                              indices=self.indices, ascent=self.ascent,
                              units=self._units, file_path=self.file_path,
                              nc_level=self._nc_level)
+            if len(self._wind_profile.gridded_times) > len(self.gridded_times):
+                new_len = len(self.gridded_times)
+                self._wind_profile.trucate_to(new_len)
+            elif len(self._wind_profile.gridded_times) < \
+                    len(self.gridded_times):
+                new_len = len(self._wind_profile.gridded_times)
+                self.gridded_times = self.gridded_times[:new_len]
+                self.gridded_base = self.gridded_base[:new_len]
+            if self._thermo_profile is not None:
+                new_len = len(self._wind_profile.gridded_times)
+                self._thermo_profile.truncate_to(new_len)
         return self._wind_profile
 
     def get_thermo_profile(self):
@@ -162,10 +206,22 @@ class Profile():
             self._thermo_profile = \
                 Thermo_Profile(thermo_data, self.resolution,
                                gridded_times=self.gridded_times,
-                               ascent=self.ascent, units=self._units,
-                               file_path=self.file_path,
+                               gridded_base=self.gridded_base,
+                               indices=self.indices, ascent=self.ascent,
+                               units=self._units, file_path=self.file_path,
                                nc_level=self._nc_level)
-
+            if len(self._thermo_profile.gridded_times) > \
+                    len(self.gridded_times):
+                new_len = len(self.gridded_times)
+                self._thermo_profile.trucate_to(new_len)
+            elif len(self._thermo_profile.gridded_times) < \
+                    len(self.gridded_times):
+                new_len = len(self._thermo_profile.gridded_times)
+                self.gridded_times = self.gridded_times[:new_len]
+                self.gridded_base = self.gridded_base[:new_len]
+            if self._wind_profile is not None:
+                new_len = len(self._thermo_profile.gridded_times)
+                self._wind_profile.truncate_to(new_len)
         return self._thermo_profile
 
     def __deepcopy__(self, memo):
@@ -197,3 +253,22 @@ class Profile():
             thermo_str = ""
         return "Profile object:\n\t\tLocation data: " + str(type(self._pos)) \
                + "\n" + wind_str + thermo_str
+
+    def __gt__(self, other):
+        if self.gridded_times[0] > other.gridded_times[0]:
+            return True
+        else:
+            return False
+
+    def __lt__(self, other):
+        if self.gridded_times[0] < other.gridded_times[0]:
+            return True
+        else:
+            return False
+
+    def __eq__(self, other):
+        def __lt__(self, other):
+            if self.gridded_times[0] == other.gridded_times[0]:
+                return True
+            else:
+                return False
