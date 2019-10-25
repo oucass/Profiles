@@ -1,328 +1,219 @@
-"""
-Plotting contains several functions which display profile
-data as stored in uas format.
-
-Authors Brian Greene, Jessica Wiedemeier, Tyler Bell
-Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
-2019
-"""
-
 import os
-import sys
-import pandas as pd
-from typing import Dict, List
-from datetime import datetime as dt
-from metpy.plots import SkewT, Hodograph
-import matplotlib.image as mpimg
 import cmocean
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates  # use datenum TODO
-from scipy.interpolate import interp2d, griddata, interp1d
+import matplotlib.dates as datenum
+import matplotlib.ticker as ticker
+import matplotlib.lines as mlines
+from scipy.interpolate import interp1d
+from profiles.UnitFormatter import UnitFormatter
+
+
+vars = {'theta': ["Potential Temperature", 'theta', 'K', cmocean.cm.thermal,
+                  1.0],
+        'temp': ["Temperature", 'temp', '$^\circ$C', cmocean.cm.thermal, 1.0],
+        'T_d': ["Dewpoint Temperature", 'T_d', '$^\circ$C', cmocean.cm.haline,
+                1.0],
+        'dewp': ["Dewpoint Temperature", 'T_d', '$^\circ$C', cmocean.cm.haline,
+                 1.0],
+        'r': ["Mixing Ratio", 'mixing_ratio', 'g Kg$^{-1}$', cmocean.cm.haline,
+              0.5],
+        'mr': ["Mixing Ratio", 'mixing_ratio', 'g Kg$^{-1}$', cmocean.cm.haline,
+               0.5],
+        'q': ["Specific Humidity", 'q', 'g Kg$^{-1}$', cmocean.cm.haline, 0.5],
+        'rh': ["Relative Humidity", 'rh', '%', cmocean.cm.haline, 5.0],
+        'ws': ["Wind Speed", 'speed', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
+        'u': ["U", 'u', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
+        'v': ["V", 'v', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
+        'dir': ["Wind Direction", 'dir', '$^\circ$', cmocean.cm.phase, 360.,
+                'wind'],
+        'pres': ["Pressure", 'pres', 'Pa', cmocean.cm.haline, 15.0],
+        'p': ["Pressure", 'pres', 'Pa', cmocean.cm.haline, 15.0],
+        'alt': ["Altitude", 'alt', 'm', cmocean.cm.haline, 10.0]}
+
 
 # File path to logos added to plots
 fpath_logos = os.path.join(os.getcwd(), 'resources', 'CircleLogos.png')
 
 
-def contour_height_time_helper(var_info, data, time, z, fig=None):
-    """ This creates a filled contour plot of the specified variable in a time-height
-    coordinate system or adds an unfilled contour plot to fig.
-
-    :param list profiles: a list of all profiles to be included in the plot
-    :param list var_info: the name, color scheme, label info, etc. of the variable to be contoured
-    :rtype: matplotlib.figure.Figure
-    :return: the contoured plot
-    """
-
-    z = np.sort(z.magnitude)
-
-    time_ints = np.array([])
-    for time_a in time:
-        time_ints_sub = []
-        for time_b in time_a:
-            if type(time_b) != dt and np.isnan(time_b):
-                time_ints_sub.append(np.nan)
-            else:
-                time_ints_sub.append(int(time_b.hour * 3600 +
-                                         time_b.minute * 60 + time_b.second))
-        time_ints = np.append(time_ints, time_ints_sub)
-
-    time_ints = np.sort(time_ints)
-    """
-        # data and time are 2d, z is 1d
-    gridded_data = np.full_like(np.zeros((len(time_ints), len(z))), np.nan)
-
-    for i in range(len(data)):
-        for j in range(len(data[i])):
-            # z corresponds to j index, time is time_int i*len(data[i]) + j
-            gridded_data[i*len(data[i]) + j][j] = data[i][j].magnitude
-
-    # now that the data's in the grid, interpolate
-    z=z.magnitude
-    print(z.shape)
-    print(time_ints.shape)
-    print(gridded_data.shape)
-    interp_fun = interp2d(z, time_ints, gridded_data)
-    grid = interp_fun(z, time_ints)
-
-    """
-    data_unitless = np.array([])
-    for data_a in data:
-        data_unitless_sub = []
-        for data_b in data_a:
-            data_unitless_sub.append(float(data_b.magnitude))
-        data_unitless = np.append(data_unitless, data_unitless_sub)
-
-    data_interp_function = interp1d(time_ints, data_unitless, kind='linear',
-                                    fill_value="extrapolate",
-                                    bounds_error=False)
-    data_interp = data_interp_function(time_ints)
-
-    z_single = np.array(z).flatten()
-    
-    z = z_single
-    for i in range(len(data)-1):
-        z = np.append(z, z_single)
-
-    if fig is None:
-        fig, ax = plt.subplots(1, figsize=(16, 9))
-        time_arr = pd.to_datetime(np.linspace(pd.Timestamp(time[0][0]).value,
-                                              pd.Timestamp(time[-1][0]).value,
-                                              len(time)))
-
-        # Manually remove NaN values - Griddata doesn't like them
-        i = 0
-        while i < len(time_ints):
-            if np.isnan(time_ints[i]) or np.isnan(z[i]) or \
-                    np.isnan(data_unitless[i]):
-                time_ints = np.delete(time_ints, i)
-                z = np.delete(z, i)
-                data_unitless = np.delete(data_unitless, i)
-            else:
-                i += 1
-
-        grid_x, grid_y = np.meshgrid(time_ints, z)
-
-        grid = griddata((time_ints, z), data_unitless, (grid_x, grid_y),
-                        method='cubic')
-
-        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
-        cfax = ax.pcolormesh(time_ints, z, grid, cmap=var_info[3])
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
-        ax.scatter(time_ints, z, c='black')
-        locs, labels = plt.xticks()
-        plt.xticks(locs, time_arr)
-
-        plt.xticks(np.linspace(time_ints[0], time_ints[-1], 10), time_arr)
-        plt.show()
-        plt.plot(grid[0,:], z)
-        plt.show()
-        plt.plot(grid[:, 0], time_ints)
-        plt.show()
-        #cfax.set_edgecolor('face')
-    #             cax = ax.contour(self.dt_interp, self.z, self.data_interp,
-    #                              levels=c_levels, colors='white', zorder=1)
-    #             plt.clabel(cax, fontsize=10, inline=1, fmt='%3.1f')
-    #             cbar = fig.colorbar(cfax)
-    #             cbar.ax.set_ylabel(self.label + ' (' + self.units + ')', fontsize=16)
-    #
-    #         ax.xaxis.set_major_locator(mpdates.MinuteLocator(byminute=[0, 30]))
-    #         ax.xaxis.set_major_formatter(mpdates.DateFormatter('%H:%M'))
-    #         ax.tick_params(axis='both', labelsize=14)
-    #         plt.xlabel('Time UTC', fontsize=16)
-    #         plt.ylabel('Altitude AGL (m)', fontsize=16)
-    #         plt.title(self.label + ' ' + self.dt[0].strftime('%d %B %Y') + ' ' +
-    #                   self.loc, fontsize=22)
-    #         # cbar.ax.set_yticklabels(fontsize=14)
-    #         [plt.axvline(t, linestyle='--', color='k') for t in self.t]
-    #         [plt.plot(i, j, 'k*') for (i, j) in zip(self.t, self.maxZ)]
-    #
-    #         fig.tight_layout()
-    #         # return fig
-    #         return fig
-
-    return fig
-
-
 def contour_height_time(profiles, var=['temp'], use_pres=False):
-    """ contourHeightTime creates a filled contour plot of var1 in a
-    time-height coordinate system. If var2 is not None, it also
-    overlays unfilled contours of var2.
+    """ contourHeightTime creates a filled contour plot of the first element of
+       var in a time-height coordinate system. If len(var) > 1, it also
+       overlays unfilled contours of the remaining elements.
+       Accepted variable names are:
+
+       * 'theta'
+       * 'temp'
+       * 'T_d'
+       * 'dewp'
+       * 'r'
+       * 'mr'
+       * 'q'
+       * 'rh'
+       * 'ws':
+       * 'u'
+       * 'v'
+       * 'dir'
+       * 'pres'
+       * 'p'
+       * 'alt'
 
     :param list profiles: a list of all profiles to be included in the plot
-    :param Var var1: the name of the variable to be filled
-    :param Var var2: the name of the variable to be drawn
-    :raises TypeError: if var1 is not a valid instance of Var
+    :param list<str> var: names of the variable to be plotted
     :rtype: matplotlib.figure.Figure
     :return: the contoured plot
     """
 
-    vars = {'theta': ["Potential Temperature", None, 'K', cmocean.cm.thermal, 1.0, 'thermo'],  # TODO
-            'temp': ["Temperature", 'temp', '$^\circ$C', cmocean.cm.thermal, 1.0, 'thermo'],
-            'T_d': ["Dewpoint Temperature", None, '$^\circ$C', cmocean.cm.haline, 1.0, 'thermo'],  # TODO
-            'dewp': ["Dewpoint Temperature", None, '$^\circ$C', cmocean.cm.haline, 1.0, 'thermo'],  # TODO
-            'r': ["Mixing Ratio", 'mixing_ratio', 'g Kg$^{-1}$', cmocean.cm.haline, 0.5, 'thermo'],
-            'mr': ["Mixing Ratio", 'mixing_ratio', 'g Kg$^{-1}$', cmocean.cm.haline, 0.5, 'thermo'],
-            'q': ["Specific Humidity", None, 'g Kg$^{-1}$', cmocean.cm.haline, 0.5, 'thermo'],  # TODO
-            'rh': ["Relative Humidity", 'rh', '%', cmocean.cm.haline, 5.0, 'thermo'],
-            'ws': ["Wind Speed", 'speed', 'm s$^{-1}$', cmocean.cm.speed, 5.0, 'wind'],
-            'u': ["U", 'u', 'm s$^{-1}$', cmocean.cm.speed, 5.0, 'wind'],
-            'v': ["V", 'v', 'm s$^{-1}$', cmocean.cm.speed, 5.0, 'wind'],
-            'dir': ["Wind Direction", 'dir', '$^\circ$', cmocean.cm.phase, 360., 'wind'],
-            'pres': ["Pressure", 'pres', None, None, None, 'all'],
-            'p': ["Pressure", 'pres', None, None, None, 'all'],
-            'alt': ["Altitude", 'alt', None, None, None, 'all']}
-
-    labels = []
-    attrs = []
-    units = []
-    shades = []
-    cont_ints = []
-    sources = []
-
-    # Figure out which variables need to be plotted and which classes (i.e. ThermoProfile or WindProfile) the data
-    # needs to be retrieved from
+    legend_handles = []
     for var_i in var:
         if var_i not in vars.keys():
-            print(var_i + " was not recognized. Try one of these:\n" + str(vars.keys()))
-        else:
-            if vars[var_i][-1] not in sources:
-                sources.append(vars[var_i][-1])
+            print(var_i + " was not recognized. Try one of these:\n" +
+                  str(vars.keys()))
 
-    subprofiles = {}
-
-    # For each source (i.e. ThermoProfile or WindProfile), add an object to subprofiles for each profile
-    for source in sources:
-        if source not in subprofiles.keys() and source not in 'all':
-            subprofiles[source] = []
-            for profile in profiles:
-                if source in 'wind':
-                    subprofiles[source].append(profile.get_wind_profile())
-                elif source in 'thermo':
-                    subprofiles[source].append(profile.get_thermo_profile())
-
-    # At this point, subprofiles[source] should contain len(profiles) elements
-
-    # Some variables are in both sources. Decide which to use.
-    for source in sources:
-        if source in 'all':
-            if 'thermo' in subprofiles.keys():
-                source = 'thermo'
-            elif 'wind' in subprofiles.keys():
-                source = 'wind'
-            else:
-                subprofiles[source].append(profile.get_thermo_profile())
-
-    time = [[]] * len(profiles)
-    z_uncombined = [[]] * len(profiles)
-    data = {}
+    times = []  # datenum.date2num(list)
+    z = []  # unitless
+    data = {}  # also unitless
+    data_units = {}
     for var_i in var:
-        data[var_i] = [[]] * len(profiles)
+        data[var_i] = []
 
-    # gather the data for each profile
-    for source in sources:
-        for i in range(len(subprofiles[source])):
-            subprofile = subprofiles[source][i]
-            z_uncombined[i] = subprofile.alt
-            time[i] = subprofile.gridded_times
+    linestyles = ['solid', 'dashed', 'dashdot']
+    style_ind = 0
+
+    for i in range(len(profiles)):
+        # Get data from Profile objects
+        times.append(list(profiles[i].gridded_times))
+        z.append(profiles[i].get("gridded_base").magnitude)
+        for var_i in var:
+            data[var_i].append(list(profiles[i].get(var_i).magnitude))
+            if var_i not in data_units.keys():
+                data_units[var_i] = profiles[i].get(var_i).units
+
+    # Now there are 3 parallel lists for each profile.
+    # Force them to share z
+    max_len = 0
+    which_i = -1
+    for i in range(len(z)):
+        if len(z[i]) > max_len:
+            max_len = len(z[i])
+            which_i = i
+
+    z = z[which_i]
+    # There is now only one list for z - all profiles have to share
+
+    time_flat = np.array(times[0])
+    for p in range(len(times)):
+        if p > 0:
+            time_flat = np.concatenate((time_flat, times[p]))
+    timerange = datenum.drange(np.nanmin(time_flat),
+                               np.nanmax(time_flat),
+                               (np.nanmax(time_flat)
+                                -np.nanmin(time_flat))/100)
+    q = (np.nanmax(time_flat)-np.nanmin(time_flat))/100
+    for i in range(len(times)):
+        diff = max_len - len(times[i])
+        for j in range(diff):
+            times[i].append(None)
             for var_i in var:
-                data[var_i][i] = subprofile.__getattribute__(vars[var_i][1])
+                data[var_i][i].append(np.nan)
 
-    # determine z-values for combined array
-    z = []
-    for z_profile in z_uncombined:
-        for z_indiv in z_profile:
-            if not np.isnan(z_indiv.magnitude):
-                in_z = False
-                for z_preexisting in z:
-                    if np.isclose(z_indiv.magnitude, z_preexisting,
-                                  atol=0.1):
-                        # z1 is actually in z
-                        in_z = True
-                if not in_z:
-                    z.append(z_indiv.magnitude)
-    z = np.array(z) * z_uncombined[0][0].units
+    # Convert datetime to datenum
+    for p in range(len(times)):
+        for i in range(len(times[p])):
+            try:
+                times[p][i] = datenum.date2num(times[p][i])
+            except AttributeError:
+                times[p][i] = np.nan
 
-    # Now pad time and data to match the length of z
-    for i in range(len(time)):
-        diff = len(z) - len(time[i])
-        if diff > 0:
-            for j in range(diff):
-                time[i].append(np.nan)
-    for var_i in var:
-        for i in range(len(data[var_i])):
-            diff = len(z) - len(data[var_i][i])
-            if diff > 0:
-                replace_with = list(data[var_i][i].magnitude)
-                for j in range(diff):
-                    replace_with.append(np.nan)
-                replace_with = np.array(replace_with) * data[var_i][i].units
-                data[var_i][i] = replace_with
+    # Switch to arrays to make indexing easier
+    times = np.array(times, dtype=float)
+    z = np.array(z)
+    if use_pres:
+        z *= 0.01
+    XX, YY = np.meshgrid(timerange, z)
 
+    # Prepare for interpolation
+    data_grid = {}
     fig = None
     for var_i in var:
-        fig = contour_height_time_helper(vars[var_i], data[var_i],
-                                             time, z, fig=fig)
+        data_grid[var_i] = np.full_like(XX, np.nan)
+        data[var_i] = np.array(data[var_i])
 
-    return fig
-    """
-    # Pull info from Profile objects
-    time = []  # sub-list for each height
-    z = []
-    data = {}
-
-    # TODO force everything to match tallest z - fill in np.nan
-    for source in sources:
-        for subprofile in subprofiles[source]:
-            if len(z) == 0:
-                z = subprofile.alt
-                time = subprofile.gridded_times
-                for var_i in var:
-                    if source in vars[var_i][-1]:
-                        data[var_i] = \
-                            subprofile.__getattribute__(vars[var_i][1])
-            else:
-                for i in range(len(subprofile.alt)):
-                    z1 = subprofile.alt[i]
-                    t1 = subprofile.gridded_times[i]
-                    data1 = {}
-                    for var1 in var:
-                        if source in vars[var_i][-1]:
-                            data1[var_i] = \
-                                subprofile.__getattribute__(vars[var_i][1])[i]
-                    if not np.isnan(z1.magnitude):
-                        in_z = False
-                        for z2 in z:
-                            if np.isclose(z1.magnitude, z2.magnitude, atol=0.1):
-                                # z1 is actually in z
-                                in_z = True
-                                break
-
-                        if not in_z:
-                            # This does not need to be matched - 1D
-                            z.append(z1)
-
-                            for var_i in var:
-                                if source in vars[var_i][-1]:
-                                    if var_i not in data.keys():
-                                        data[var_i] = []
-
-                    time.append(t1)
-                    for var_i in var:
-                        if source in vars[var_i][-1]:
-                            data[var_i].append(data1[var_i])
-
-
-    fig = None
+    # For z in z interp1d with time as x and data as y
+    # Force back into one grid
     for var_i in var:
+        for i in range(len(z)):
+            a = list(np.array(times[:, i]).ravel())
+            j = 0
+            while j < len(a):
+                if np.isnan((a[j])):
+                    a.remove(a[j])
+                else:
+                    j += 1
+            if len(a) < 2:
+                continue
+            interp_fun = interp1d(np.array(times[:, i]).ravel(), data[var_i][:, i],
+                                  fill_value='extrapolate', kind='cubic')
+            data_grid[var_i][i, :] = interp_fun(XX[i, :])
+
+        # Set up figure
         if fig is None:
-            fig = contour_height_time_helper(vars[var_i], data[var_i], time, z)
+            start = 0
+            end = -1
+            for r in range(len(data_grid[var_i])):
+                if not np.isnan(data_grid[var_i][r][0]):
+                    start = r
+                    break
+            for r in range(len(data_grid[var_i])):
+                if r > start and np.isnan(data_grid[var_i][r][0]):
+                    end = r
+                    break
+            fig, ax = plt.subplots(1, figsize=(16, 9))
+            plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+            ax.xaxis.set_major_formatter(datenum.DateFormatter('%H:%M:%S'))
+            plt.ylim((z[start], z[end]))
+            if use_pres:
+                plt.ylabel("Pressure (hPa)", fontsize=15)
+            else:
+                plt.ylabel("Altitude (m MSL)", fontsize=15)
+            plt.xlabel("Time (UTC)", fontsize=15)
+            ax.tick_params(labelsize=14)
+
+            # Make filled contour plot
+            cfax = ax.pcolormesh(XX[start:end], YY[start:end],
+                                 data_grid[var_i][start:end],
+                                 cmap=vars[var_i][3])
+            cbar = plt.colorbar(cfax, ax=ax, pad=0.01, )
+            cbar.set_label(vars[var_i][0] + " (" + str(data_units[var_i]) + ")",
+                           rotation=270, fontsize=20, labelpad=30)
         else:
-            fig = contour_height_time_helper(vars[var[i]], data[var[i][1]], time, z, fig=fig)
+            # Make unfilled contour plot
+            cfax = ax.contour(XX[start:end], YY[start:end],
+                              data_grid[var_i][start:end],
+                              np.linspace(np.nanmin(data[var_i]),
+                                          np.nanmax(data[var_i]), 10),
+                              colors='black', linestyles=linestyles[style_ind])
+            legend_handles.append(
+                mlines.Line2D([], [], color='black', label=vars[var_i][0],
+                              linestyle=linestyles[style_ind], marker='.',
+                              markersize=1))
+            style_ind += 1
+            plt.clabel(cfax, fontsize=12,
+                       fmt=UnitFormatter(unit=vars[var_i][2],
+                                               places=1))
+
+
+    for p_times in times:
+        ax.scatter(p_times.astype(float), z, c='black', s=0.5)
+    legend_handles.append(mlines.Line2D([], [], color='black',
+                          label="Data collection points",
+                          linestyle='dotted'))
+    ax.legend(handles=legend_handles, fontsize=14, framealpha=1.0, loc=4)
 
     return fig
-    """
-    '''
+
+
+'''
 def meteogram(fpath):
     """ Graphically displays Mesonet data.
 
@@ -431,7 +322,6 @@ def rh_comp_co2(rh):
     :param tuple rh: relative humidity as (rh1, rh2, ..., time: ms)
     """
 
-########################################################################################################################
 # class plotSkewT():
 #     def __init__(self, T=None, pres=None, Td=None, u=None, v=None,
 #                  dt_start=None, **kwargs):
@@ -634,162 +524,6 @@ def rh_comp_co2(rh):
 #         fig.tight_layout()
 #         return fig
 #
-#
-# class plotTimeHeight():
-#     def __init__(self, t=None, z=None, z2d=None, data=None, label=None,
-#                  loc=None, **kwargs):
-#         '''
-#         t: 1d array of flight times
-#         z: 1d array of max alt range
-#         z2d: 2d array of altitudes for each flight
-#         data: 2d array of any paramater to be plotted
-#         label: data name string
-#         loc: location where data collected
-#         kwargs: data_cont: additional data to overlay with contour
-#                 data_cont_label: name of contoured data
-#         '''
-#         self.t = t
-#         self.z = z
-#         self.z2d = z2d
-#         self.data = data
-#         self.label = label
-#         self.loc = loc
-#         argDict = {'data_cont': None,
-#                    'data_cont_label': None,
-#                    't_cont': None,
-#                    'z_cont': None,
-#                    'z2d_cont': None
-#                    }
-#
-#         argDict.update(kwargs)
-#         self.argDict = argDict
-#         labelDict = {
-#             'Potential Temperature': ['K', cmocean.cm.thermal, 1.0],
-#             'Temperature': ['$^\circ$C', cmocean.cm.thermal, 1.0],
-#             'Dewpoint Temperature': ['$^\circ$C', cmocean.cm.haline, 1.0],
-#             'Mixing Ratio': ['g Kg$^{-1}$', cmocean.cm.haline, 0.5],
-#             'Specific Humidity': ['g Kg$^{-1}$', cmocean.cm.haline, 0.5],
-#             'Relative Humidity': ['%', cmocean.cm.haline, 5.0],
-#             'Wind Speed': ['m s$^{-1}$', gist_stern_r, 5.0],
-#             'Sensible Heat Flux': ['W m$^{-2}$', cmocean.cm.balance, 50.0],
-#             'Latent Heat Flux': ['W m$^{-2}$', cmocean.cm.balance, 50.0],
-#             'Wind Direction': ['$^\circ$', cmocean.cm.phase, 360.]
-#         }
-#         self.units = labelDict[self.label][0]
-#         self.shade = labelDict[self.label][1]
-#         self.contint = labelDict[self.label][2]
-#         if self.argDict['data_cont'] is not None:
-#             self.extraContour = True
-#             self.units_extra = labelDict[self.argDict['data_cont_label']][0]
-#         else:
-#             self.extraContour = False
-#             self.units_extra = ''
-#
-#         # interpolate new t
-#         self.dt = [mpdates.num2date(i) for i in self.t]
-#         self.dt_interp = mpdates.drange(self.dt[0], self.dt[-1],
-#                                         timedelta(seconds=60.))
-#
-#         # interpolate t_cont
-#         if self.extraContour:
-#             self.dt_ex = [mpdates.num2date(i) for i in self.argDict['t_cont']]
-#             self.dt_ex_int = mpdates.drange(self.dt_ex[0], self.dt_ex[-1],
-#                                             timedelta(seconds=60.))
-#
-#         # maximum altitude
-#         maxZ = []
-#         for i in range(len(self.t)):
-#             maxZ.append(np.nanmax(self.z2d[:, i]))
-#         self.maxZ = np.array(maxZ)
-#
-#         # max altitude extra
-#         if self.extraContour:
-#             maxZex = []
-#             for i in range(len(self.argDict['t_cont'])):
-#                 maxZex.append(np.nanmax(self.argDict['z2d_cont'][:, i]))
-#             self.maxZex = np.array(maxZex)
-#
-#     def interpTime(self):
-#         '''
-#         To preserve data from higher altitudes, do custom interpolation:
-#         At each level, create arrays data that are not nans and are spaced less
-#         than 20 minutes apart
-#         Interpolate that array in t
-#         Insert back into
-#         '''
-#         data_interp = np.full((len(self.z), len(self.dt_interp)), np.nan)
-#         for i in np.arange(len(self.z)):
-#             f = interp1d(self.t, self.data[i, :])
-#             fnew = f(self.dt_interp)
-#             data_interp[i, :] = fnew
-#
-#         self.data_interp = ma.masked_invalid(data_interp)
-#         # mask negative wind speeds
-#         if self.label == 'Wind Speed':
-#             self.data_interp = ma.masked_where(self.data_interp < 0.,
-#                                                self.data_interp)
-#
-#         # Interpolate contours
-#         if self.extraContour:
-#             data_interp_ex = np.full((len(self.argDict['z_cont']), len(
-#                 self.dt_ex_int)), np.nan)
-#             for i in np.arange(len(self.argDict['z_cont'])):
-#                 f_ex = interp1d(self.argDict['t_cont'],
-#                                 self.argDict['data_cont'][i, :])
-#                 fnew_ex = f_ex(self.dt_ex_int)
-#                 data_interp_ex[i, :] = fnew_ex
-#
-#             self.data_interp_ex = ma.masked_invalid(data_interp_ex)
-#
-#     def plot(self):
-#         self.interpTime()
-#         c_levels = np.arange(np.floor(np.nanmin(self.data_interp)),
-#                              np.ceil(np.nanmax(self.data_interp)) + 1.0, self.contint)
-#
-#         fig, ax = plt.subplots(1, figsize=(16, 9))
-#         plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
-#         if self.extraContour:
-#             vmax = max([abs(np.nanmin(self.data_interp_ex)),
-#                         np.nanmax(self.data_interp_ex)])
-#             vmax = round(vmax, 0)
-#
-#             cfax = ax.pcolormesh(self.dt_ex_int, self.argDict['z_cont'],
-#                                  self.data_interp_ex, cmap=cmocean.cm.balance,
-#                                  vmin=-vmax, vmax=vmax)
-#             cfax.set_edgecolor('face')
-#             cax = ax.contour(self.dt_interp, self.z, self.data_interp,
-#                              levels=c_levels, colors='k')
-#             plt.clabel(cax, fontsize=10, inline=1, fmt='%3.1f')
-#             cbar = fig.colorbar(cfax)
-#             cbar.ax.set_ylabel(self.argDict['data_cont_label'] + \
-#                                ' (' + self.units_extra + ')', fontsize=16)
-#
-#         else:
-#             cfax = ax.pcolormesh(self.dt_interp, self.z, self.data_interp,
-#                                  cmap=self.shade)
-#             cfax.set_edgecolor('face')
-#             cax = ax.contour(self.dt_interp, self.z, self.data_interp,
-#                              levels=c_levels, colors='white', zorder=1)
-#             plt.clabel(cax, fontsize=10, inline=1, fmt='%3.1f')
-#             cbar = fig.colorbar(cfax)
-#             cbar.ax.set_ylabel(self.label + ' (' + self.units + ')', fontsize=16)
-#
-#         ax.xaxis.set_major_locator(mpdates.MinuteLocator(byminute=[0, 30]))
-#         ax.xaxis.set_major_formatter(mpdates.DateFormatter('%H:%M'))
-#         ax.tick_params(axis='both', labelsize=14)
-#         plt.xlabel('Time UTC', fontsize=16)
-#         plt.ylabel('Altitude AGL (m)', fontsize=16)
-#         plt.title(self.label + ' ' + self.dt[0].strftime('%d %B %Y') + ' ' +
-#                   self.loc, fontsize=22)
-#         # cbar.ax.set_yticklabels(fontsize=14)
-#         [plt.axvline(t, linestyle='--', color='k') for t in self.t]
-#         [plt.plot(i, j, 'k*') for (i, j) in zip(self.t, self.maxZ)]
-#
-#         fig.tight_layout()
-#         # return fig
-#         return fig
-#
-#
 # class meteogram():
 #     def __init__(self, fmeso, tstart, tend, tsunrise):
 #         mesodata = np.genfromtxt(fmeso, delimiter=',')
@@ -896,3 +630,4 @@ def rh_comp_co2(rh):
 #         #         axarr[j, i].axvline(self.tsunrise, color='r', linestyle='-')
 #
 #        return fig, axarr
+'''

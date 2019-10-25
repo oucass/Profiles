@@ -9,7 +9,7 @@ from profiles.Profile_Set import Profile_Set
 import matplotlib.pyplot as plt
 from metpy.plots import Hodograph
 import os
-from profiles import plotting_2
+from profiles import plotting
 
 datadir = '/home/jessica/GitHub/data_templates/20191014'
 # Example using Profiles
@@ -44,7 +44,7 @@ aw = []
 for p in a.profiles:
     aw.append(p.get_wind_profile())
 
-fig = plotting_2.contour_height_time(a.profiles,
+fig = plotting.contour_height_time(a.profiles,
                                      var=['theta', 'q'],
                                      use_pres=True)
 plt.savefig("yay2.png")

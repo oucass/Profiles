@@ -12,11 +12,13 @@ import netCDF4
 import numpy as np
 from datetime import datetime as dt
 from metpy.units import units
-import mavlogdump_Profiles
+import profiles.mavlogdump_Profiles as mavlogdump_Profiles
+from profiles import utils
 import pandas as pd
 import os
 
 units.define('percent = 0.01*count = %')
+units.define('gPerKg = 0.001*count = g/Kg')
 
 
 class Raw_Profile():
@@ -57,6 +59,7 @@ class Raw_Profile():
         self.rotation = None
         self.dev = dev
         self.baro = "BARO"
+        self.serial_numbers_from_JSON = None
         if "json" in file_path or "JSON" in file_path:
             if os.path.basename(file_path)[:-5] + ".nc" in \
                os.listdir(os.path.dirname(file_path)):
@@ -75,7 +78,7 @@ class Raw_Profile():
 
         if scoop_id is not None:
             try:
-                coefs = pd.read_csv("./coefs/scoop" + scoop_id + ".csv")
+                coefs = pd.read_csv(utils.package_path + "/coefs/scoop" + str(scoop_id) + ".csv")
                 coefs.validFrom = [dt.strptime(date_string, "%Y-%m-%d")
                                    for date_string in coefs.validFrom]
                 day_flight = self.temp[-1][0]
@@ -95,10 +98,18 @@ class Raw_Profile():
                 self.serial_numbers = \
                     coefs[coefs.validFrom ==
                           sensor_install_date].to_dict('records')[0]
-
+                if self.serial_numbers_from_JSON is not None:
+                    for key in self.serial_numbers.keys():
+                        if self.serial_numbers[key] != self.serial_numbers_from_JSON[key] and "validFrom" not in key:
+                            print("Maintenance or Operator Error: metadata says " + key + " is " +
+                                  str(self.serial_numbers[key]) + " but file says " +
+                                  str(self.serial_numbers_from_JSON[key]))
             except IOError:
 
                 print("failed to read coefs")
+                if self.serial_numbers_from_JSON is not None:
+                    print("\tretrieved from JSON")
+                    self.serial_numbers = self.serial_numbers_from_JSON
 
                 # IMET
                 for sensor_number in np.add(range(int((len(self.temp)-2)
@@ -109,7 +120,9 @@ class Raw_Profile():
                     self.serial_numbers["rh" + str(sensor_number)] = 0
                 # WIND
                 self.serial_numbers["wind"] = 0
-        else:
+        elif self.serial_numbers_from_JSON is not None:
+            self.serial_numbers = self.serial_numbers_from_JSON
+        elif self.serial_numbers_from_JSON is None:
             # IMET
             for sensor_number in np.add(range(int((len(self.temp)-2)
                                                   / 2)), 1):
@@ -157,13 +170,11 @@ class Raw_Profile():
             to_return["resi" + str(sensor_number)] \
                 = self.temp[sensor_number*2 - 1]
 
-        to_return["time_temp"] = self.temp[-1]
+        to_return["time_temp"] = np.array(self.temp[-1])
 
         for sensor_number in [a + 1 for a in range((len(self.rh)-1) // 2)]:
-            to_return["rh" + str(sensor_number)] = \
-                self.rh[sensor_number * 2 - 2]
-            to_return["temp_rh" + str(sensor_number)] = \
-                self.rh[sensor_number*2 - 1]
+            to_return["rh" + str(sensor_number)] = self.rh[sensor_number * 2 - 2]
+            to_return["temp_rh" + str(sensor_number)] = self.rh[sensor_number*2 - 1]
 
         to_return["time_rh"] = self.rh[-1]
 
@@ -252,8 +263,26 @@ class Raw_Profile():
         #     "RHUM": {name: index, name: index, ...},
         #     ...
         # }
+        self.serial_numbers_from_JSON = {'validFrom': dt.today(),
+                                         'imet1': 57560, 'imet2': 57552,
+                                         'imet3': 57558, 'rh1': 10,
+                                         'rh2': 11, 'rh3': 12, 'wind': 0}
         sensor_names = {}
+
         for elem in full_data:
+
+            # TODO test if wind coef is read correctly
+            if elem["meta"]["type"] == "PARM" and "SYSID_THISMAV" in elem["data"]["Name"]:
+                file = np.transpose(np.genfromtxt(os.path.join(utils.package_path,
+                                                               'coefs/copterID.csv'), delimiter=','))
+                del file
+
+            if elem["meta"]["type"] == "PARM" and "USER_SENSORS" in elem["data"]["Name"]:
+                index = int(elem['data']['Name'][-1])
+                if index <= 4:
+                    self.serial_numbers_from_JSON['imet' + str(index)] = int(elem['data']['Value'])
+                elif index > 4 and index <= 8:
+                    self.serial_numbers_from_JSON['rh' + str(index)] = int(elem['data']['Value'])
 
             if self.baro == "BARO" and elem["meta"]["type"] == "BAR2":
                 # remove BARO structure and switch to using BAR2
@@ -457,10 +486,11 @@ class Raw_Profile():
         # Temperature
         for i in range(int((len(temp_list) - 1) / 2)):
             try:
-                temp_list[2*i] = temp_list[2*i] * units.K
-                temp_list[2*i + 1] = temp_list[2*i + 1] * units.ohm
+                temp_list[2*i] = np.array(temp_list[2*i]) * units.K
+                temp_list[2*i + 1] = np.array(temp_list[2*i + 1]) * units.ohm
             except IndexError:
-                print("No data for sensor ", i + 1)
+                # print("No data for sensor ", i + 1)
+                continue
 
         # RH
         for i in range(len(rh_list) - 1):
@@ -474,25 +504,25 @@ class Raw_Profile():
         # POS
         ground_alt = pos_list[2][0]  # This is the first in the file.
         # Profiles have not yet been separated.
-        pos_list[0] = pos_list[0] * units.deg  # lat
-        pos_list[1] = pos_list[1] * units.deg  # lng
-        pos_list[2] = pos_list[2] * units.m  # alt
-        pos_list[3] = pos_list[3] * units.m  # relHomeAlt
-        pos_list[4] = pos_list[4] * units.m  # relOrigAlt
+        pos_list[0] = np.array(pos_list[0]) * units.deg  # lat
+        pos_list[1] = np.array(pos_list[1]) * units.deg  # lng
+        pos_list[2] = np.array(pos_list[2]) * units.m  # alt
+        pos_list[3] = np.array(pos_list[3]) * units.m  # relHomeAlt
+        pos_list[4] = np.array(pos_list[4]) * units.m  # relOrigAlt
 
         # PRES
-        pres_list[0] = pres_list[0] * units.Pa
-        pres_list[1] = pres_list[1] * units.fahrenheit
-        pres_list[2] = pres_list[2] * units.fahrenheit
-        pres_list[3] = np.add(pres_list[3], ground_alt) * units.m
+        pres_list[0] = np.array(pres_list[0]) * units.Pa
+        pres_list[1] = np.array(pres_list[1]) * units.fahrenheit
+        pres_list[2] = np.array(pres_list[2]) * units.fahrenheit
+        pres_list[3] = np.array(np.add(pres_list[3], ground_alt)) * units.m
 
         # ROTATION
         for i in range(len(rotation_list) - 1):
             if i < 3:
-                rotation_list[i] = rotation_list[i] \
-                                        * units.m / units.s
+                rotation_list[i] = np.array(rotation_list[i]) \
+                                            * units.m / units.s
             else:
-                rotation_list[i] = rotation_list[i] * units.deg
+                rotation_list[i] = np.array(rotation_list[i]) * units.deg
 
         #
         # Convert to tuple
@@ -514,7 +544,7 @@ class Raw_Profile():
 
         main_file = netCDF4.Dataset(file_path, "r", format="NETCDF4",
                                     mmap=False)
-        print(main_file)
+        # print(main_file)
 
         # Note: each data chunk is converted to an np array. This is not a
         # superfluous conversion; a Variable object is incompatible with pint.
@@ -585,10 +615,6 @@ class Raw_Profile():
                                         units="microseconds since \
                                         2010-01-01 00:00:00:00"))
         self.rh = tuple(rh_list)
-
-        #
-        # TODO- CO2
-        #
 
         #
         # PRESSURE
@@ -698,8 +724,6 @@ class Raw_Profile():
                                       units="microseconds since \
                                       2010-01-01 00:00:00:00")
         new_var.units = "microseconds since 2010-01-01 00:00:00:00"
-
-        # TODO - CO2
 
         # POS
         pos_grp = main_file.createGroup("/pos")
@@ -819,8 +843,6 @@ class Raw_Profile():
             if not np.array_equal(self.pres[i], other.pres[i]):
                 print("pres not equal at " + str(i))
                 return False
-
-        # TODO - CO2
 
         # misc
         if self.baro != other.baro:

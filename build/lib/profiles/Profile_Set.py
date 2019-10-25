@@ -8,15 +8,15 @@ Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
 Component of Profiles v1.0.0
 """
 import os
-import utils
 import netCDF4
 import datetime as dt
 import numpy as np
 from metpy.units import units
-from Profile import Profile
-from Raw_Profile import Raw_Profile
-from Thermo_Profile import Thermo_Profile
-from Wind_Profile import Wind_Profile
+from profiles.Profile import Profile
+from profiles.Raw_Profile import Raw_Profile
+from profiles.Thermo_Profile import Thermo_Profile
+from profiles.Wind_Profile import Wind_Profile
+import profiles.utils as utils
 #from memory_profiler import profile
 from copy import deepcopy
 
@@ -74,6 +74,7 @@ class Profile_Set():
         self.profile_start_height = profile_start_height
         self._nc_level = nc_level
         self.root_dir = ""
+        self._base_start = None
 
     def add_all_profiles(self, file_path, scoop_id=None):
         """ Reads a file, splits it in to several vertical profiles, and adds
@@ -122,7 +123,25 @@ class Profile_Set():
                                          raw_profile=raw_profile_set,
                                          profile_start_height=self
                                          .profile_start_height,
-                                         nc_level=self._nc_level))
+                                         nc_level=self._nc_level,
+                                         base_start=self._base_start))
+
+            if self._base_start is None:
+                self._base_start = self.profiles[-1]._base_start
+                self.profiles = []
+                # re-add with standardized start
+                self.profiles.append(Profile(file_path, self.resolution,
+                                             self.res_units, profile_num,
+                                             self.ascent, self.dev,
+                                             self.confirm_bounds,
+                                             index_list=index_list,
+                                             raw_profile=raw_profile_set,
+                                             profile_start_height=self
+                                             .profile_start_height,
+                                             nc_level=self._nc_level,
+                                             base_start=self._base_start))
+
+        self.profiles.sort()
         print(len(self.profiles), "profile(s) including those added from file",
               file_path)
 

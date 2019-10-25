@@ -1,10 +1,10 @@
 README.md
 setup.py
-profiles/Location.py
 profiles/Profile.py
 profiles/Profile_Set.py
 profiles/Raw_Profile.py
 profiles/Thermo_Profile.py
+profiles/UnitFormatter.py
 profiles/Wind_Profile.py
 profiles/__init__.py
 profiles/mavlogdump_Profiles.py

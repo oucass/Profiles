@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="profiles",
-    version="0.0.1",
+    version="1.0.0",
     author="Jessica Blunt, Tyler Bell, Brian Greene",
     author_email="jessica.m.blunt-1@ou.edu",
     description="Tools to process atmospheric data collected by UAS along either vertical or horizontal lines",
@@ -15,7 +15,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: TBD",
+        "License :: GPL v3",
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.7',

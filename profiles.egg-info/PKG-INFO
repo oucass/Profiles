@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: profiles
-Version: 0.0.1
+Version: 1.0.0
 Summary: Tools to process atmospheric data collected by UAS along either vertical or horizontal lines
 Home-page: https://github.com/oucass/Profiles
 Author: Jessica Blunt, Tyler Bell, Brian Greene
@@ -12,7 +12,7 @@ Description: # Profiles
         
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3
-Classifier: License :: TBD
+Classifier: License :: GPL v3
 Classifier: Operating System :: OS Independent
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown

@@ -93,6 +93,8 @@ def process(args):
     """
     :return: JSON file path
     """
+
+
     if not args.mav10:
         os.environ['MAVLINK20'] = '1'
 
@@ -179,7 +181,6 @@ def process(args):
     while True:
         m = mlog.recv_match(blocking=args.follow)
         if m is None:
-            # FIXME: Make sure to output the last CSV message before dropping
             # out of this loop
             break
         available_types.add(m.get_type())
@@ -276,7 +277,6 @@ def process(args):
                 meta["srcComponent"] = m.get_srcComponent()
             outMsg = {"meta": meta, "data": data}
 
-            # TODO - Make this more pretty
             # Now print out this object with stringified properly.
             # print(json.dumps(outMsg) + '\n')
 
