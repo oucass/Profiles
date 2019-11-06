@@ -9,6 +9,7 @@ profiles/Wind_Profile.py
 profiles/__init__.py
 profiles/mavlogdump_Profiles.py
 profiles/plotting.py
+profiles/process_checklist.py
 profiles/utils.py
 profiles.egg-info/PKG-INFO
 profiles.egg-info/SOURCES.txt
