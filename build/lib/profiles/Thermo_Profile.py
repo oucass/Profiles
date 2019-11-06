@@ -91,48 +91,35 @@ class Thermo_Profile():
         else:
             self._ascent_filename_tag = "Descending"
 
-        # If a .json or .bin was given, checks for corrosponding .nc
-        if os.path.basename(file_path + "thermo_" +
-                            str(self.resolution.magnitude) +
-                            str(self.resolution.units) +
-                            self._ascent_filename_tag + ".nc") \
-           in os.listdir(self._datadir):
-            print("Reading thermo_profile from pre-processed netCDF")
-            self._read_netCDF(file_path + "thermo_" +
-                            str(self.resolution.magnitude) +
-                            str(self.resolution.units) +
-                            self._ascent_filename_tag + ".nc")
-            return
-        else:
-            if not indices[0] is None:
-                # trim profile
-                selection_temp = np.where(np.array(temp_dict["time_temp"]) > indices[0],
-                                          np.array(temp_dict["time_temp"]) < indices[1],
-                                          False)
-                selection_rh = np.where(np.array(temp_dict["time_rh"]) > indices[0],
-                                        np.array(temp_dict["time_rh"]) < indices[1],
-                                        False)
-                selection_pres = np.where(np.array(temp_dict["time_pres"]) > indices[0],
-                                          np.array(temp_dict["time_pres"]) < indices[1],
-                                          False)
+        if not indices[0] is None:
+            # trim profile
+            selection_temp = np.where(np.array(temp_dict["time_temp"]) > indices[0],
+                                      np.array(temp_dict["time_temp"]) < indices[1],
+                                      False)
+            selection_rh = np.where(np.array(temp_dict["time_rh"]) > indices[0],
+                                    np.array(temp_dict["time_rh"]) < indices[1],
+                                    False)
+            selection_pres = np.where(np.array(temp_dict["time_pres"]) > indices[0],
+                                      np.array(temp_dict["time_pres"]) < indices[1],
+                                      False)
 
-                for key in temp_dict.keys():
-                    if "time" not in key:
-                        if ("temp" in key and "rh" not in key and "pres" not in key)\
-                                or "resi" in key:
-                            temp_dict[key] = temp_dict[key].magnitude[np.where(selection_temp)] * temp_dict[key].units
-                        elif "pres" in key:
-                            temp_dict[key] = temp_dict[key].magnitude[np.where(selection_pres)] * temp_dict[key].units
-                        elif "rh" in key:
-                            temp_dict[key] = temp_dict[key].magnitude[np.where(selection_rh)] * temp_dict[key].units
-                    else:
-                         if ("temp" in key and "rh" not in key) \
-                                 or "resi" in key:
-                             temp_dict[key] = np.array(temp_dict[key])[np.where(selection_temp)]
-                         elif "pres" in key:
-                             temp_dict[key] = np.array(temp_dict[key])[np.where(selection_pres)]
-                         elif "rh" in key:
-                             temp_dict[key] = np.array(temp_dict[key])[np.where(selection_rh)]
+            for key in temp_dict.keys():
+                if "time" not in key:
+                    if ("temp" in key and "rh" not in key and "pres" not in key)\
+                            or "resi" in key:
+                        temp_dict[key] = temp_dict[key].magnitude[np.where(selection_temp)] * temp_dict[key].units
+                    elif "pres" in key:
+                        temp_dict[key] = temp_dict[key].magnitude[np.where(selection_pres)] * temp_dict[key].units
+                    elif "rh" in key:
+                        temp_dict[key] = temp_dict[key].magnitude[np.where(selection_rh)] * temp_dict[key].units
+                else:
+                     if ("temp" in key and "rh" not in key) \
+                             or "resi" in key:
+                         temp_dict[key] = np.array(temp_dict[key])[np.where(selection_temp)]
+                     elif "pres" in key:
+                         temp_dict[key] = np.array(temp_dict[key])[np.where(selection_pres)]
+                     elif "rh" in key:
+                        temp_dict[key] = np.array(temp_dict[key])[np.where(selection_rh)]
         temp = []
         rh = []
 
@@ -242,11 +229,11 @@ class Thermo_Profile():
 
         minlen = min(len(self.alt), len(self.gridded_times), len(self.rh),
                      len(self.pres), len(self.temp))
-        self.pres = self.pres[0:minlen-1]
-        self.temp = self.temp[0:minlen-1]
-        self.rh = self.rh[0:minlen-1]
-        self.alt = self.alt[0:minlen-1]
-        self.gridded_times = self.gridded_times[0:minlen-1]
+        self.pres = self.pres[0:minlen]
+        self.temp = self.temp[0:minlen]
+        self.rh = self.rh[0:minlen]
+        self.alt = self.alt[0:minlen]
+        self.gridded_times = self.gridded_times[0:minlen]
 
         # Calculate mixing ratio
         self.mixing_ratio = calc.mixing_ratio_from_relative_humidity(
@@ -275,6 +262,10 @@ class Thermo_Profile():
         self.temp = self.temp[:new_len]
         self.rh = self.rh[:new_len]
         self.alt = self.alt[:new_len]
+        self.T_d = self.T_d[:new_len]
+        self.theta = self.theta[:new_len]
+        self.mixing_ratio = self.mixing_ratio[:new_len]
+        self.q = self.q[:new_len]
         self.gridded_times = self.gridded_times[:new_len]
 
     def _save_netCDF(self, file_path):
@@ -287,6 +278,12 @@ class Thermo_Profile():
                                     format="NETCDF4", mmap=False)
 
         main_file.createDimension("time", None)
+        # TIME
+        time_var = main_file.createVariable("time", "f8", ("time",))
+        time_var[:] = netCDF4.date2num(self.gridded_times,
+                                       units='microseconds since \
+                                       2010-01-01 00:00:00:00')
+        time_var.units = 'microseconds since 2010-01-01 00:00:00:00'
         # PRES
         pres_var = main_file.createVariable("pres", "f8", ("time",))
         pres_var[:] = self.pres.magnitude
@@ -319,12 +316,6 @@ class Thermo_Profile():
         q_var = main_file.createVariable("q", "f8", ("time",))
         q_var[:] = self.q.magnitude
         q_var.units = str(self.q.units)
-        # TIME
-        time_var = main_file.createVariable("time", "f8", ("time",))
-        time_var[:] = netCDF4.date2num(self.gridded_times,
-                                       units='microseconds since \
-                                       2010-01-01 00:00:00:00')
-        time_var.units = 'microseconds since 2010-01-01 00:00:00:00'
 
         main_file.close()
 
