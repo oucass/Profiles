@@ -61,53 +61,58 @@ class Wind_Profile():
            'none'.
         """
 
-        self.resolution = resolution
-        self.gridded_times = gridded_times
-        self.ascent = ascent
-        self.pres = wind_dict["pres"]
-        self.alt = wind_dict["alt"]
-        self._indices = indices
-        self._units = units
+
+
+        try:
+            self._read_netCDF(file_path + "wind_" +
+                              str(resolution.magnitude) +
+                              str(resolution.units) +
+                              self._ascent_filename_tag + ".nc")
+            return
+
+        except Exception:
+            self.resolution = resolution
+            self.gridded_times = gridded_times
+            self.ascent = ascent
+            self.pres = wind_dict["pres"]
+            self.alt = wind_dict["alt"]
+            self._indices = indices
+            self._units = units
+            self._datadir = os.path.dirname(file_path + ".json")
+
         if ascent:
             self._ascent_filename_tag = "Ascending"
         else:
             self._ascent_filename_tag = "Descending"
 
-        self._datadir = os.path.dirname(file_path + ".json")
-        filepath_nc = file_path + "wind_" + str(resolution.magnitude) + \
-            str(resolution.units) + self._ascent_filename_tag + ".nc"
 
-        if os.path.basename(filepath_nc) in os.listdir(self._datadir):
-            print("Reading wind_profile from pre-processed netCDF")
-            self._read_netCDF(file_path)
-            return
-        else:
-            # If no indices given, use entire file
-            if not indices[0] is None:
-                # trim profile
-                selection = np.where(np.array(wind_dict["time"]) > indices[0],
-                                     np.array(wind_dict["time"]) < indices[1],
-                                     False)
 
-                wind_dict["roll"] = \
-                    np.array(wind_dict["roll"].magnitude)[selection] * \
-                    wind_dict["roll"].units
-                wind_dict["pitch"] = \
-                    np.array(wind_dict["pitch"].magnitude)[selection] * \
-                    wind_dict["pitch"].units
-                wind_dict["yaw"] = \
-                    np.array(wind_dict["yaw"].magnitude)[selection] * \
-                    wind_dict["yaw"].units
-                wind_dict["speed_east"] = \
-                    np.array(wind_dict["speed_east"].magnitude)[selection] * \
-                    wind_dict["speed_east"].units
-                wind_dict["speed_north"] = \
-                    np.array(wind_dict["speed_north"].magnitude)[selection] \
-                    * wind_dict["speed_north"].units
-                wind_dict["speed_down"] = \
-                    np.array(wind_dict["speed_down"].magnitude)[selection] * \
-                    wind_dict["speed_down"].units
-                wind_dict["time"] = np.array(wind_dict["time"])[selection]
+        # If no indices given, use entire file
+        if not indices[0] is None:
+            # trim profile
+            selection = np.where(np.array(wind_dict["time"]) > indices[0],
+                                 np.array(wind_dict["time"]) < indices[1],
+                                 False)
+
+            wind_dict["roll"] = \
+                np.array(wind_dict["roll"].magnitude)[selection] * \
+                wind_dict["roll"].units
+            wind_dict["pitch"] = \
+                np.array(wind_dict["pitch"].magnitude)[selection] * \
+                wind_dict["pitch"].units
+            wind_dict["yaw"] = \
+                np.array(wind_dict["yaw"].magnitude)[selection] * \
+                wind_dict["yaw"].units
+            wind_dict["speed_east"] = \
+                np.array(wind_dict["speed_east"].magnitude)[selection] * \
+                wind_dict["speed_east"].units
+            wind_dict["speed_north"] = \
+                np.array(wind_dict["speed_north"].magnitude)[selection] \
+                * wind_dict["speed_north"].units
+            wind_dict["speed_down"] = \
+                np.array(wind_dict["speed_down"].magnitude)[selection] * \
+                wind_dict["speed_down"].units
+            wind_dict["time"] = np.array(wind_dict["time"])[selection]
 
         direction, speed, time = self._calc_winds(wind_dict)
 
@@ -281,10 +286,7 @@ class Wind_Profile():
 
         :param string file_path: file name
         """
-        main_file = netCDF4.Dataset(file_path + "wind_" +
-                                    str(self.resolution.magnitude) +
-                                    str(self.resolution.units) +
-                                    self._ascent_filename_tag + ".nc", "r",
+        main_file = netCDF4.Dataset(file_path, "r",
                                     format="NETCDF4", mmap=False)
         # Note: each data chunk is converted to an np array. This is not a
         # superfluous conversion; a Variable object is incompatible with pint.
