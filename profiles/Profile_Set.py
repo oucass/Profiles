@@ -85,8 +85,9 @@ class Profile_Set():
         :param str file_path: the data file
         :param str scoop_id: the identifier of the sensor package used
         """
-        file_dir = os.path.dirname(file_path)
-        if(self.root_dir is ""):
+        file_path = os.path.abspath(file_path)
+        file_dir = os.path.dirname(file_path) + "/"
+        if self.root_dir is "":
             self.root_dir = file_dir
         else:
             match_up_to = -1
@@ -100,13 +101,15 @@ class Profile_Set():
                 else:
                     print(self.root_dir[:i-1], file_dir[:i-1])
                     break
-            self.root_dir = self.root_dir[:match_up_to+1]
+            print(self.root_dir)
+            self.root_dir = self.root_dir[:match_up_to+2]
+            print(self.root_dir)
             self.root_dir = self.root_dir[:self.root_dir.rindex("/")+1]
-
+            print(self.root_dir)
         # Process altitude data for profile identification
         raw_profile_set = Raw_Profile(file_path, self.dev, scoop_id,
                                       nc_level=self._nc_level,
-                                      meta_path_file=meta_path_flight,
+                                      meta_path_flight=meta_path_flight,
                                       meta_path_header=meta_path_header)
         pos = raw_profile_set.pos_data()
 
@@ -376,8 +379,13 @@ class Profile_Set():
         :param string file_path: the file name to which attributes should be
            saved
         """
-        main_file = netCDF4.Dataset(os.path.join(self.root_dir, file_path),
+        main_file = netCDF4.Dataset(os.path.join(self.root_dir,
+                                                 "processed", file_path),
                                     "w", format="NETCDF4", mmap=False)
+        if self.meta is not None:
+            self.meta.write_public_meta(
+                os.path.join(self.root_dir,"processed", file_path)[:-3]
+                + "_meta.txt")
         main_file.dev = str(self.dev)
         main_file.resolution = self.resolution
         main_file.res_units = self.res_units
@@ -513,6 +521,18 @@ class Profile_Set():
                     alt_var.units = str(wind.alt.units)
                 except Exception:
                     print("")
+
+
+        #
+        # META
+        #
+        if self.meta is not None:
+            print("\n\n" + str(self.meta.public_fields) + "\n\n")
+            for key in np.unique(self.meta.public_fields):
+                if self.meta.get(key) is not None:
+                    print(key)
+                    main_file.key = self.meta.get(key)
+                    main_file.renameAttribute("key", key)
 
         main_file.close()
 
