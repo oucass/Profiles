@@ -114,7 +114,7 @@ class Profile():
         elif ".json" in file_path or ".JSON" in file_path:
             self.file_path = file_path[:-5]
         elif ".bin" in file_path or ".BIN" in file_path:
-            self.file_path = file_path[:-4]
+            self.file_path = file_path[:-3]
         else:
             print("File type not recognized")
             sys.exit(0)

@@ -160,7 +160,6 @@ def temp_calib(resistance, sn):
     """
 
     coefs = pd.read_csv(os.path.join(package_path, 'coefs/MasterCoefList.csv'))
-    a = coefs.A[coefs.SerialNumber == sn][coefs.SensorType == "Imet"]
     a = float(coefs.A[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
     b = float(coefs.B[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
     c = float(coefs.C[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
