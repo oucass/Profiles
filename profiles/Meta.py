@@ -27,6 +27,7 @@ class Meta:
 
 
         self.all_fields = {"timestamp": None,
+                           "date_utc": None,
                            "checklist_operator": None,
                            "location": None,
                            "PIC": None,
@@ -64,6 +65,8 @@ class Meta:
         self.read_file(flight_path)
 
     def read_file(self, csv_path):
+        if csv_path is None:
+            return
         file = pd.read_csv(csv_path)
         for field in self.all_fields.keys():
             if field in file.keys():
@@ -87,13 +90,20 @@ class Meta:
 
     def write_public_meta(self, out_path):  # for the flight
         file = open(out_path, 'w')
-        order = self.public_fields.sort()
+        order = sorted(self.public_fields)
         i = 0
         while i < len(order):
-            file.write(order[i] + ": " + str(self.all_fields[order[i]]) + "\n")
+            if self.all_fields[order[i]] is not None:
+                file.write(order[i] + ": " + str(self.all_fields[order[i]])
+                           + "\n")
             i += 1
 
+        file.close()
         return
 
-    def get(self, field):
-        return self.all_fields[field]
+    def get(self, name):
+        if name in self.all_fields.keys():
+            return self.all_fields[name]
+        else:
+            print("You have requested an invalid metadata parameter. "
+                  "Please try on of the following: " + str(self.all_fields.keys()))

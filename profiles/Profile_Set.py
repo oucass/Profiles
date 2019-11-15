@@ -76,8 +76,8 @@ class Profile_Set():
         self.root_dir = ""
         self._base_start = None
 
-    def add_all_profiles(self, file_path, scoop_id=None, meta_header_path=None,
-                         meta_flight_path=None):
+    def add_all_profiles(self, file_path, scoop_id=None,
+                         meta_path_flight=None, meta_path_header=None):
         """ Reads a file, splits it in to several vertical profiles, and adds
         all Profiles to profiles
 

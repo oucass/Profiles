@@ -14,6 +14,7 @@ from datetime import datetime as dt
 from metpy.units import units  # this is a pint UnitRegistry
 import profiles.mavlogdump_Profiles as mavlogdump_Profiles
 from profiles import utils
+from profiles.Meta import Meta
 import pandas as pd
 import os
 from profiles.process_checklist import Meta
@@ -77,6 +78,12 @@ class Raw_Profile():
             file_path = mavlogdump_Profiles.with_args(fmt="json",
                                                       file_name=file_path)
             self._read_JSON(file_path, nc_level=nc_level)
+
+        # Incorporate metadata
+        self.meta = None
+        if meta_path_flight is not None or meta_path_header is not None:
+            self.meta = Meta(meta_path_header, meta_path_flight)
+            scoop_id = self.meta.get("scoop_id")
 
         # Populate serial_numbers
         self.serial_numbers = {}
