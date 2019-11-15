@@ -41,8 +41,8 @@ class Raw_Profile():
     def __init__(self, file_path, dev=False, scoop_id=None, nc_level='low',
                  meta_path_flight=None, meta_path_header=None):
         """ Creates a Raw_Profile object and reads in data in the appropriate
-        format. *If meta_path_flight or meta_path_header is given, scoop_id
-        will be ignored
+        format. *If meta_path_flight or meta_path_header includes scoop_id,
+        the scoop_id constructor parameter will be overwritten*
 
         :param string file_path: file name
         :param bool dev: True if the flight was developmental, false otherwise
@@ -80,7 +80,9 @@ class Raw_Profile():
         self.meta = None
         if meta_path_flight is not None or meta_path_header is not None:
             self.meta = Meta(meta_path_header, meta_path_flight)
-            scoop_id = self.meta.get("scoop_id")
+            id = self.meta.get("scoop_id")
+            if id is not None:
+                scoop_id = id
 
         # Populate serial_numbers
         self.serial_numbers = {}

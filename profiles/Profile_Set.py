@@ -72,6 +72,7 @@ class Profile_Set():
         self.confirm_bounds = confirm_bounds
         self.profiles = []
         self.profile_start_height = profile_start_height
+        self.meta = None
         self._nc_level = nc_level
         self.root_dir = ""
         self._base_start = None
@@ -118,16 +119,18 @@ class Profile_Set():
 
         # Create a Profile object for each profile identified
         for profile_num in np.add(range(len(index_list)), 1):
-            self.profiles.append(Profile(file_path, self.resolution,
-                                         self.res_units, profile_num,
-                                         self.ascent, self.dev,
-                                         self.confirm_bounds,
-                                         index_list=index_list,
-                                         raw_profile=raw_profile_set,
-                                         profile_start_height=self
-                                         .profile_start_height,
-                                         nc_level=self._nc_level,
-                                         base_start=self._base_start))
+            prof = Profile(file_path, self.resolution, self.res_units,
+                           profile_num, self.ascent, self.dev,
+                           self.confirm_bounds, index_list=index_list,
+                           raw_profile=raw_profile_set,
+                           profile_start_height=self.profile_start_height,
+                           nc_level=self._nc_level,
+                           base_start=self._base_start)
+            self.profiles.append(prof)
+            if self.meta is None:
+                self.meta = prof.meta
+            else:
+                self.meta.combine(prof.meta)
 
             if self._base_start is None:
                 self._base_start = self.profiles[-1]._base_start

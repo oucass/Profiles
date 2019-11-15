@@ -76,16 +76,12 @@ class Meta:
                 else:
                     self.all_fields[field] = file[field][0]
 
-    def combine_files(self, file1, file2):
-        file1 = open(file1, 'r')
-        file2 = open(file2, 'r')
-        lines1 = file1.readlines()
-        lines2 = file2.readlines()
-        for line in lines1:
-            if line in lines2:
-                # This line is the same in both files - use it
-                parts = line.partition(": ")
-                self.all_fields[parts[0]] = parts[1]
+    def combine(self, other):
+        if other is None:
+            return
+        for key in self.all_fields.keys():
+            if self.all_fields[key] != other.all_fields[key]:
+                self.all_fields[key] = None
 
     def write_public_meta(self, out_path):  # for the flight
         file = open(out_path, 'w')
