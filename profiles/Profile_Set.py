@@ -83,6 +83,7 @@ class Profile_Set():
         :param str file_path: the data file
         :param str scoop_id: the identifier of the sensor package used
         """
+        file_path = os.path.abspath(file_path)
         file_dir = os.path.dirname(file_path)
         if(self.root_dir is ""):
             self.root_dir = file_dir
