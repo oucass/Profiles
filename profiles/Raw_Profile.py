@@ -83,7 +83,9 @@ class Raw_Profile():
         self.meta = None
         if meta_path_flight is not None or meta_path_header is not None:
             self.meta = Meta(meta_path_header, meta_path_flight)
-            scoop_id = self.meta.get("scoop_id")
+            id = self.meta.get("scoop_id")
+            if id is not None:
+                scoop_id = id
 
         # Populate serial_numbers
         self.serial_numbers = {}
