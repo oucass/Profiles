@@ -141,13 +141,13 @@ class Wind_Profile():
         minlen = min([len(self.u), len(self.v), len(self.dir),
                       len(self.speed), len(self.alt), len(self.pres),
                       len(self.gridded_times)])
-        self.u = self.u[0:minlen]
-        self.v = self.v[0:minlen]
-        self.dir = self.dir[0:minlen]
-        self.speed = self.speed[0:minlen]
-        self.alt = self.alt[0:minlen]
-        self.pres = self.pres[0:minlen]
-        self.gridded_times = self.gridded_times[0:minlen]
+        self.u = self.u[0:minlen-1]
+        self.v = self.v[0:minlen - 1]
+        self.dir = self.dir[0:minlen - 1]
+        self.speed = self.speed[0:minlen - 1]
+        self.alt = self.alt[0:minlen - 1]
+        self.pres = self.pres[0:minlen - 1]
+        self.gridded_times = self.gridded_times[0:minlen - 1]
         #
         # save NC
         #

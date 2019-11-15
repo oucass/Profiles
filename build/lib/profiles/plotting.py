@@ -7,7 +7,6 @@ import matplotlib.ticker as ticker
 import matplotlib.lines as mlines
 from scipy.interpolate import interp1d
 from profiles.UnitFormatter import UnitFormatter
-import metpy.plots as mpplots
 
 
 vars = {'theta': ["Potential Temperature", 'theta', 'K', cmocean.cm.thermal,
@@ -213,44 +212,7 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
 
     return fig
 
-# TODO plot all variables
-# TODO determine x_lim
-# TODO Test with big flight data
-def plot_skewT(temp=None, pres=None, t_d=None, u=None, v=None, time=None, units=None,
-               **kwargs):
-    r""" Plots a SkewT diagram.
-    :param list<number> temp: Temperatures in C
-    :param list<number> pres: Pressures in ?
-    :param list<number> t_d: Dewpoint temperatures in C
-    :param list<number> u: U-component of wind in kts
-    :param list<number> v: V-component of wind in kts
-    :param datetime time: The starting time of the flight
-    :param \**kwargs: see below
-    :rtype: matplotlib.figure.Figure
-    :return: fig containing a SkewT diagram of the data
-    """
 
-    # Create plot
-    rotation = 30
-    fig = mpplots.SkewT(rotation=rotation, aspect=80.5)
-    fig.ax.yaxis.set_major_locator(ticker.MultipleLocator(5))
-    fig.plot(pres, temp, 'r', label="Temperature")
-    fig.plot(pres, t_d, 'g', label="Dewpoint")
-    fig.ax.set_ylim(np.nanmax(pres.to(units.hPa).magnitude) + 10,
-                    np.nanmin(pres.to(units.hPa).magnitude) - 20)
-    fig.ax.set_xlim(np.nanmin(t_d.to(units.degC).magnitude) - 5,
-                    np.nanmax(temp.to(units.degC).magnitude) + 10)
-    fig.plot_dry_adiabats(linewidth=0.5, label="Dry Adiabats")
-    fig.plot_moist_adiabats(linewidth=0.5, label="Moist Adiabats")
-    fig.plot_mixing_lines(linewidth=0.5, label="Mixing Ratio")
-    fig.plot_barbs(np.array(pres.magnitude) * pres.units,
-                   np.array(u.magnitude) * u.units,
-                   np.array(v.magnitude) * v.units)
-    plt.legend(loc='upper left')
-
-    # Set limits
-
-    return fig
 '''
 def meteogram(fpath):
     """ Graphically displays Mesonet data.
@@ -280,7 +242,43 @@ def plot_var_time(var=None, t=None, times=None):
     return
 
 
+def plot_skewT(temp=None, pres=None, t_d=None, u=None, v=None, time=None,
+               **kwargs):
+    r""" Plots a SkewT diagram.
+    :param list<number> temp: Temperatures in C
+    :param list<number> pres: Pressures in ?
+    :param list<number> t_d: Dewpoint temperatures in C
+    :param list<number> u: U-component of wind in kts
+    :param list<number> v: V-component of wind in kts
+    :param datetime time: The starting time of the flight
+    :param \**kwargs: see below
 
+    :Keyword Arguments:
+       * *parcel* (``???``) --
+         the parcel path (based on lapse rate)
+       * *lcl_pres* (``number``) --
+         the pressure at the LCL in hPa
+       * *lcl_temp* (``number``) --
+         the temperature at the LCL in degrees C
+       * *surface_based_CAPE* (``number``) --
+         the value of surface-based CAPE in J/kg
+       * *meso* (``Meso``) --
+         information from the ground station
+       * *location* (``Location``) --
+          information about the mission and location
+       * *platform_ID* (``int``) --
+          the platform's unique identification number
+
+    :rtype: matplotlib.figure.Figure
+    :return: fig containing a SkewT diagram of the data
+    """
+
+    # Create plot
+    fig = SkewT()
+
+    # Set limits
+
+    return fig
 
 
 def summary(temp=None, pres=None, t_d=None, u=None, v=None, dt=None,
