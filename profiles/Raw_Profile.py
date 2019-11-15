@@ -14,6 +14,7 @@ from datetime import datetime as dt
 from metpy.units import units
 import profiles.mavlogdump_Profiles as mavlogdump_Profiles
 from profiles import utils
+from profiles.Meta import Meta
 import pandas as pd
 import os
 
@@ -37,9 +38,11 @@ class Raw_Profile():
     :var dict serial_numbers: Contains serial number or 0 for each sensor
     """
 
-    def __init__(self, file_path, dev=False, scoop_id=None, nc_level='low'):
-        """ Creates a Raw_Profile object and reads in data in the appropiate
-        format.
+    def __init__(self, file_path, dev=False, scoop_id=None, nc_level='low',
+                 meta_path_flight=None, meta_path_header=None):
+        """ Creates a Raw_Profile object and reads in data in the appropriate
+        format. *If meta_path_flight or meta_path_header is given, scoop_id
+        will be ignored
 
         :param string file_path: file name
         :param bool dev: True if the flight was developmental, false otherwise
@@ -72,6 +75,12 @@ class Raw_Profile():
             file_path = mavlogdump_Profiles.with_args(fmt="json",
                                                       file_name=file_path)
             self._read_JSON(file_path, nc_level=nc_level)
+
+        # Incorporate metadata
+        self.meta = None
+        if meta_path_flight is not None or meta_path_header is not None:
+            self.meta = Meta(meta_path_header, meta_path_flight)
+            scoop_id = self.meta.get("scoop_id")
 
         # Populate serial_numbers
         self.serial_numbers = {}

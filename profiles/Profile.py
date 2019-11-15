@@ -43,7 +43,8 @@ class Profile():
     def _init2(self, file_path, resolution, res_units, profile_num,
                ascent=True, dev=False, confirm_bounds=True,
                index_list=None, scoop_id=None, raw_profile=None,
-               profile_start_height=None, nc_level='low', base_start=None):
+               profile_start_height=None, nc_level='low', base_start=None,
+               meta_path_flight=None, meta_path_header=None):
         """ Creates a Profile object.
 
         :param string file_path: data file
@@ -78,7 +79,9 @@ class Profile():
             self._raw_profile = raw_profile
         else:
             self._raw_profile = Raw_Profile(file_path, dev, scoop_id,
-                                            nc_level=nc_level)
+                                            nc_level=nc_level,
+                                            meta_path_flight=meta_path_flight,
+                                            meta_path_header=meta_path_header)
         self._units = self._raw_profile.get_units()
         self._pos = self._raw_profile.pos_data()
         self._pres = (self._raw_profile.pres[0], self._raw_profile.pres[-1])
