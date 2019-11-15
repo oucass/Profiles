@@ -11,11 +11,12 @@ import json
 import netCDF4
 import numpy as np
 from datetime import datetime as dt
-from metpy.units import units
+from metpy.units import units  # this is a pint UnitRegistry
 import profiles.mavlogdump_Profiles as mavlogdump_Profiles
 from profiles import utils
 import pandas as pd
 import os
+from profiles.process_checklist import Meta
 
 units.define('percent = 0.01*count = %')
 units.define('gPerKg = 0.001*count = g/Kg')
@@ -37,7 +38,8 @@ class Raw_Profile():
     :var dict serial_numbers: Contains serial number or 0 for each sensor
     """
 
-    def __init__(self, file_path, dev=False, scoop_id=None, nc_level='low'):
+    def __init__(self, file_path, dev=False, scoop_id=None, nc_level='low',
+                 meta_header_path=None, meta_flight_path=None):
         """ Creates a Raw_Profile object and reads in data in the appropiate
         format.
 
@@ -52,6 +54,9 @@ class Raw_Profile():
            'none'.
         """
 
+        self.meta = None
+        if meta_header_path is not None or meta_flight_path is not None:
+            self.meta = Meta(meta_header_path, meta_flight_path)
         self.temp = None
         self.rh = None
         self.pos = None
@@ -75,6 +80,9 @@ class Raw_Profile():
 
         # Populate serial_numbers
         self.serial_numbers = {}
+
+        if self.meta is not None:
+            scoop_id = self.meta.get("scoop_id")
 
         if scoop_id is not None:
             try:

@@ -86,9 +86,9 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
         times.append(list(profiles[i].gridded_times))
         z.append(profiles[i].get("gridded_base").magnitude)
         for var_i in var:
-            data[var_i].append(list(profiles[i].get(var_i).magnitude))
+            data[var_i].append(list(profiles[i].get(vars[var_i][1]).magnitude))
             if var_i not in data_units.keys():
-                data_units[var_i] = profiles[i].get(var_i).units
+                data_units[var_i] = profiles[i].get(vars[var_i][1]).units
 
     # Now there are 3 parallel lists for each profile.
     # Force them to share z

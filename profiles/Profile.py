@@ -43,7 +43,8 @@ class Profile():
     def _init2(self, file_path, resolution, res_units, profile_num,
                ascent=True, dev=False, confirm_bounds=True,
                index_list=None, scoop_id=None, raw_profile=None,
-               profile_start_height=None, nc_level='low', base_start=None):
+               profile_start_height=None, nc_level='low', base_start=None,
+               meta_flight_path=None, meta_header_path=None):
         """ Creates a Profile object.
 
         :param string file_path: data file
@@ -74,11 +75,14 @@ class Profile():
            and Wind Profile, specify 'low'. For no NetCDF files, specify \
            'none'.
         """
+
         if raw_profile is not None:
             self._raw_profile = raw_profile
         else:
             self._raw_profile = Raw_Profile(file_path, dev, scoop_id,
-                                            nc_level=nc_level)
+                                            nc_level=nc_level,
+                                            meta_header_path=meta_header_path,
+                                            meta_flight_path=meta_flight_path)
         self._units = self._raw_profile.get_units()
         self._pos = self._raw_profile.pos_data()
         self._pres = (self._raw_profile.pres[0], self._raw_profile.pres[-1])
