@@ -23,7 +23,7 @@ vars = {'theta': ["Potential Temperature", 'theta', 'K', cmocean.cm.thermal,
                0.5],
         'q': ["Specific Humidity", 'q', 'g Kg$^{-1}$', cmocean.cm.haline, 0.5],
         'rh': ["Relative Humidity", 'rh', '%', cmocean.cm.haline, 5.0],
-        'ws': ["Wind Speed", 'speed', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
+        'speed': ["Wind Speed", 'speed', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
         'u': ["U", 'u', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
         'v': ["V", 'v', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
         'dir': ["Wind Direction", 'dir', '$^\circ$', cmocean.cm.phase, 360.,
@@ -51,7 +51,7 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
        * 'mr'
        * 'q'
        * 'rh'
-       * 'ws':
+       * 'speed':
        * 'u'
        * 'v'
        * 'dir'
