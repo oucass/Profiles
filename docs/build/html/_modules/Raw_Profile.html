@@ -54,6 +54,10 @@
 <span class="kn">from</span> <span class="nn">metpy.units</span> <span class="k">import</span> <span class="n">units</span>
 <span class="kn">import</span> <span class="nn">profiles.mavlogdump_Profiles</span> <span class="k">as</span> <span class="nn">mavlogdump_Profiles</span>
 <span class="kn">from</span> <span class="nn">profiles</span> <span class="k">import</span> <span class="n">utils</span>
+<<<<<<< Updated upstream
+=======
+<span class="kn">from</span> <span class="nn">profiles.Meta</span> <span class="k">import</span> <span class="n">Meta</span>
+>>>>>>> Stashed changes
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
@@ -77,9 +81,17 @@
 <span class="sd">    :var dict serial_numbers: Contains serial number or 0 for each sensor</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<<<<<<< Updated upstream
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">dev</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scoop_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nc_level</span><span class="o">=</span><span class="s1">&#39;low&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Creates a Raw_Profile object and reads in data in the appropiate</span>
 <span class="sd">        format.</span>
+=======
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">dev</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scoop_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nc_level</span><span class="o">=</span><span class="s1">&#39;low&#39;</span><span class="p">,</span>
+                 <span class="n">meta_path_flight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">meta_path_header</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Creates a Raw_Profile object and reads in data in the appropriate</span>
+<span class="sd">        format. *If meta_path_flight or meta_path_header includes scoop_id,</span>
+<span class="sd">        the scoop_id constructor parameter will be overwritten*</span>
+>>>>>>> Stashed changes
 
 <span class="sd">        :param string file_path: file name</span>
 <span class="sd">        :param bool dev: True if the flight was developmental, false otherwise</span>
@@ -113,6 +125,17 @@
                                                       <span class="n">file_name</span><span class="o">=</span><span class="n">file_path</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_read_JSON</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">nc_level</span><span class="o">=</span><span class="n">nc_level</span><span class="p">)</span>
 
+<<<<<<< Updated upstream
+=======
+        <span class="c1"># Incorporate metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">meta_path_flight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">meta_path_header</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="n">Meta</span><span class="p">(</span><span class="n">meta_path_header</span><span class="p">,</span> <span class="n">meta_path_flight</span><span class="p">)</span>
+            <span class="nb">id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scoop_id&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">scoop_id</span> <span class="o">=</span> <span class="nb">id</span>
+
+>>>>>>> Stashed changes
         <span class="c1"># Populate serial_numbers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">serial_numbers</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -911,10 +934,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../Profile.html">Profile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Raw_Profile.html">Raw_Profile</a></li>
+<<<<<<< Updated upstream
 <li class="toctree-l1"><a class="reference internal" href="../Thermo_Profile.html">Thermo_Profile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../utils.html">utils</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Profile_Set.html">Profile_Set</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Wind_Profile.html">Wind_Profile</a></li>
+=======
+<li class="toctree-l1"><a class="reference internal" href="../Profile_Set.html">Profile_Set</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Thermo_Profile.html">Thermo_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Wind_Profile.html">Wind_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Meta.html">Meta</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">utils</a></li>
+>>>>>>> Stashed changes
 <li class="toctree-l1"><a class="reference internal" href="../plotting.html">plotting</a></li>
 </ul>
 
@@ -946,7 +977,11 @@
         <div class="right">
           
     <div class="footer" role="contentinfo">
+<<<<<<< Updated upstream
         &#169; Copyright 2019, Jessica Blunt, Brian Greene, Tyler Bell, Gus Azevedo, and Ariel Jacobs.
+=======
+        &#169; Copyright 2019, Center for Autonomous Sensing and Sampling.
+>>>>>>> Stashed changes
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
         </div>

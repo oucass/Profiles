@@ -83,7 +83,12 @@
     <span class="k">def</span> <span class="nf">_init2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">res_units</span><span class="p">,</span> <span class="n">profile_num</span><span class="p">,</span>
                <span class="n">ascent</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dev</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">confirm_bounds</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                <span class="n">index_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scoop_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw_profile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<<<<<<< Updated upstream
                <span class="n">profile_start_height</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nc_level</span><span class="o">=</span><span class="s1">&#39;low&#39;</span><span class="p">,</span> <span class="n">base_start</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+=======
+               <span class="n">profile_start_height</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nc_level</span><span class="o">=</span><span class="s1">&#39;low&#39;</span><span class="p">,</span> <span class="n">base_start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">meta_path_flight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">meta_path_header</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+>>>>>>> Stashed changes
         <span class="sd">&quot;&quot;&quot; Creates a Profile object.</span>
 
 <span class="sd">        :param string file_path: data file</span>
@@ -118,11 +123,21 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_raw_profile</span> <span class="o">=</span> <span class="n">raw_profile</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_raw_profile</span> <span class="o">=</span> <span class="n">Raw_Profile</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">scoop_id</span><span class="p">,</span>
+<<<<<<< Updated upstream
                                             <span class="n">nc_level</span><span class="o">=</span><span class="n">nc_level</span><span class="p">)</span>
+=======
+                                            <span class="n">nc_level</span><span class="o">=</span><span class="n">nc_level</span><span class="p">,</span>
+                                            <span class="n">meta_path_flight</span><span class="o">=</span><span class="n">meta_path_flight</span><span class="p">,</span>
+                                            <span class="n">meta_path_header</span><span class="o">=</span><span class="n">meta_path_header</span><span class="p">)</span>
+>>>>>>> Stashed changes
         <span class="bp">self</span><span class="o">.</span><span class="n">_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_profile</span><span class="o">.</span><span class="n">get_units</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_profile</span><span class="o">.</span><span class="n">pos_data</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pres</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw_profile</span><span class="o">.</span><span class="n">pres</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_profile</span><span class="o">.</span><span class="n">pres</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_nc_level</span> <span class="o">=</span> <span class="n">nc_level</span>
+<<<<<<< Updated upstream
+=======
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_profile</span><span class="o">.</span><span class="n">meta</span>
+>>>>>>> Stashed changes
 
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">index_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -154,7 +169,11 @@
         <span class="k">elif</span> <span class="s2">&quot;.json&quot;</span> <span class="ow">in</span> <span class="n">file_path</span> <span class="ow">or</span> <span class="s2">&quot;.JSON&quot;</span> <span class="ow">in</span> <span class="n">file_path</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span> <span class="o">=</span> <span class="n">file_path</span><span class="p">[:</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span>
         <span class="k">elif</span> <span class="s2">&quot;.bin&quot;</span> <span class="ow">in</span> <span class="n">file_path</span> <span class="ow">or</span> <span class="s2">&quot;.BIN&quot;</span> <span class="ow">in</span> <span class="n">file_path</span><span class="p">:</span>
+<<<<<<< Updated upstream
             <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span> <span class="o">=</span> <span class="n">file_path</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+=======
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span> <span class="o">=</span> <span class="n">file_path</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+>>>>>>> Stashed changes
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;File type not recognized&quot;</span><span class="p">)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -324,10 +343,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../Profile.html">Profile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Raw_Profile.html">Raw_Profile</a></li>
+<<<<<<< Updated upstream
 <li class="toctree-l1"><a class="reference internal" href="../Thermo_Profile.html">Thermo_Profile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../utils.html">utils</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Profile_Set.html">Profile_Set</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Wind_Profile.html">Wind_Profile</a></li>
+=======
+<li class="toctree-l1"><a class="reference internal" href="../Profile_Set.html">Profile_Set</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Thermo_Profile.html">Thermo_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Wind_Profile.html">Wind_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Meta.html">Meta</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">utils</a></li>
+>>>>>>> Stashed changes
 <li class="toctree-l1"><a class="reference internal" href="../plotting.html">plotting</a></li>
 </ul>
 
@@ -359,7 +386,11 @@
         <div class="right">
           
     <div class="footer" role="contentinfo">
+<<<<<<< Updated upstream
         &#169; Copyright 2019, Jessica Blunt, Brian Greene, Tyler Bell, Gus Azevedo, and Ariel Jacobs.
+=======
+        &#169; Copyright 2019, Center for Autonomous Sensing and Sampling.
+>>>>>>> Stashed changes
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
         </div>

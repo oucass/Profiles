@@ -20,7 +20,11 @@ sys.path.insert(0, os.path.abspath('../../profiles'))
 # -- Project information -----------------------------------------------------
 
 project = u'Profiles'
+<<<<<<< Updated upstream:docs/source/conf.py
 copyright = u'2019, Jessica Blunt, Brian Greene, Tyler Bell, Gus Azevedo, and Ariel Jacobs'
+=======
+copyright = u'2019, Center for Autonomous Sensing and Sampling'
+>>>>>>> Stashed changes:docs/source/conf.py
 author = u'Jessica Blunt, Brian Greene, Tyler Bell, Gus Azevedo, and Ariel Jacobs'
 
 # The short X.Y version

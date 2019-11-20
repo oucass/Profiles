@@ -13,10 +13,16 @@ Profiles: powered by CASS
 
    Profile
    Raw_Profile
+   Profile_Set
    Thermo_Profile
+   Wind_Profile
+   Meta
    utils
+<<<<<<< Updated upstream:docs/source/index.rst
    Profile_Set
    Wind_Profile
+=======
+>>>>>>> Stashed changes:docs/source/index.rst
    plotting
 
 
