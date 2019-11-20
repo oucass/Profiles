@@ -14,10 +14,11 @@ Profiles: powered by CASS
    Profile
    Profile_Set
    Raw_Profile
+   Profile_Set
    Thermo_Profile
    Wind_Profile
    plotting
-   utils 
+   utils
 
 
 
@@ -29,7 +30,7 @@ Key Equations
 .. math::
 
    \begin{aligned}
-   \mathrm{Speed} &= A \sqrt{\tan{[\arccos{(\cos{(\mathrm{PITCH})} - \cos{(\mathrm{ROLL})})}]}} + B \\ 
+   \mathrm{Speed} &= A \sqrt{\tan{[\arccos{(\cos{(\mathrm{PITCH})} - \cos{(\mathrm{ROLL})})}]}} + B \\
    \\
    \mathrm{Direction} &= \arctan{\Bigg[\frac{-\cos{(\mathrm{YAW})}\sin{(\mathrm{ROLL})}}{\sin{(\mathrm{YAW})}\sin{(\mathrm{ROLL})} + \sin{(\mathrm{PITCH})}\cos{(\mathrm{YAW})}\cos{(\mathrm{ROLL})}} \Bigg]}
    \end{aligned}
