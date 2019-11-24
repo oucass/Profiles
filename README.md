@@ -1,3 +1,3 @@
 # Profiles
 
-See oucass.github.io for documentation.
+See https://oucass.github.io/Profiles for documentation.
