@@ -23,7 +23,6 @@ sys.path.insert(0, os.path.abspath('..'))
 project = u'Profiles'
 copyright = u'2019, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs'
 author = u'Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs'
-author = u'Jessica Blunt, Brian Greene, Tyler Bell, Gus Azevedo, and Ariel Jacobs'
 
 # The short X.Y version
 version = u'1.0'

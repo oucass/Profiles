@@ -39,9 +39,10 @@ class Raw_Profile():
     """
 
     def __init__(self, file_path, dev=False, scoop_id=None, nc_level='low',
-                 meta_header_path=None, meta_flight_path=None):
-        """ Creates a Raw_Profile object and reads in data in the appropiate
-        format.
+                 meta_path_flight=None, meta_path_header=None):
+        """ Creates a Raw_Profile object and reads in data in the appropriate
+        format. *If meta_path_flight or meta_path_header includes scoop_id,
+        the scoop_id constructor parameter will be overwritten*
 
         :param string file_path: file name
         :param bool dev: True if the flight was developmental, false otherwise
