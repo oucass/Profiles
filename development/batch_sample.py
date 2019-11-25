@@ -45,7 +45,7 @@ for p in a.profiles:
     aw.append(p.get_wind_profile())
 
 fig = plotting.contour_height_time(a.profiles,
-                                     var=['theta', 'p'],
+                                     var=['theta', 'temp', 'p', 'rh'],
                                      use_pres=True)
 #plt.savefig("yay2.png")
 fig.show()

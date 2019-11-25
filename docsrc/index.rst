@@ -12,12 +12,12 @@ Profiles: powered by CASS
    :titlesonly:
 
    Profile
+   Profile_Set
    Raw_Profile
    Thermo_Profile
-   utils
-   Profile_Set
    Wind_Profile
    plotting
+   utils 
 
 
 

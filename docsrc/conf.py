@@ -20,13 +20,13 @@ sys.path.insert(0, os.path.abspath('../profiles'))
 # -- Project information -----------------------------------------------------
 
 project = u'Profiles'
-copyright = u'2019, Jessica Blunt, Brian Greene, Tyler Bell, Gus Azevedo, and Ariel Jacobs'
-author = u'Jessica Blunt, Brian Greene, Tyler Bell, Gus Azevedo, and Ariel Jacobs'
+copyright = u'2019, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs'
+author = u'Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs'
 
 # The short X.Y version
-version = u''
+version = u'1.0'
 # The full version, including alpha/beta/rc tags
-release = u'1.0.0'
+release = u'1.0.1'
 
 
 # -- General configuration ---------------------------------------------------
