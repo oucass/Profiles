@@ -41,7 +41,8 @@ fpath_logos = os.path.join(os.getcwd(), 'resources', 'CircleLogos.png')
 def contour_height_time(profiles, var=['temp'], use_pres=False):
     """ contourHeightTime creates a filled contour plot of the first element of
        var in a time-height coordinate system. If len(var) > 1, it also
-       overlays unfilled contours of the remaining elements.
+       overlays unfilled contours of the remaining elements. No more than 4
+       variables can be plotted at once.
        Accepted variable names are:
 
        * 'theta'
