@@ -1,7 +1,0 @@
-numpy
-pandas
-matplotlib
-metpy
-netCDF4
-pymavlink
-pint

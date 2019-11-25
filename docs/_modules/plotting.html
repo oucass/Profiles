@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>plotting &#8212; Profiles 1.0.0 documentation</title>
+    <title>plotting &#8212; Profiles 1.0.1 documentation</title>
     <link rel="stylesheet" href="../_static/agogo.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -19,7 +19,7 @@
     <div class="header-wrapper" role="banner">
       <div class="header">
         <div class="headertitle"><a
-          href="../index.html">Profiles 1.0.0 documentation</a></div>
+          href="../index.html">Profiles 1.0.1 documentation</a></div>
         <div class="rel" role="navigation" aria-label="related navigation">
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |
@@ -64,6 +64,7 @@
         <span class="s1">&#39;q&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Specific Humidity&quot;</span><span class="p">,</span> <span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="s1">&#39;g Kg$^{-1}$&#39;</span><span class="p">,</span> <span class="n">cmocean</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">haline</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
         <span class="s1">&#39;rh&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Relative Humidity&quot;</span><span class="p">,</span> <span class="s1">&#39;rh&#39;</span><span class="p">,</span> <span class="s1">&#39;%&#39;</span><span class="p">,</span> <span class="n">cmocean</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">haline</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">],</span>
         <span class="s1">&#39;speed&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Wind Speed&quot;</span><span class="p">,</span> <span class="s1">&#39;speed&#39;</span><span class="p">,</span> <span class="s1">&#39;m s$^{-1}$&#39;</span><span class="p">,</span> <span class="n">cmocean</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">speed</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">],</span>
+        <span class="s1">&#39;ws&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Wind Speed&quot;</span><span class="p">,</span> <span class="s1">&#39;speed&#39;</span><span class="p">,</span> <span class="s1">&#39;m s$^{-1}$&#39;</span><span class="p">,</span> <span class="n">cmocean</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">speed</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">],</span>
         <span class="s1">&#39;u&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="s1">&#39;m s$^{-1}$&#39;</span><span class="p">,</span> <span class="n">cmocean</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">speed</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">],</span>
         <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;m s$^{-1}$&#39;</span><span class="p">,</span> <span class="n">cmocean</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">speed</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">],</span>
         <span class="s1">&#39;dir&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Wind Direction&quot;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">,</span> <span class="s1">&#39;$^\circ$&#39;</span><span class="p">,</span> <span class="n">cmocean</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">phase</span><span class="p">,</span> <span class="mf">360.</span><span class="p">,</span>
@@ -80,7 +81,8 @@
 <div class="viewcode-block" id="contour_height_time"><a class="viewcode-back" href="../plotting.html#plotting.contour_height_time">[docs]</a><span class="k">def</span> <span class="nf">contour_height_time</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">],</span> <span class="n">use_pres</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; contourHeightTime creates a filled contour plot of the first element of</span>
 <span class="sd">       var in a time-height coordinate system. If len(var) &gt; 1, it also</span>
-<span class="sd">       overlays unfilled contours of the remaining elements.</span>
+<span class="sd">       overlays unfilled contours of the remaining elements. No more than 4</span>
+<span class="sd">       variables can be plotted at once.</span>
 <span class="sd">       Accepted variable names are:</span>
 
 <span class="sd">       * &#39;theta&#39;</span>
@@ -684,12 +686,12 @@
           <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../Profile.html">Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Profile_Set.html">Profile_Set</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Raw_Profile.html">Raw_Profile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Thermo_Profile.html">Thermo_Profile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../utils.html">utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Profile_Set.html">Profile_Set</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Wind_Profile.html">Wind_Profile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../plotting.html">plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">utils</a></li>
 </ul>
 
           <div role="search">
@@ -720,7 +722,7 @@
         <div class="right">
           
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2019, Jessica Blunt, Brian Greene, Tyler Bell, Gus Azevedo, and Ariel Jacobs.
+        &#169; Copyright 2019, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
     </div>
         </div>
