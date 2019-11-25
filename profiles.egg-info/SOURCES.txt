@@ -10,6 +10,7 @@ profiles/__init__.py
 profiles/mavlogdump_Profiles.py
 profiles/plotting.py
 profiles/utils.py
+profiles/Meta.py
 profiles.egg-info/MANIFEST.in
 profiles.egg-info/PKG-INFO
 profiles.egg-info/SOURCES.txt

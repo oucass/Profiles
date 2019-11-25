@@ -17,7 +17,6 @@ from profiles import utils
 from profiles.Meta import Meta
 import pandas as pd
 import os
-from profiles.process_checklist import Meta
 
 units.define('percent = 0.01*count = %')
 units.define('gPerKg = 0.001*count = g/Kg')
@@ -81,8 +80,8 @@ class Raw_Profile():
 
         # Incorporate metadata
         self.meta = None
-        if meta_path_flight is not None or meta_path_header is not None:
-            self.meta = Meta(meta_path_header, meta_path_flight)
+        if meta_flight_path is not None or meta_header_path is not None:
+            self.meta = Meta(meta_header_path, meta_flight_path)
             id = self.meta.get("scoop_id")
             if id is not None:
                 scoop_id = id

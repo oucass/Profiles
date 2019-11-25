@@ -1,3 +1,6 @@
+"""
+Manages metadata from a single flight or set of profiles at a specific location
+"""
 import pandas as pd
 import numpy as np
 

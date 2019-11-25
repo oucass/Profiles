@@ -78,7 +78,7 @@ class Profile_Set():
         self._base_start = None
 
     def add_all_profiles(self, file_path, scoop_id=None,
-                         meta_path_flight=None, meta_path_header=None):
+                         meta_flight_path=None, meta_header_path=None):
         """ Reads a file, splits it in to several vertical profiles, and adds
         all Profiles to profiles
 
@@ -86,13 +86,8 @@ class Profile_Set():
         :param str scoop_id: the identifier of the sensor package used
         """
         file_path = os.path.abspath(file_path)
-<<<<<<< HEAD
-        file_dir = os.path.dirname(file_path)
-        if(self.root_dir is ""):
-=======
         file_dir = os.path.dirname(file_path) + "/"
-        if self.root_dir is "":
->>>>>>> save meta to netcdf, write human-readable public file
+        if(self.root_dir is ""):
             self.root_dir = file_dir
         else:
             match_up_to = -1
