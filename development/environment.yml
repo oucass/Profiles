@@ -1,4 +1,4 @@
-name: Profiles
+name: Profiles2
 channels:
   - conda-forge
   - defaults

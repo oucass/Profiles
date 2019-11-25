@@ -1,45 +1,26 @@
 Getting started:
-    Download Anaconda 3. Install the environment "Profiles_dev" (in this folder). 
-  If you make changes to the environment, export the entire environment to post all changes on GitHub.
-    Download Sphinx for documentation. All settings are in conf.py, which is in this folder.
+  Download Anaconda 3 or miniconda and PyCharm. Install the environment
+    "Profiles_dev" (in this folder).
+  If you make changes to the environment, export the entire environment to post
+    all changes on GitHub.
+  Download Sphinx for documentation. All settings are in conf.py, which is in
+    this folder.
+  To install new package version without publishing, cd into "dist" and do
+    "pip install " and the name of the file ending in ".whl"
 
-Temperature Calculations:
-
-  Reading resistance
-
-    read:
-        In Raw_Profile._read_JSON() search for "if elem["meta"]["type"] ==
-      "IMET":". The following section is where all IMET data is read. The code
-      currently searches for Temp1, Temp2, ..., Resi1, Resi2, ..., and Time.
-      No JSON files with logged resistance were available for code development.
-      Change "Resi" in Raw_Profile to match the name of the identifier in the
-      JSON file. Search for "temp_list[2*i + 2] = temp_list[2*i + 2] *
-      units.Ohms and change the units to those in which resistance is actually
-      logged.
-
-    test:
-        Ensure that resistance, temperature, and time are being recorded
-      correctly. Data files without logged resistance should be using the
-      logged temperature.
-
-  Coefficients
-      Coefficients are currently stored in a dictionary of dictionaries located
-    at the top of Thermo_Profile.py. The coefficients do need to be changed
-    any time the IMET sensors are moved - these calculations rely on both the
-    temperatures listed in the JSON and the coefficients being identically
-    ordered. Each set of coefficients should be followed by a comment
-    identifying the individual sensor for which it was calculated. Coefficients
-    should eventually be stored in a JSON database file.
-
-  Calculation
-      np.pow(np.add(np.add(np.multiply(np.log(resist), coeff[nnumber][1])),
-                    np.multiply(np.pow(resist, 3), coeff[nnumber][2])), -1)
-    yields the calculated temperature. In C++, the equation would be written
-      _temperature = 1.0f / (coeff[0] + coeff[1] * logf(resist) + coeff[2] *
-                             powf(logf(resist), 3));
-    These equations have not been tested in Profiles to ensure that they were
-    implemented correctly - that needs to be done.
-
+  To publish a new version, follow these steps:
+    1) setup.py - review and change version number
+    2) docsrc/conf.py - change version number
+    3) terminal - type "make github" from directory "Profiles" to build
+         documentation
+    4) terminal - type "python3 -m pip install --user --upgrade setuptools
+         wheel" to update wheel
+    5) terminal - type "python3 setup.py sdist bdist_wheel" to make/update
+         profiles package
+    6) terminal - type "python3 -m pip install --user --upgrade twine" to
+         update twine
+    7) terminal - type "python3 -m twine upload --repository-url
+         https://test.pypi.org/legacy dist/*" to upload profiles to Test PyPI
 
 Pressure Altitude:
     Add flag (boolean parameter) from Profiles down to use altitude calculated
@@ -67,20 +48,6 @@ CO2:
   User access
     In Profile.get_co2_profile, create a CO2_Profile object.
 
-Wind:
-  Calculate
-    Calculate wind data from roll, pitch, yaw data in Raw_Profile.
-
-  Wind_Profile
-    Implement Wind_Profile. A skeleton file already exists.
-
-  User access
-    In Profile.get_wind_data, create a Wind_Profile object
-
-Profiles:
-  Finish implementation
-
-
 AFTER ANY CHANGE TO THE USER INTERFACE, UPDATE RST FILES, HTML FILES, AND UML.
-Email jessica.m.wiedemeier-1@ou.edu if you are unsure how to do this - I can
+Email jessicamblunt@gmail.com if you are unsure how to do this - I can
 make changes remotely.

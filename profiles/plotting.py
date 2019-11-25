@@ -24,6 +24,7 @@ vars = {'theta': ["Potential Temperature", 'theta', 'K', cmocean.cm.thermal,
         'q': ["Specific Humidity", 'q', 'g Kg$^{-1}$', cmocean.cm.haline, 0.5],
         'rh': ["Relative Humidity", 'rh', '%', cmocean.cm.haline, 5.0],
         'speed': ["Wind Speed", 'speed', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
+        'ws': ["Wind Speed", 'speed', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
         'u': ["U", 'u', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
         'v': ["V", 'v', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
         'dir': ["Wind Direction", 'dir', '$^\circ$', cmocean.cm.phase, 360.,
@@ -40,7 +41,8 @@ fpath_logos = os.path.join(os.getcwd(), 'resources', 'CircleLogos.png')
 def contour_height_time(profiles, var=['temp'], use_pres=False):
     """ contourHeightTime creates a filled contour plot of the first element of
        var in a time-height coordinate system. If len(var) > 1, it also
-       overlays unfilled contours of the remaining elements.
+       overlays unfilled contours of the remaining elements. No more than 4
+       variables can be plotted at once.
        Accepted variable names are:
 
        * 'theta'

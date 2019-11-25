@@ -23,6 +23,7 @@ vars = {'theta': ["Potential Temperature", 'theta', 'K', cmocean.cm.thermal,
                0.5],
         'q': ["Specific Humidity", 'q', 'g Kg$^{-1}$', cmocean.cm.haline, 0.5],
         'rh': ["Relative Humidity", 'rh', '%', cmocean.cm.haline, 5.0],
+        'speed': ["Wind Speed", 'speed', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
         'ws': ["Wind Speed", 'speed', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
         'u': ["U", 'u', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
         'v': ["V", 'v', 'm s$^{-1}$', cmocean.cm.speed, 5.0],
@@ -40,7 +41,8 @@ fpath_logos = os.path.join(os.getcwd(), 'resources', 'CircleLogos.png')
 def contour_height_time(profiles, var=['temp'], use_pres=False):
     """ contourHeightTime creates a filled contour plot of the first element of
        var in a time-height coordinate system. If len(var) > 1, it also
-       overlays unfilled contours of the remaining elements.
+       overlays unfilled contours of the remaining elements. No more than 4
+       variables can be plotted at once.
        Accepted variable names are:
 
        * 'theta'
@@ -51,7 +53,7 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
        * 'mr'
        * 'q'
        * 'rh'
-       * 'ws':
+       * 'speed':
        * 'u'
        * 'v'
        * 'dir'
@@ -86,9 +88,9 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
         times.append(list(profiles[i].gridded_times))
         z.append(profiles[i].get("gridded_base").magnitude)
         for var_i in var:
-            data[var_i].append(list(profiles[i].get(var_i).magnitude))
+            data[var_i].append(list(profiles[i].get(vars[var_i][1]).magnitude))
             if var_i not in data_units.keys():
-                data_units[var_i] = profiles[i].get(var_i).units
+                data_units[var_i] = profiles[i].get(vars[var_i][1]).units
 
     # Now there are 3 parallel lists for each profile.
     # Force them to share z
