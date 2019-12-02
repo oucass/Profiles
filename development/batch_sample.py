@@ -15,7 +15,7 @@ datadir = '/home/jessica/GitHub/data_templates/20191014'
 # Example using Profiles
 a = Profile_Set(resolution=5, res_units='m', ascent=True, dev=True,
                 confirm_bounds=False, profile_start_height=365,
-                nc_level="none")
+                nc_level="none", coefs_path="/home/jessica/GitHub/Profiles/profiles/coefs")
 for file_name in os.listdir(datadir):
     if ".json" in file_name:
         a.add_all_profiles(os.path.join(datadir, file_name),

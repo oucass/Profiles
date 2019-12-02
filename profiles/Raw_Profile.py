@@ -39,7 +39,8 @@ class Raw_Profile():
     """
 
     def __init__(self, file_path, dev=False, scoop_id=None, nc_level='low',
-                 meta_flight_path=None, meta_header_path=None):
+                 meta_flight_path=None, meta_header_path=None,
+                 coefs_path=os.path.join(utils.package_path, "coefs")):
         """ Creates a Raw_Profile object and reads in data in the appropriate
         format. *If meta_path_flight or meta_path_header includes scoop_id,
         the scoop_id constructor parameter will be overwritten*
@@ -66,6 +67,7 @@ class Raw_Profile():
         self.dev = dev
         self.baro = "BARO"
         self.serial_numbers_from_JSON = None
+        self.coefs_path = coefs_path
         if "json" in file_path or "JSON" in file_path:
             if os.path.basename(file_path)[:-5] + ".nc" in \
                os.listdir(os.path.dirname(file_path)):
@@ -95,7 +97,9 @@ class Raw_Profile():
 
         if scoop_id is not None:
             try:
-                coefs = pd.read_csv(utils.package_path + "/coefs/scoop" + str(scoop_id) + ".csv")
+                coefs = pd.read_csv(os.path.join(coefs_path,
+                                                 "scoop" + str(scoop_id)
+                                                 + ".csv"))
                 coefs.validFrom = [dt.strptime(date_string, "%Y-%m-%d")
                                    for date_string in coefs.validFrom]
                 day_flight = self.temp[-1][0]
@@ -290,8 +294,8 @@ class Raw_Profile():
 
             # TODO test if wind coef is read correctly
             if elem["meta"]["type"] == "PARM" and "SYSID_THISMAV" in elem["data"]["Name"]:
-                file = np.transpose(np.genfromtxt(os.path.join(utils.package_path,
-                                                               'coefs/copterID.csv'), delimiter=','))
+                file = np.transpose(np.genfromtxt(os.path.join(self.coefs_path,
+                                                               'copterID.csv'), delimiter=','))
                 del file
 
             if elem["meta"]["type"] == "PARM" and "USER_SENSORS" in elem["data"]["Name"]:

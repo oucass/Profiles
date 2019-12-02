@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Thermo_Profile &#8212; Profiles 1.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/agogo.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Wind_Profile" href="Wind_Profile.html" />
+    <link rel="prev" title="Raw_Profile" href="Raw_Profile.html" /> 
+  </head><body>
+    <div class="header-wrapper" role="banner">
+      <div class="header">
+        <div class="headertitle"><a
+          href="index.html">Profiles 1.0.1 documentation</a></div>
+        <div class="rel" role="navigation" aria-label="related navigation">
+          <a href="Raw_Profile.html" title="Raw_Profile"
+             accesskey="P">previous</a> |
+          <a href="Wind_Profile.html" title="Wind_Profile"
+             accesskey="N">next</a> |
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-Thermo_Profile">
+<span id="thermo-profile"></span><h1>Thermo_Profile<a class="headerlink" href="#module-Thermo_Profile" title="Permalink to this headline">¶</a></h1>
+<p>Calculates and stores basic thermodynamic parameters</p>
+<p>Authors Brian Greene, Jessica Blunt, Tyler Bell, Gus Azevedo</p>
+<p>Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
+2019</p>
+<p>Component of Profiles v1.0.0</p>
+<dl class="class">
+<dt id="Thermo_Profile.Thermo_Profile">
+<em class="property">class </em><code class="sig-prename descclassname">Thermo_Profile.</code><code class="sig-name descname">Thermo_Profile</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains data from one file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>temp</strong> (<em>np.array&lt;Quantity&gt;</em>) – QC’d and averaged temperature</p></li>
+<li><p><strong>mixing_ratio</strong> (<em>np.array&lt;Quantity&gt;</em>) – calculated mixing ratio</p></li>
+<li><p><strong>theta</strong> (<em>np.array&lt;Quantity&gt;</em>) – calculated potential temperature</p></li>
+<li><p><strong>T_d</strong> (<em>np.array&lt;Quantity&gt;</em>) – calculated dewpoint temperature</p></li>
+<li><p><strong>q</strong> (<em>np.array&lt;Quantity&gt;</em>) – calculated mixing ratio</p></li>
+<li><p><strong>rh</strong> (<em>np.array&lt;Quantity&gt;</em>) – QC’d and averaged relative humidity</p></li>
+<li><p><strong>pres</strong> (<em>np.array&lt;Quantity&gt;</em>) – QC’d pressure</p></li>
+<li><p><strong>alt</strong> (<em>np.array&lt;Quantity&gt;</em>) – altitude</p></li>
+<li><p><strong>gridded_times</strong> (<em>np.array&lt;Datetime&gt;</em>) – times at which processed data exists</p></li>
+<li><p><strong>resolution</strong> (<em>Quantity</em>) – vertical resolution in units of time,
+altitude, or pressure to which the data is calculated</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="Thermo_Profile.Thermo_Profile.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Thermo_Profile.Thermo_Profile.__str__">
+<code class="sig-name descname">__str__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile.__str__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return str(self).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Thermo_Profile.Thermo_Profile._init2">
+<code class="sig-name descname">_init2</code><span class="sig-paren">(</span><em class="sig-param">temp_dict</em>, <em class="sig-param">resolution</em>, <em class="sig-param">file_path=None</em>, <em class="sig-param">gridded_times=None</em>, <em class="sig-param">gridded_base=None</em>, <em class="sig-param">indices=(None</em>, <em class="sig-param">None)</em>, <em class="sig-param">ascent=True</em>, <em class="sig-param">units=None</em>, <em class="sig-param">nc_level='low'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile._init2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile._init2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates Thermo_Profile object from raw data at the specified
+resolution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>temp_dict</strong> (<em>dict</em>) – A dictionary of the format            {“temp1”:, “temp2”:, …, “tempj”:,             “resi1”:, “resi2”:, …, “resij”, “time_temp”:,             “rh1”:, “rh2”:, …, “rhk”:, “time_rh”:,             “temp_rh1”:, “temp_rh2”:, …, “temp_rhk”:,             “pres”:, “temp_pres”:, “ground_temp_pres”:,             “alt_pres”:, “time_pres”:, “serial_numbers”:},             which is returned by             Raw_Profile.thermo_data</p></li>
+<li><p><strong>resoltion</strong> (<em>Quantity</em>) – vertical resolution in units of altitude            or pressure to which the data should be calculated</p></li>
+<li><p><strong>filepath</strong> (<em>str</em>) – the path to the original data file WITHOUT the            suffix .nc or .json</p></li>
+<li><p><strong>gridded_times</strong> (<em>np.Array&lt;Datetime&gt;</em>) – times at which data points            should be calculated</p></li>
+<li><p><strong>ascent</strong> (<em>bool</em>) – True if data should be processed for the ascending           leg of the flight, False if descending</p></li>
+<li><p><strong>units</strong> (<em>metpy.Units</em>) – the unit registry created by Profile</p></li>
+<li><p><strong>nc_level</strong> (<em>str</em>) – either ‘low’, or ‘none’. This parameter            is used when processing non-NetCDF files to determine which types            of NetCDF files will be generated. For individual files for each            Raw, Thermo,            and Wind Profile, specify ‘low’. For no NetCDF files, specify            ‘none’.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Thermo_Profile.Thermo_Profile._read_netCDF">
+<code class="sig-name descname">_read_netCDF</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile._read_netCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile._read_netCDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads data from a NetCDF file. Called by the constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_path</strong> (<em>string</em>) – file name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Thermo_Profile.Thermo_Profile._save_netCDF">
+<code class="sig-name descname">_save_netCDF</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile._save_netCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile._save_netCDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a NetCDF file to facilitate future processing if a .JSON was
+read.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_path</strong> (<em>string</em>) – file name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Thermo_Profile.Thermo_Profile.truncate_to">
+<code class="sig-name descname">truncate_to</code><span class="sig-paren">(</span><em class="sig-param">new_len</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile.truncate_to"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile.truncate_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shortens arrays to have no more than new_len data points</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>new_len</strong> – The new, shorter length</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="temperature-calibration">
+<h2>Temperature Calibration<a class="headerlink" href="#temperature-calibration" title="Permalink to this headline">¶</a></h2>
+<p>Resistance (R) to temperature (T)</p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+T &amp;= \frac{1}{A + B (log{R}) + C (log{R})^3}
+\end{aligned}\]</div>
+<p>Coefficients are pulled from ./coefs/MasterCoefList.csv on your computer.</p>
+<p>Equation from: Greene, B.R. Boundary Layer Profiling Using Rotary-Wing Unmanned Aircraft Systems: Filling the Atmospheric Data Gap. Master’s Thesis, The University of Oklahoma, Norman, OK, USA, 2018.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+        </div>
+        <div class="sidebar">
+          <h3>Table of Contents</h3>
+          <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Meta.html">Meta</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Profile.html">Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Profile_Set.html">Profile_Set</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Raw_Profile.html">Raw_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Profile_Set.html">Profile_Set</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Thermo_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Wind_Profile.html">Wind_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coefs.html">Sensor calibration</a></li>
+</ul>
+
+          <div role="search">
+            <h3 style="margin-top: 1.5em;">Search</h3>
+            <form class="search" action="search.html" method="get">
+                <input type="text" name="q" />
+                <input type="submit" value="Go" />
+            </form>
+          </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <div role="navigation" aria-label="related navigaton">
+            <a href="Raw_Profile.html" title="Raw_Profile"
+              >previous</a> |
+            <a href="Wind_Profile.html" title="Wind_Profile"
+              >next</a> |
+            <a href="py-modindex.html" title="Python Module Index"
+              >modules</a> |
+            <a href="genindex.html" title="General Index"
+              >index</a>
+          </div>
+          <div role="note" aria-label="source link">
+              <br/>
+              <a href="_sources/Thermo_Profile.rst.txt"
+                rel="nofollow">Show Source</a>
+          </div>
+        </div>
+
+        <div class="right">
+          
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+  </body>
+</html>
