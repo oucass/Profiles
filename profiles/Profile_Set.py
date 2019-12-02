@@ -96,16 +96,16 @@ class Profile_Set():
                     if self.root_dir[i] == file_dir[i]:
                         match_up_to = i
                     else:
-                        print(self.root_dir[i], file_dir[i])
+                        # print(self.root_dir[i], file_dir[i])
                         break
                 else:
-                    print(self.root_dir[:i-1], file_dir[:i-1])
+                    # print(self.root_dir[:i-1], file_dir[:i-1])
                     break
-            print(self.root_dir)
+            # print(self.root_dir)
             self.root_dir = self.root_dir[:match_up_to+2]
-            print(self.root_dir)
+            # print(self.root_dir)
             self.root_dir = self.root_dir[:self.root_dir.rindex("/")+1]
-            print(self.root_dir)
+            # print(self.root_dir)
         # Process altitude data for profile identification
         raw_profile_set = Raw_Profile(file_path, self.dev, scoop_id,
                                       nc_level=self._nc_level,
@@ -178,10 +178,10 @@ class Profile_Set():
                     if self.root_dir[i] == file_dir[i]:
                         match_up_to = i
                     else:
-                        print(self.root_dir[i], file_dir[i])
+                        # print(self.root_dir[i], file_dir[i])
                         break
                 else:
-                    print(self.root_dir[:i-1], file_dir[:i-1])
+                    # print(self.root_dir[:i-1], file_dir[:i-1])
                     break
             self.root_dir = os.path.dirname(self.root_dir[0:match_up_to+1])
 
@@ -527,10 +527,10 @@ class Profile_Set():
         # META
         #
         if self.meta is not None:
-            print("\n\n" + str(self.meta.public_fields) + "\n\n")
+            # print("\n\n" + str(self.meta.public_fields) + "\n\n")
             for key in np.unique(self.meta.public_fields):
                 if self.meta.get(key) is not None:
-                    print(key)
+                    # print(key)
                     main_file.key = self.meta.get(key)
                     main_file.renameAttribute("key", key)
 

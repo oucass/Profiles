@@ -39,7 +39,7 @@ class Raw_Profile():
     """
 
     def __init__(self, file_path, dev=False, scoop_id=None, nc_level='low',
-                 meta_path_flight=None, meta_path_header=None):
+                 meta_flight_path=None, meta_header_path=None):
         """ Creates a Raw_Profile object and reads in data in the appropriate
         format. *If meta_path_flight or meta_path_header includes scoop_id,
         the scoop_id constructor parameter will be overwritten*

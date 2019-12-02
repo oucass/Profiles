@@ -1,5 +1,5 @@
 import pandas as pd
-
+import numpy as np
 
 class Meta:
     """ Processes, stores, and writes metadata files (JSON-LD for public, CSV for private) for a flight
@@ -108,16 +108,13 @@ class Meta:
         file = pd.read_csv(csv_path)
         for field in self.all_fields.keys():
             if field in file.keys():
-                if field is not None and self.all_fields[field] is not None:
-                    print("Replaced " + str(self.all_fields[field] + " with " + str(file[field])))
+                if field is not None and self.all_fields[field] is not None \
+                        and field not in "timestamp":
+                    print("Replaced " + str(self.all_fields[field] + " with " + str(file[field].values[0])))
                     self.all_fields[field] = np.array(file[field])[0]
                     return
                 else:
                     self.all_fields[field] = np.array(file[field])[0]
-
-    def combine(self, other):
-                else:
-                    self.all_fields[field] = file[field][0]
 
     def combine(self, other):
         """ Merge two Meta objects to create a file that accurately describes

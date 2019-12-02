@@ -67,6 +67,8 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
     :return: the contoured plot
     """
 
+    plt.figure()  # Don't append this to an existing figure
+
     legend_handles = []
     for var_i in var:
         if var_i not in vars.keys():
@@ -231,15 +233,12 @@ def plot_skewT(temp=None, pres=None, t_d=None, u=None, v=None, time=None, units=
     :rtype: matplotlib.figure.Figure
     :return: fig containing a SkewT diagram of the data
     """
-    for p in pres:
-        print(np.isnan(p))
-        print(p.dtype)
+
     # Ensure all NaNs are np.nan
     pres = np.where(np.isnan(pres.magnitude), np.nan, pres.magnitude) * pres.units
     u = np.where(np.isnan(u.magnitude), np.nan, u.magnitude) * u.units
     v = np.where(np.isnan(v.magnitude), np.nan, v.magnitude) * v.units
-    for p in pres:
-        print(p.dtype)
+
 
     # Create plot
     rotation = 30
