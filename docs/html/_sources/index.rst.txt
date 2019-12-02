@@ -53,7 +53,7 @@ Contact us!
 .. raw:: html
 
    <embed>
-   <form name='input' method='POST' action=https://formspree.io/jessica.m.blunt-1@ou.edu>
+   <form name='input' method='POST' action=https://formspree.io/cass@ou.edu>
       Name: <input type="text" name="Name" placeholder="Your name"><br>
       Email: <input type="email" name="_replyto" placeholder="Your email"><br>
       Message: <textarea name="message" placeholder="Type your message here"></textarea><br>
