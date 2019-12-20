@@ -311,7 +311,7 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
     * The craft does not go above profile_start_height after the last
     profile is ended.
 
-    :param np.Array<Quantity> alts: recorded altitudes; units don't matter
+    :param np.Array<Quantity> or np.Array<float> alts: recorded altitudes; units don't matter
     :param np.Array<Datetime> alt_times: times coresponding to alts
     :param bool confirm_bounds: if True, will ask user for verification that \
        the start, peak, and end times of the profile have been properly \
@@ -327,6 +327,11 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
     :return: a list of times defining the profiles in the format \
        (time_start, time_max_height, time_end)
     """
+
+    try:
+        alts = alts.magnitude
+    except AttributeError:
+        pass
 
     isDone = False
     # Get the starting height from the user
