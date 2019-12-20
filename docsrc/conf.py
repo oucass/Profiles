@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = u'Profiles'
+project = u'oucass-profiles'
 copyright = u'2019, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs'
 author = u'Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs'
 
