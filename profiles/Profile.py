@@ -96,7 +96,7 @@ class Profile():
         try:
             if index_list is None:
                 index_list = \
-                 utils.identify_profile(self._pos["alt_MSL"].magnitude,
+                 utils.identify_profile(self._pos["alt_MSL"],
                                         self._pos["time"], confirm_bounds,
                                         profile_start_height=\
                                         profile_start_height)
@@ -170,7 +170,7 @@ class Profile():
         try:
             return self._raw_profile.__getattribute__(varname)
         except AttributeError:
-            print("The requested variable does not exist. Call "
+            print("The requested variable " + varname + " does not exist. Call "
                   "get_thermo_profile and get_wind_profile before trying "
                   "again.")
 

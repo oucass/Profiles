@@ -23,9 +23,7 @@ different profile start height.
 
 # Example using Profile_Set
 a = Profile_Set(resolution=1, res_units='m', ascent=True, dev=True)
-a.add_all_profiles("/home/jessica/GitHub/data_templates/20191014/20191014_2029.json",
-                   meta_flight_path="/home/jessica/GitHub/Utilities/Logs/20191115_2321N963UA (CS3D)_flight_log.csv",
-                   meta_header_path="/home/jessica/GitHub/Utilities/Logs/20191115N963UA (CS3D)_log_header.csv")
+a.add_all_profiles("/home/jessica/GitHub/data_templates/01082020/00000110.BIN")
 
 
 
@@ -46,7 +44,7 @@ at = []
 for p in a.profiles:
     at.append(p.get_thermo_profile())
 
-"""
+
 aw = []
 for p in a.profiles:
     aw.append(p.get_wind_profile())
@@ -55,12 +53,17 @@ for p in a.profiles:
 # bw = b.get_wind_profile()
 
 
-"""
+
 Here's an example of one way to view the processed data. See the docs for a
 full list of accessible variables.
 """
 # Example using Profiles
-plotting.contour_height_time(a.profiles)  # not yet functional
+# plotting.contour_height_time(a.profiles)  # not yet functional
+a1 = a.profiles[0]
+plotting.plot_skewT(temp=a1.get("temp"), pres=a1.get("pres"), t_d=a1.get("T_d"),
+                    u=a1.get("u"), v=a1.get("v"), time=a1.get("gridded_times"),
+                    units=a1.get("_units"))
+plt.savefig("/home/jessica/GitHub/data_templates/01082020/20200108__mSkewT.png")
 plt.show()
 
 # plt.figure()

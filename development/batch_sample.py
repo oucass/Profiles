@@ -18,12 +18,8 @@ a = Profile_Set(resolution=5, res_units='m', ascent=True, dev=True,
                 nc_level="none", coefs_path="/home/jessica/GitHub/Profiles/profiles/coefs")
 for file_name in os.listdir(datadir):
     if ".json" in file_name:
-        a.add_all_profiles(os.path.join(datadir, file_name),
-                           meta_flight_path="/home/jessica/GitHub/Utilities/Logs/20191202_2025N963UA_CS_3D_flight_log.csv",
-                           meta_header_path="/home/jessica/GitHub/Utilities/Logs/20191202N963UA_CS_3D_log_header.csv")
+        a.add_all_profiles(os.path.join(datadir, file_name))
 
-
-a.save_netCDF("pancake.nc")
 '''
 # Example using Profile (singular)
 b = Profile("/home/jessica/GitHub/data_templates/00000003.JSON", 10, 'm', 1,
