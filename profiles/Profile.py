@@ -17,6 +17,7 @@ from profiles.Wind_Profile import Wind_Profile
 from copy import deepcopy, copy
 
 
+
 class Profile():
     """ A Profile object contains data from a profile (if altitude or pressure
     is specified under resolution) or flight (if the resolution is in units
@@ -136,12 +137,11 @@ class Profile():
              self._units.get_dimensionality('Pa')):
             base = self._pres[0]
             base_time = self._pres[1]
-
         self.gridded_times, self.gridded_base \
-            = utils.regrid_base(base=base, base_times=base_time,
-                                new_res=self.resolution, ascent=ascent,
-                                units=self._units, indices=self.indices,
-                                base_start=base_start)
+                = utils.regrid_base(base=base, base_times=base_time,
+                                    new_res=self.resolution, ascent=ascent,
+                                    units=self._units, indices=self.indices,
+                                    base_start=base_start)
         self._base_start = self.gridded_base[0]
 
     def get(self, varname):
