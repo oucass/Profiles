@@ -170,6 +170,21 @@ def temp_calib(resistance, sn, coefs_path):
                     c * np.power(np.log(resistance), 3)), -1)
 
 
+def rh_calib(raw, sn, coefs_path):
+    """ Adds the sensor offsets
+
+    :param list<Quanitity> raw: raw RH
+    :param int sn: serial number of the humidity sensor
+    :rtype: list<Quantity>
+    :return: list of calibrated rh
+    """
+
+    coefs = pd.read_csv(os.path.join(coefs_path, 'MasterCoefList.csv'))
+    offset = float(coefs.Offset[coefs.SerialNumber == sn][coefs.SensorType == "RH"])
+
+    return np.add(raw, offset)
+
+
 def qc(data, max_bias, max_variance):
     """ Determines which sensors are not reliable from a given set. Be sure
        to only include like sensors (not both temperature inside and outside

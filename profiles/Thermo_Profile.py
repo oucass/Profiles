@@ -155,7 +155,9 @@ class Thermo_Profile():
             # Ensure only humidity is processed here
             if "rh" in key and "temp" not in key and "time" not in key:
                 rh_raw.append(temp_dict[key].magnitude)
-
+        for i in range(len(rh_raw)):
+            rh_raw[i] = utils.rh_calib(rh_raw[i], serial_numbers["rh"+str(i+1)],
+                                       coefs_path=coefs_path)
         alts = np.array(temp_dict["alt_pres"].magnitude)\
             * temp_dict["alt_pres"].units
         pres = np.array(temp_dict["pres"].magnitude)\
