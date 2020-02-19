@@ -177,8 +177,7 @@ def rh_calib(raw, sn, coefs_path):
     """
 
     coefs = pd.read_csv(os.path.join(coefs_path, 'MasterCoefList.csv'))
-    offset = float(coefs.Offset[coefs.SerialNumber == sn][coefs.SensorType == "RH"])
-
+    offset = float(coefs.Offset[coefs.SerialNumber == sn][coefs.SensorType == "RH"]) / 1000
     return np.add(raw, offset)
 
 

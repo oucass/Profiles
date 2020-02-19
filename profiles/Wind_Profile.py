@@ -215,11 +215,20 @@ class Wind_Profile():
             az[i] = np.arctan2(R[1, 2], R[0, 2])
 
         coefs = pd.read_csv(os.path.join(self.coefs_path, 'MasterCoefList.csv'))
-        a_spd = float(coefs.A[coefs.SerialNumber == tail_num]
-                      [coefs.SensorType == "Wind"])
-        b_spd = float(coefs.B[coefs.SerialNumber == tail_num]
-                      [coefs.SensorType == "Wind"])
 
+        if tail_num in coefs.SerialNumber:
+            a_spd = float(coefs.A[coefs.SerialNumber == tail_num]
+                          [coefs.SensorType == "Wind"])
+            b_spd = float(coefs.B[coefs.SerialNumber == tail_num]
+                          [coefs.SensorType == "Wind"])
+        else:
+            print("Wind calibration is not available for this platform. "
+                  "Analyzed wind is probably valid qualitatively, but SHOULD"
+                  " NOT be used quantitatively.")
+            a_spd = float(coefs.A[coefs.SerialNumber == 0]
+                          [coefs.SensorType == "Wind"])
+            b_spd = float(coefs.B[coefs.SerialNumber == 0]
+                          [coefs.SensorType == "Wind"])
         speed = a_spd * np.sqrt(np.tan(psi)) + b_spd
 
         speed = speed * self._units.m / self._units.s

@@ -55,7 +55,7 @@ class Raw_Profile():
            and Wind Profile, specify 'low'. For no NetCDF files, specify \
            'none'.
         """
-
+        print(coefs_path)
         self.meta = None
         if meta_header_path is not None or meta_flight_path is not None:
             self.meta = Meta(meta_header_path, meta_flight_path)
@@ -66,8 +66,8 @@ class Raw_Profile():
         self.rotation = None
         self.dev = dev
         self.baro = "BARO"
-        self.serial_numbers_from_JSON = None
         self.coefs_path = coefs_path
+        self.serial_numbers = {}
         if "json" in file_path or "JSON" in file_path:
             if os.path.basename(file_path)[:-5] + ".nc" in \
                os.listdir(os.path.dirname(file_path)):
@@ -89,14 +89,10 @@ class Raw_Profile():
             if id is not None:
                 scoop_id = id
 
-        # Populate serial_numbers
-        self.serial_numbers = {}
-
         if self.meta is not None:
             scoop_id = self.meta.get("scoop_id")
 
         if scoop_id is not None:
-            try:
                 coefs = pd.read_csv(os.path.join(coefs_path,
                                                  "scoop" + str(scoop_id)
                                                  + ".csv"))
@@ -116,40 +112,24 @@ class Raw_Profile():
                     if sensor_install_date is None:  # the flight took place
                         # before the start of the scoop log
                         sensor_install_date = min(coefs.validFrom)
+
                 self.serial_numbers = \
                     coefs[coefs.validFrom ==
                           sensor_install_date].to_dict('records')[0]
-                if self.serial_numbers_from_JSON is not None:
-                    for key in self.serial_numbers.keys():
-                        if self.serial_numbers[key] != self.serial_numbers_from_JSON[key] and "validFrom" not in key:
-                            print("Maintenance or Operator Error: metadata says " + key + " is " +
-                                  str(self.serial_numbers[key]) + " but file says " +
-                                  str(self.serial_numbers_from_JSON[key]))
-            except IOError:
 
-                print("failed to read coefs")
-                if self.serial_numbers_from_JSON is not None:
-                    print("\tretrieved from JSON")
-                    self.serial_numbers = self.serial_numbers_from_JSON
+                for key in self.serial_numbers.keys():
+                    if self.serial_numbers[key] != self.serial_numbers_from_JSON[key] and "validFrom" not in key:
+                        print("Maintenance or Operator Error: metadata says " + key + " is " +
+                               str(self.serial_numbers[key]) + " but file says " +
+                               str(self.serial_numbers_from_JSON[key]))
 
-                # IMET
-                for sensor_number in np.add(range(int((len(self.temp)-2)
-                                                  / 2)), 1):
-                    self.serial_numbers["imet" + str(sensor_number)] = 0
-                # RH
-                for sensor_number in np.add(range((len(self.rh)-2) // 2), 1):
-                    self.serial_numbers["rh" + str(sensor_number)] = 0
-                # WIND
-                self.serial_numbers["wind"] = 0
-        elif self.serial_numbers_from_JSON is not None:
-            self.serial_numbers = self.serial_numbers_from_JSON
-        elif self.serial_numbers_from_JSON is None:
+        if len(self.serial_numbers.keys()) == 0:
             # IMET
             for sensor_number in np.add(range(int((len(self.temp)-2)
                                                   / 2)), 1):
                 self.serial_numbers["imet" + str(sensor_number)] = 0
             # RH
-            for sensor_number in np.add(range((len(self.rh)-2) // 2), 1):
+            for sensor_number in np.add(range(int((len(self.rh)-2) / 2)), 1):
                 self.serial_numbers["rh" + str(sensor_number)] = 0
             # WIND
                 self.serial_numbers["wind"] = 0
@@ -183,7 +163,6 @@ class Raw_Profile():
                  "alt_pres":, "time_pres"}
         """
         to_return = {}
-
         for sensor_number in [a + 1 for a in
                               range(int(len(self.temp) / 2) - 1)]:
             to_return["temp" + str(sensor_number)] \
@@ -280,30 +259,28 @@ class Raw_Profile():
         rotation_list = None
         # sensor_names will be dictionary of dictionaries formatted
         # {
+        #     "valid_from": ,
         #     "IMET": {name: index, name: index, ...},
         #     "RHUM": {name: index, name: index, ...},
         #     ...
         # }
-        self.serial_numbers_from_JSON = {'validFrom': dt.today(),
-                                         'imet1': 57560, 'imet2': 57552,
-                                         'imet3': 57558, 'rh1': 10,
-                                         'rh2': 11, 'rh3': 12, 'wind': 0}
         sensor_names = {}
 
         for elem in full_data:
 
-            # TODO test if wind coef is read correctly
             if elem["meta"]["type"] == "PARM" and "SYSID_THISMAV" in elem["data"]["Name"]:
+
                 file = np.transpose(np.genfromtxt(os.path.join(self.coefs_path,
                                                                'copterID.csv'), delimiter=','))
+                self.serial_numbers['wind'] = int(file[1][int(elem['data']['Value'] - 1)])
                 del file
 
             if elem["meta"]["type"] == "PARM" and "USER_SENSORS" in elem["data"]["Name"]:
                 index = int(elem['data']['Name'][-1])
                 if index <= 4:
-                    self.serial_numbers_from_JSON['imet' + str(index)] = int(elem['data']['Value'])
+                    self.serial_numbers['imet' + str(index)] = int(elem['data']['Value'])
                 elif index > 4 and index <= 8:
-                    self.serial_numbers_from_JSON['rh' + str(index)] = int(elem['data']['Value'])
+                    self.serial_numbers['rh' + str(index-4)] = int(elem['data']['Value'])
 
             if self.baro == "BARO" and elem["meta"]["type"] == "BAR2":
                 # remove BARO structure and switch to using BAR2
@@ -499,7 +476,6 @@ class Raw_Profile():
                             rotation_list[value].append(elem["data"][key])
                     except KeyError:
                         rotation_list[value].append(np.nan)
-
         #
         # Add the units
         #

@@ -68,7 +68,6 @@ class Thermo_Profile():
            and Wind Profile, specify 'low'. For no NetCDF files, specify \
            'none'.
         """
-
         self._units = units
 
         try:
@@ -121,6 +120,7 @@ class Thermo_Profile():
                          temp_dict[key] = np.array(temp_dict[key])[np.where(selection_pres)]
                      elif "rh" in key:
                         temp_dict[key] = np.array(temp_dict[key])[np.where(selection_rh)]
+
         temp = []
         rh = []
 
@@ -180,7 +180,6 @@ class Thermo_Profile():
                                   range(len(rh_raw))]))
 
         rh = np.array(rh) * units.percent
-
         # Determine which sensors are "bad"
         temp_flags = utils.qc(temp_raw, 0.25, 0.1)
 

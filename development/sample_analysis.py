@@ -23,7 +23,7 @@ different profile start height.
 
 # Example using Profile_Set
 a = Profile_Set(resolution=1, res_units='m', ascent=True, dev=True, profile_start_height=400, confirm_bounds=False)
-a.add_all_profiles("/home/jessica/GitHub/data_templates/01082020/00000108.BIN")
+a.add_all_profiles("/home/jessicablunt/data_templates/00000108.BIN")
 
 
 
@@ -63,7 +63,7 @@ a1 = a.profiles[0]
 plotting.plot_skewT(temp=a1.get("temp"), pres=a1.get("pres"), t_d=a1.get("T_d"),
                     u=a1.get("u"), v=a1.get("v"), time=a1.get("gridded_times"),
                     units=a1.get("_units"))
-plt.savefig("/home/jessica/GitHub/data_templates/01082020/20200108__mSkewT.png")
+plt.savefig("/home/jessicablunt/20200108__mSkewT.png")
 plt.show()
 
 # plt.figure()
