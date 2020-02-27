@@ -18,6 +18,10 @@ from datetime import timedelta
 from pandas.plotting import register_matplotlib_converters
 from pint import UnitStrippedWarning
 from metpy.units import units as u
+from azure.cosmosdb.table.tableservice import TableService
+from azure.cosmosdb.table.models import Entity
+import .profilesrc as coef_info
+
 
 package_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -142,6 +146,7 @@ def regrid_data(data=None, data_times=None, gridded_times=None, units=None):
     gridded_data = np.array(gridded_data) * data.units
 
     return (gridded_data)
+
 
 
 def temp_calib(resistance, sn, coefs_path):
