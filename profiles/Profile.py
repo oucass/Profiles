@@ -92,7 +92,8 @@ class Profile():
         self._pres = (self._raw_profile.pres[0], self._raw_profile.pres[-1])
         self._nc_level = nc_level
         self.meta = self._raw_profile.meta
-        profile_start_height = profile_start_height * self._units.meter
+        if profile_start_height is not None:
+            profile_start_height = profile_start_height * self._units.meter
         try:
             if index_list is None:
                 index_list = \

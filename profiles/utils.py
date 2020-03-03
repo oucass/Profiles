@@ -313,7 +313,7 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
     :param bool confirm_bounds: if True, will ask user for verification that \
        the start, peak, and end times of the profile have been properly \
        identified
-    :param int profile_start_height: if this is given, the user will not be \
+    :param Quantity profile_start_height: if this is given, the user will not be \
        prompted to enter a start height for each profile. This is recommended \
        when processing many profiles from the same mission. At least one \
        profile should be processed without this option to determine the correct\
@@ -339,7 +339,8 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
 
         try:
             profile_start_height = int(input('Wrong file? Enter "q" to quit. '
-                                             + '\nProfile start height: '))
+                                             + '\nProfile start height: ')) * \
+                                             alts.units
         except ValueError:
             sys.exit(0)
         plt.close()
@@ -395,9 +396,8 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
                     fig2 = plt.figure()
                     plt.plot(range(len(alt_times)), alts, figure=fig2)
                     plt.grid(axis="y", which="both", figure=fig2)
-
                     plt.vlines([start_ind_asc, peak_ind, end_ind_des],
-                               min(alts) - 50, max(alts) + 50)
+                               min(alts).magnitude - 50, max(alts.magnitude) + 50)
 
                     plt.show(block=False)
 
@@ -450,7 +450,6 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
                                  profile_start_height=a,
                                  to_return=to_return,
                                  ind=ind+100)
-
     return to_return
 
 
