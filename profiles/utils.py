@@ -20,7 +20,6 @@ from pint import UnitStrippedWarning
 from metpy.units import units as u
 from azure.cosmosdb.table.tableservice import TableService
 from azure.cosmosdb.table.models import Entity
-import .profilesrc as coef_info
 
 
 package_path = os.path.dirname(os.path.abspath(__file__))

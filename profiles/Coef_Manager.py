@@ -1,6 +1,9 @@
 import os
 import pandas as pd
+from profiles import coef_info
 from abc import abstractmethod
+from azure.cosmosdb.table.tableservice import TableService
+from azure.cosmosdb.table.models import Entity
 
 class Coef_Manager_Base:
     @abstractmethod
@@ -52,17 +55,14 @@ class Coef_Manager(Coef_Manager_Base):
         self.sub_manager = None
         if coef_info.USE_AZURE.upper() in "YES":
             try:
-                table_service = Table_Service(connection_string=coef_info.CONNECTION_STRING_1)
+                table_service = TableService(connection_string=coef_info.AZURE_CONNECTION_STRING)
             except Exception:
-                try:
-                    table_service = Table_Service(connection_string=coef_info.CONNECTION_STRING_2)
-                except Exception:
-                    raise Exception("There are no valid connection strings in __init__.py")
+                raise Exception("There are no valid connection strings in __init__.py")
             # If this point has been reached, we have an active table_service to pull data from
             self.sub_manager = Azure_Coef_Manager(table_service)
         elif coef_info.USE_AZURE.upper() in "NO":
             if len(coef_info.FILE_PATH) > 0:
-                if os.exists(coef_info.FILE_PATH):
+                if os.path.exists(coef_info.FILE_PATH):
                     self.sub_manager = CSV_Coef_Manager(coef_info.FILE_PATH)
                 else:
                     raise Exception("The FILE_PATH in __init__.py is not valid")
@@ -94,18 +94,18 @@ class Coef_Manager(Coef_Manager_Base):
         """ Get the coefs for the sensor with the given type and serial number.
 
         :param str type: "Imet" or "RH" or "Wind"
-        :param str serial_number: the sensor's serial number
+        :param [str or int] serial_number: the sensor's serial number
         :rtype: dict
         :return: information about the sensor, including offset OR coefs and calibration equation
         """
-        return self.sub_manager.get_coefs(type, serial_number)
+        return self.sub_manager.get_coefs(type, str(serial_number))
 
 
 class Azure_Coef_Manager:
     """ interface with Azure
     """
 
-    def __init__(table_service):
+    def __init__(self, table_service):
         """ Create Azure_Coef_Manager
 
         :param azure.cosmosdb.table.tableservice.TableService table_service: TableService connected \
@@ -161,8 +161,9 @@ class Azure_Coef_Manager:
 class CSV_Coef_Manager(Coef_Manager_Base):
 
     def __init__(self, file_path):
+        self.file_path = file_path
         self.coefs = pd.read_csv(os.path.join(file_path, 'MasterCoefList.csv'))
-        self.copternums = pd.read_csv(os.path.join(file_path, 'copterID.csv'), header=0)
+        self.copternums = pd.read_csv(os.path.join(file_path, 'copterID.csv'), names=['id', 'tail'])
 
     def get_tail_n(self, copterID):
         """ Get the tail number corresponding to a short ID number.
@@ -171,7 +172,8 @@ class CSV_Coef_Manager(Coef_Manager_Base):
         :rtype: str
         :return: the tail number
         """
-        return self.copternums[2][int(self.copternums[1]) == (copterID)]
+
+        return self.copternums['tail'][self.copternums['id'] == (copterID)].values[0]
 
     def get_sensors(self, scoopID):
         """ Get the sensor serial numbers for the given scoop.
@@ -181,31 +183,34 @@ class CSV_Coef_Manager(Coef_Manager_Base):
         :return: sensor numbers as {"imet1":"", "imet2":"", "imet3":"", "imet4":"",\
                                     "rh1":"", "rh2":"", "rh3":"", "rh4":""}
         """
-        scoop_info = pd.read_csv(os.path.join(file_path, 'scoop'+str(scoopID)+'.csv'))
+        scoop_info = pd.read_csv(os.path.join(self.file_path, 'scoop'+str(scoopID)+'.csv'))
         max_date="0000-00-00"
-        for row in scoop_info:
-            if row.validFrom > max_date:
-                max_date = row.validFrom
+        dates = scoop_info.validFrom
+        for date in dates:
+            if date > max_date:
+                max_date = date
 
         most_recent = scoop_info[scoop_info.validFrom == max_date]
-        return {"imet1":str(most_recent.imet1), "imet2":str(most_recent.imet2),
-                "imet3":str(most_recent.imet3), "imet4":None, "rh1":str(most_recent.rh1),
-                "rh2":str(most_recent.rh2),  "rh3":str(most_recent.rh3), "rh4":None}
+        return {"imet1":str(most_recent.imet1.values[0]), "imet2":str(most_recent.imet2.values[0]),
+                "imet3":str(most_recent.imet3.values[0]), "imet4":None, "rh1":str(most_recent.rh1.values[0]),
+                "rh2":str(most_recent.rh2.values[0]),  "rh3":str(most_recent.rh3.values[0]), "rh4":None}
 
     def get_coefs(self, type, serial_number):
         """ Get the coefs for the sensor with the given type and serial number.
 
         :param str type: "Imet" or "RH" or "Wind"
-        :param str serial_number: the sensor's serial number
+        :param [str or int] serial_number: the sensor's serial number
         :rtype: dict
         :return: information about the sensor, including offset OR coefs and calibration equation
         """
+        serial_number = int(serial_number)
         coefs = self.coefs
-        a = float(coefs.A[coefs.SerialNumber == serial_number][coefs.SensorType == type])
-        b = float(coefs.B[coefs.SerialNumber == serial_number][coefs.SensorType == type])
-        c = float(coefs.C[coefs.SerialNumber == serial_number][coefs.SensorType == type])
-        d = float(coefs.D[coefs.SerialNumber == serial_number][coefs.SensorType == type])
-        eq = float(coefs.Equation[coefs.SerialNumber == serial_number][coefs.SensorType == type])
-        offset = float(coefs.Offset[coefs.SerialNumber == serial_number][coefs.SensorType == type])
+        a = coefs.A[coefs.SerialNumber == serial_number][coefs.SensorType == type].values[0]
+        b = coefs.B[coefs.SerialNumber == serial_number][coefs.SensorType == type].values[0]
+        c = coefs.C[coefs.SerialNumber == serial_number][coefs.SensorType == type].values[0]
+        d = coefs.D[coefs.SerialNumber == serial_number][coefs.SensorType == type].values[0]
+        eq = coefs.Equation[coefs.SerialNumber == serial_number][coefs.SensorType == type].values[0]
+        offset = coefs.Offset[coefs.SerialNumber == serial_number][coefs.SensorType == type].values[0]
 
         return {"A":a, "B":b, "C":c, "D":d, "Equation":eq, "Offset":offset}
+

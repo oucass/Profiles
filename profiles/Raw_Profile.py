@@ -13,7 +13,7 @@ import numpy as np
 from datetime import datetime as dt
 from metpy.units import units  # this is a pint UnitRegistry
 import profiles.mavlogdump_Profiles as mavlogdump_Profiles
-from profiles import utils
+import profiles.utils as utils
 from profiles.Meta import Meta
 import pandas as pd
 import os
