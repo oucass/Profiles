@@ -39,8 +39,7 @@ class Raw_Profile():
     """
 
     def __init__(self, file_path, dev=False, scoop_id=None, nc_level='low',
-                 meta_flight_path=None, meta_header_path=None,
-                 coefs_path=os.path.join(utils.package_path, "coefs")):
+                 meta_flight_path=None, meta_header_path=None):
         """ Creates a Raw_Profile object and reads in data in the appropriate
         format. *If meta_path_flight or meta_path_header includes scoop_id,
         the scoop_id constructor parameter will be overwritten*
@@ -55,7 +54,6 @@ class Raw_Profile():
            and Wind Profile, specify 'low'. For no NetCDF files, specify \
            'none'.
         """
-        print(coefs_path)
         self.meta = None
         if meta_header_path is not None or meta_flight_path is not None:
             self.meta = Meta(meta_header_path, meta_flight_path)
@@ -66,7 +64,6 @@ class Raw_Profile():
         self.rotation = None
         self.dev = dev
         self.baro = "BARO"
-        self.coefs_path = coefs_path
         self.serial_numbers = {}
         if "json" in file_path or "JSON" in file_path:
             if os.path.basename(file_path)[:-5] + ".nc" in \
@@ -91,37 +88,6 @@ class Raw_Profile():
 
         if self.meta is not None:
             scoop_id = self.meta.get("scoop_id")
-
-        if scoop_id is not None:
-                coefs = pd.read_csv(os.path.join(coefs_path,
-                                                 "scoop" + str(scoop_id)
-                                                 + ".csv"))
-                coefs.validFrom = [dt.strptime(date_string, "%Y-%m-%d")
-                                   for date_string in coefs.validFrom]
-                day_flight = self.temp[-1][0]
-
-                sensor_install_date = None  # This is the last day in
-                # coefs.validFrom before the day of the flight
-                for sensor_day in coefs.validFrom:
-                    if sensor_day < day_flight:
-                        if sensor_install_date is None:
-                            sensor_install_date = sensor_day
-                        elif sensor_day > sensor_install_date:
-                            sensor_install_date = sensor_day
-
-                    if sensor_install_date is None:  # the flight took place
-                        # before the start of the scoop log
-                        sensor_install_date = min(coefs.validFrom)
-
-                self.serial_numbers = \
-                    coefs[coefs.validFrom ==
-                          sensor_install_date].to_dict('records')[0]
-
-                for key in self.serial_numbers.keys():
-                    if self.serial_numbers[key] != self.serial_numbers_from_JSON[key] and "validFrom" not in key:
-                        print("Maintenance or Operator Error: metadata says " + key + " is " +
-                               str(self.serial_numbers[key]) + " but file says " +
-                               str(self.serial_numbers_from_JSON[key]))
 
         if len(self.serial_numbers.keys()) == 0:
             # IMET
@@ -270,10 +236,7 @@ class Raw_Profile():
 
             if elem["meta"]["type"] == "PARM" and "SYSID_THISMAV" in elem["data"]["Name"]:
 
-                file = np.transpose(np.genfromtxt(os.path.join(self.coefs_path,
-                                                               'copterID.csv'), delimiter=','))
-                self.serial_numbers['wind'] = int(file[1][int(elem['data']['Value'] - 1)])
-                del file
+                self.serial_numbers['copterID'] = elem['data']['Value']
 
             if elem["meta"]["type"] == "PARM" and "USER_SENSORS" in elem["data"]["Name"]:
                 index = int(elem['data']['Name'][-1])

@@ -20,10 +20,11 @@ from pint import UnitStrippedWarning
 from metpy.units import units as u
 from azure.cosmosdb.table.tableservice import TableService
 from azure.cosmosdb.table.models import Entity
+from .Coef_Manager import Coef_Manager
 
 
 package_path = os.path.dirname(os.path.abspath(__file__))
-
+coef_manager = Coef_Manager()  # All required input is given in __init__.py
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("error", category=UnitStrippedWarning)
@@ -148,7 +149,7 @@ def regrid_data(data=None, data_times=None, gridded_times=None, units=None):
 
 
 
-def temp_calib(resistance, sn, coefs_path):
+def temp_calib(resistance, sn):
     """ Converts resistance to temperature using the coefficients for the \
        sensor specified OR generalized coefficients if the serial number (sn)\
        is not recognized.
@@ -160,18 +161,16 @@ def temp_calib(resistance, sn, coefs_path):
     :return: list of temperatures in K
     """
 
-    coefs = pd.read_csv(os.path.join(coefs_path, 'MasterCoefList.csv'))
-    a = float(coefs.A[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
-    b = float(coefs.B[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
-    c = float(coefs.C[coefs.SerialNumber == sn][coefs.SensorType == "Imet"])
-    # print("Temperature calculated from resistance using coefficients \n",
-    #      a, b, c)
+    coefs = coef_manager.get_coefs("Imet", sn)
+    a = float(coefs["A"])
+    b = float(coefs["B"])
+    c = float(coefs["C"])
 
     return np.power(np.add(np.add(b * np.log(resistance), a),
                     c * np.power(np.log(resistance), 3)), -1)
 
 
-def rh_calib(raw, sn, coefs_path):
+def rh_calib(raw, sn):
     """ Adds the sensor offsets
 
     :param list<Quanitity> raw: raw RH
@@ -180,8 +179,7 @@ def rh_calib(raw, sn, coefs_path):
     :return: list of calibrated rh
     """
 
-    coefs = pd.read_csv(os.path.join(coefs_path, 'MasterCoefList.csv'))
-    offset = float(coefs.Offset[coefs.SerialNumber == sn][coefs.SensorType == "RH"]) / 1000
+    offset = float(coef_manager.get_coefs('RH', sn)['Offset']) / 1000
     return np.add(raw, offset)
 
 

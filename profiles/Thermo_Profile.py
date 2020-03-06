@@ -38,8 +38,7 @@ class Thermo_Profile():
 
     def _init2(self, temp_dict, resolution, file_path=None,
                gridded_times=None, gridded_base=None, indices=(None, None),
-               ascent=True, units=None, nc_level='low',
-               coefs_path=os.path.join(utils.package_path, "coefs")):
+               ascent=True, units=None, nc_level='low'):
         """ Creates Thermo_Profile object from raw data at the specified
         resolution.
 
@@ -145,8 +144,7 @@ class Thermo_Profile():
         if use_resistance:
             for i in range(len(temp_raw)):
                 temp_raw[i] = utils.temp_calib(temp_raw[i],
-                                               serial_numbers["imet"+str(i+1)],
-                                               coefs_path=coefs_path)
+                                               serial_numbers["imet"+str(i+1)])
         # End if-else blocks
 
         rh_raw = []
@@ -156,8 +154,7 @@ class Thermo_Profile():
             if "rh" in key and "temp" not in key and "time" not in key:
                 rh_raw.append(temp_dict[key].magnitude)
         for i in range(len(rh_raw)):
-            rh_raw[i] = utils.rh_calib(rh_raw[i], serial_numbers["rh"+str(i+1)],
-                                       coefs_path=coefs_path)
+            rh_raw[i] = utils.rh_calib(rh_raw[i], serial_numbers["rh"+str(i+1)])
         alts = np.array(temp_dict["alt_pres"].magnitude)\
             * temp_dict["alt_pres"].units
         pres = np.array(temp_dict["pres"].magnitude)\

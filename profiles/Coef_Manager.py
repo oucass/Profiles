@@ -1,9 +1,10 @@
 import os
 import pandas as pd
-from profiles import coef_info
+from profiles.conf import coef_info
 from abc import abstractmethod
 from azure.cosmosdb.table.tableservice import TableService
 from azure.cosmosdb.table.models import Entity
+from azure.common import AzureMissingResourceHttpError
 
 class Coef_Manager_Base:
     @abstractmethod
@@ -152,7 +153,12 @@ class Azure_Coef_Manager:
         :rtype: dict
         :return: information about the sensor, including offset OR coefs and calibration equation
         """
-        coefs = self.table_service.get_entity('MasterCoef', type, str(serial_number))
+        try:
+            coefs = self.table_service.get_entity('MasterCoef', type, str(serial_number))
+        except AzureMissingResourceHttpError:
+            print('No coefficients found for ' + type + " sensor " + str(serial_number) 
+                  + " - using default coefs.")
+            coefs = self.table_service.get_entity('MasterCoef', type, str(0))
 
         return {"A":coefs.A, "B":coefs.B, "C":coefs.C, "D":coefs.D, "Equation":coefs.Equation,
                 "Offset":coefs.Offset}
@@ -213,4 +219,3 @@ class CSV_Coef_Manager(Coef_Manager_Base):
         offset = coefs.Offset[coefs.SerialNumber == serial_number][coefs.SensorType == type].values[0]
 
         return {"A":a, "B":b, "C":c, "D":d, "Equation":eq, "Offset":offset}
-
