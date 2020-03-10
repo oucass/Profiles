@@ -2,29 +2,6 @@ import pandas as pd
 import numpy as np
 
 class Meta:
-    """ Processes, stores, and writes metadata files (JSON-LD for public, CSV for private) for a flight
-
-       :var dict<str: Object> all_fields: Dictionary containing all information to be written to metadata files
-       :var list<str> private_fields: List of fields to be included in the CSV file
-       :var list<str> public_fields: List of fields to be included in the JSON file
-    """
-
-    def __init__(self, header_path, flight_path):
-
-        self.private_fields = ["timestamp", "checklist_operator", "location", "PIC", "objective", "authorization_type",
-                               "platform_id", "max_planned_alt", "battery_id", "scoop_id", "battery_voltage_initial",
-                               "launch_time_utc", "max_achieved_alt", "land_time_utc", "battery_voltage_final",
-                               "emergency_landing", "emergency_remarks", "private_remarks"]
-        self.public_fields = ["date_utc", "region", "location", "objective", "cloud", "rain", "wind_from_direction",
-                              "wind_speed", "wind_speed_of_gust", "surface_altitude", "launch_time_utc",
-                              "max_achieved_alt", "land_time_utc", "remarks", "variables", "platform_id",
-                              "platform_name"]
-        self.all_fields = {}
-
-        if not ".csv" in header_path and not ".csv" in flight_path:
-            self.combine_files(header_path, flight_path)
-            return
-
     """ Processes, stores, and writes metadata files (JSON-LD for public, CSV
     for private) for a flight
 

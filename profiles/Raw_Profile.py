@@ -65,6 +65,7 @@ class Raw_Profile():
         self.dev = dev
         self.baro = "BARO"
         self.serial_numbers = {}
+        self.file_path = file_path
         if "json" in file_path or "JSON" in file_path:
             if os.path.basename(file_path)[:-5] + ".nc" in \
                os.listdir(os.path.dirname(file_path)):
@@ -74,9 +75,9 @@ class Raw_Profile():
         elif ".nc" in file_path or ".NC" in file_path:
             self._read_netCDF(file_path)
         elif ".bin" in file_path or ".BIN" in file_path:
-            file_path = mavlogdump_Profiles.with_args(fmt="json",
+            self.file_path = mavlogdump_Profiles.with_args(fmt="json",
                                                       file_name=file_path)
-            self._read_JSON(file_path, nc_level=nc_level)
+            self._read_JSON(self.file_path, nc_level=nc_level)
 
         # Incorporate metadata
         self.meta = None
@@ -504,10 +505,16 @@ class Raw_Profile():
 
         main_file = netCDF4.Dataset(file_path, "r", format="NETCDF4",
                                     mmap=False)
-        # print(main_file)
 
         # Note: each data chunk is converted to an np array. This is not a
         # superfluous conversion; a Variable object is incompatible with pint.
+
+        # SERIAL NUMBERS
+        self.serial_numbers = {}
+        self.serial_numbers["copterID"] = main_file.groups["serial_numbers"].getncattr("copterID")
+        for i in range(4):  # Throughout the file, it is assumed that there are 4 sensors of each type
+            self.serial_numbers["rh" + str(i+1)] = main_file.groups["serial_numbers"].getncattr("rh" + str(i+1))
+            self.serial_numbers["imet" + str(i+1)] = main_file.groups["serial_numbers"].getncattr("imet" + str(i+1))
 
         #
         # POSITION - this should be first
@@ -645,6 +652,13 @@ class Raw_Profile():
         """
         main_file = netCDF4.Dataset(file_path[:-5] + ".nc", "w",
                                     format="NETCDF4", mmap=False)
+
+        # SERIAL NUMBERS
+        sn_grp = main_file.createGroup("/serial_numbers")
+        sn_grp.setncattr("copterID", self.serial_numbers["copterID"])
+        for i in range(4):  # Throughout the file, it is assumed that there are 4 sensors of each type
+            sn_grp.setncattr("rh" + str(i+1), self.serial_numbers['rh' + str(i+1)])
+            sn_grp.setncattr("imet" + str(i+1), self.serial_numbers['imet' + str(i+1)])
 
         # TEMP
         temp_grp = main_file.createGroup("/temp")

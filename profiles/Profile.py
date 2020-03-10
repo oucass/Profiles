@@ -90,6 +90,7 @@ class Profile():
         self._pres = (self._raw_profile.pres[0], self._raw_profile.pres[-1])
         self._nc_level = nc_level
         self.meta = self._raw_profile.meta
+        file_path = self._raw_profile.file_path
 
         try:
             if index_list is None:

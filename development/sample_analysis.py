@@ -22,8 +22,8 @@ different profile start height.
 """
 
 # Example using Profile_Set
-a = Profile_Set(resolution=1, res_units='m', ascent=True, dev=True, profile_start_height=400, confirm_bounds=False)
-a.add_all_profiles("/home/jessicablunt/data_templates/00000108.BIN")
+a = Profile_Set(resolution=1, res_units='m', ascent=True, dev=True, profile_start_height=400, confirm_bounds=False, nc_level='low')
+a.add_all_profiles("/home/jessicablunt/data_templates/20200108_2123.nc")
 
 
 
