@@ -253,9 +253,9 @@ def plot_skewT(temp=None, pres=None, t_d=None, u=None, v=None, time=None, units=
     fig.plot_dry_adiabats(linewidth=0.5, label="Dry Adiabats")
     fig.plot_moist_adiabats(linewidth=0.5, label="Moist Adiabats")
     fig.plot_mixing_lines(linewidth=0.5, label="Mixing Ratio")
-    fig.plot_barbs(np.array(pres.magnitude, dtype='float64') * pres.units,
-                   np.array(u.magnitude, dtype='float64') * u.units,
-                   np.array(v.magnitude, dtype='float64') * v.units)
+    #fig.plot_barbs(np.array(pres.magnitude, dtype='float64') * pres.units,
+    #               np.array(u.magnitude, dtype='float64') * u.units,
+    #               np.array(v.magnitude, dtype='float64') * v.units)
     plt.legend(loc='upper left')
 
     # Set limits

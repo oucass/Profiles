@@ -45,8 +45,8 @@
 <span class="kn">import</span> <span class="nn">matplotlib.dates</span> <span class="k">as</span> <span class="nn">datenum</span>
 <span class="kn">import</span> <span class="nn">matplotlib.ticker</span> <span class="k">as</span> <span class="nn">ticker</span>
 <span class="kn">import</span> <span class="nn">matplotlib.lines</span> <span class="k">as</span> <span class="nn">mlines</span>
-<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="k">import</span> <span class="n">interp1d</span>
-<span class="kn">from</span> <span class="nn">profiles.UnitFormatter</span> <span class="k">import</span> <span class="n">UnitFormatter</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
+<span class="kn">from</span> <span class="nn">profiles.UnitFormatter</span> <span class="kn">import</span> <span class="n">UnitFormatter</span>
 <span class="kn">import</span> <span class="nn">metpy.plots</span> <span class="k">as</span> <span class="nn">mpplots</span>
 
 
@@ -293,9 +293,9 @@
     <span class="n">fig</span><span class="o">.</span><span class="n">plot_dry_adiabats</span><span class="p">(</span><span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Dry Adiabats&quot;</span><span class="p">)</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">plot_moist_adiabats</span><span class="p">(</span><span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Moist Adiabats&quot;</span><span class="p">)</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">plot_mixing_lines</span><span class="p">(</span><span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Mixing Ratio&quot;</span><span class="p">)</span>
-    <span class="n">fig</span><span class="o">.</span><span class="n">plot_barbs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pres</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">pres</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
-                   <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
-                   <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">v</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+    <span class="c1">#fig.plot_barbs(np.array(pres.magnitude, dtype=&#39;float64&#39;) * pres.units,</span>
+    <span class="c1">#               np.array(u.magnitude, dtype=&#39;float64&#39;) * u.units,</span>
+    <span class="c1">#               np.array(v.magnitude, dtype=&#39;float64&#39;) * v.units)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">)</span>
 
     <span class="c1"># Set limits</span>
