@@ -45,48 +45,45 @@ def regrid_base(base=None, base_times=None, new_res=None, ascent=True,
        the profile starting height and the corrosponding base values
     """
     # Use negative pressure so that the max of the data list is the peak
+
+    # Change indices to a 2-tuple with indices instead of times, start and end
+    if indices[0] is None:
+        indices = (0, len(base))
+    else:
+        a = list(base_times).index(indices[0])
+        if ascent:
+            b = list(base_times).index(indices[1])
+        else:
+            b = list(base_times).index(indices[2])
+        indices = (a, b)
+
     if new_res.dimensionality == units.Pa.dimensionality:
         base = -1*base
         if base_start is not None:
             base_start = -1*base_start
 
     # Regrid base
-    if ascent:
-        if base_start is None:
-            new_base = np.arange((base[0] + 0.5*new_res).magnitude, (max(base) - 0.5*new_res).magnitude,
-                                 new_res.magnitude)
-        else:
-            new_base = np.arange(base_start.magnitude, (max(base) - 0.5 * new_res).magnitude, new_res.magnitude)
+    if base_start is None:
+        new_base = np.arange((base[indices[0]] + 0.5*new_res).magnitude,
+                             (base[indices[1]] - 0.5*new_res).magnitude,
+                             new_res.magnitude)
     else:
-        if base_start is None:
-            new_base = np.arange((base[0] - 0.5*new_res).magnitude, (min(base) +
-                                 0.5*new_res).magnitude,
-                                 -1*new_res.magnitude)
-        else:
-            new_base = np.arange(base_start.magnitude, (min(base) + 0.5 * new_res).magnitude,
-                                 -1 * new_res.magnitude)
+        new_base = np.arange(base_start.magnitude,
+                             (base[indices[1]] - 0.5 * new_res).magnitude,
+                             new_res.magnitude)
+
     new_base = np.array(new_base) * base.units
 
-    # Find times corresponding to regridded base
-    new_times = []
+    ind_in_grid = []
+    i = indices[0]
     for elem in new_base:
-        if indices[0] is None:
-            if ascent:
-                closest_base_val_ind = next(x for x, val in enumerate(base)
-                                            if val > elem)
-            else:
-                closest_base_val_ind = next(x for x, val in enumerate(base)
-                                            if val < elem)
-        else:
-            if ascent:
-                closest_base_val_ind = next(x for x, val in enumerate(base)
-                                            if val > elem and base_times[x] >=
-                                            indices[0])
-            else:
-                closest_base_val_ind = next(x for x, val in enumerate(base)
-                                            if val < elem and base_times[x] >=
-                                            indices[1])
-        new_times.append(base_times[closest_base_val_ind])
+        while base[i] < elem and i < indices[1]:
+            i += 1
+        ind_in_grid.append(i)
+        i += 1
+
+    new_times = [base_times[i] for i in ind_in_grid]
+
 
     if new_res.dimensionality == units.Pa.dimensionality:
         new_base = -1*new_base
@@ -125,20 +122,20 @@ def regrid_data(data=None, data_times=None, gridded_times=None, units=None):
         data_seg_start_ind = None
         data_seg_end_ind = None
 
-        while(data_index < len(data)):
+        while data_index < len(data):
             if data_times[data_index] >= start_time:
                 data_seg_start_ind = data_index
                 break
             data_index += 1
 
-        while(data_index < len(data)):
+        while data_index < len(data):
             if data_times[data_index] >= end_time:
                 data_seg_end_ind = data_index
                 break
             data_index += 1
 
         # Calculate and store the segment mean
-        if (data_seg_start_ind is not None and data_seg_end_ind is not None):
+        if data_seg_start_ind is not None and data_seg_end_ind is not None:
             gridded_data.append(np.nanmean(data.magnitude[data_seg_start_ind:
                                            data_seg_end_ind]))
 
@@ -316,7 +313,7 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
     :param bool confirm_bounds: if True, will ask user for verification that \
        the start, peak, and end times of the profile have been properly \
        identified
-    :param int profile_start_height: if this is given, the user will not be \
+    :param Quantity profile_start_height: if this is given, the user will not be \
        prompted to enter a start height for each profile. This is recommended \
        when processing many profiles from the same mission. At least one \
        profile should be processed without this option to determine the correct\
@@ -342,7 +339,8 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
 
         try:
             profile_start_height = int(input('Wrong file? Enter "q" to quit. '
-                                             + '\nProfile start height: '))
+                                             + '\nProfile start height: ')) * \
+                                             alts.units
         except ValueError:
             sys.exit(0)
         plt.close()
@@ -398,9 +396,8 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
                     fig2 = plt.figure()
                     plt.plot(range(len(alt_times)), alts, figure=fig2)
                     plt.grid(axis="y", which="both", figure=fig2)
-
                     plt.vlines([start_ind_asc, peak_ind, end_ind_des],
-                               min(alts) - 50, max(alts) + 50)
+                               min(alts).magnitude - 50, max(alts.magnitude) + 50)
 
                     plt.show(block=False)
 
@@ -453,7 +450,6 @@ def identify_profile(alts, alt_times, confirm_bounds=True,
                                  profile_start_height=a,
                                  to_return=to_return,
                                  ind=ind+100)
-
     return to_return
 
 

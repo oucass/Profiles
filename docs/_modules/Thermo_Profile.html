@@ -47,13 +47,13 @@
 
 <span class="sd">Component of Profiles v1.0.0</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">metpy</span> <span class="k">import</span> <span class="n">calc</span>
+<span class="kn">from</span> <span class="nn">metpy</span> <span class="kn">import</span> <span class="n">calc</span>
 <span class="kn">import</span> <span class="nn">profiles.utils</span> <span class="k">as</span> <span class="nn">utils</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">netCDF4</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">datetime</span> <span class="k">as</span> <span class="nn">dt</span>
-<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span><span class="p">,</span> <span class="n">copy</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span><span class="p">,</span> <span class="n">copy</span>
 
 
 <div class="viewcode-block" id="Thermo_Profile"><a class="viewcode-back" href="../Thermo_Profile.html#Thermo_Profile.Thermo_Profile">[docs]</a><span class="k">class</span> <span class="nc">Thermo_Profile</span><span class="p">():</span>
@@ -72,7 +72,7 @@
 <span class="sd">           altitude, or pressure to which the data is calculated</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Thermo_Profile.__init__"><a class="viewcode-back" href="../Thermo_Profile.html#Thermo_Profile.Thermo_Profile.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Thermo_Profile.__init__"><a class="viewcode-back" href="../Thermo_Profile.html#Thermo_Profile.Thermo_Profile.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">([</span><span class="o">*</span><span class="n">args</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_init2</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
@@ -406,7 +406,7 @@
                 <span class="nb">setattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">memo</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">result</span>
 
-<div class="viewcode-block" id="Thermo_Profile.__str__"><a class="viewcode-back" href="../Thermo_Profile.html#Thermo_Profile.Thermo_Profile.__str__">[docs]</a>    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Thermo_Profile.__str__"><a class="viewcode-back" href="../Thermo_Profile.html#Thermo_Profile.Thermo_Profile.__str__">[docs]</a>    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">to_return</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t\t</span><span class="s2">Thermo_Profile&quot;</span> \
                     <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t\t\t</span><span class="s2">alt:          &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alt</span><span class="p">))</span> \
                     <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\t\t\t</span><span class="s2">pres:         &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">))</span> \

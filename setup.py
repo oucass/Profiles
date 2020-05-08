@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="oucass-profiles",
-    version="1.1.0",
+    version="1.1.1",
     author="Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, Ariel Jacobs",
     author_email="cass@ou.edu",
     description="Tools to process atmospheric data collected by UAS along either vertical or horizontal lines",

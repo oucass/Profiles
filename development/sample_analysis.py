@@ -23,7 +23,7 @@ different profile start height.
 
 # Example using Profile_Set
 a = Profile_Set(resolution=1, res_units='m', ascent=True, dev=True)
-a.add_all_profiles("/home/jessica/GitHub/data_templates/01082020/00000110.BIN")
+a.add_all_profiles("/home/jessicablunt/data_templates/00000010.BIN")
 
 
 
