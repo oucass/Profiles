@@ -1,11 +1,5 @@
 """
 Calculates and stores wind parameters
-
-Authors Brian Greene, Jessica Blunt, Tyler Bell, Gus Azevedo \n
-Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
-2019
-
-Component of Profiles v1.0.0
 """
 import numpy as np
 import pandas as pd

@@ -11,17 +11,17 @@ oucass-profiles Overview
    :caption: Contents:
    :titlesonly:
 
+   Coef_Manager
    Meta
    Profile
    Profile_Set
    Raw_Profile
-   Profile_Set
    Thermo_Profile
    Wind_Profile
    plotting
    utils
-   Sensor calibration <coefs>
-
+   Set-up: Sensor Coefficients <coefs>
+   Set-up: Run Configuration <conf>
 
 
 Key Equations

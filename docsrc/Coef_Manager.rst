@@ -1,14 +1,14 @@
-plotting
-======================
+Coef_Manager
+=============
 
-.. py:data:: fpath_logos 
-
-.. autofunction:: plotting.contour_height_time
+.. automodule:: Coef_Manager
+   :members:
+   :undoc-members:
 
 .. raw:: html
 
    <script type="text/javascript">
-   var methods = document.getElementsByClassName("function");
+   var methods = document.getElementsByClassName("method");
    var i;
    for (i=0; i<methods.length; i++)
    {

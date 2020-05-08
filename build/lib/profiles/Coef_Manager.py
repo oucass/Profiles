@@ -66,9 +66,9 @@ class Coef_Manager(Coef_Manager_Base):
                 if os.path.exists(coef_info.FILE_PATH):
                     self.sub_manager = CSV_Coef_Manager(coef_info.FILE_PATH)
                 else:
-                    raise Exception("The FILE_PATH in conf.py is not valid")
+                    raise Exception("The FILE_PATH in __init__.py is not valid")
             else:
-                raise Exception("When USE_AZURE is NO, the FILE_PATH must be set in conf.py.")
+                raise Exception("When USE_AZURE is NO, the FILE_PATH must be set in __init__.py.")
         else:
             raise Exception("USE_AZURE in __init__.py must be YES or NO")
 
@@ -134,15 +134,12 @@ class Azure_Coef_Manager:
         :return: sensor numbers as {"imet1":"", "imet2":"", "imet3":"", "imet4":"",\
                                     "rh1":"", "rh2":"", "rh3":"", "rh4":""}
         """
-        all_scoop = \
-            self.table_service.query_entities('ScoopsOrig', 
-            filter="RowKey ge '" + str(scoopID).rjust(7, '0') + "_00000000'", 
-            select="RowKey")
-        max_key = str(scoopID).rjust(7, '0') + "_00000000"
-        for entity in all_scoop:
-            if entity.RowKey > max_key:
-                max_key = entity.RowKey
-        coefs = self.table_service.get_entity('ScoopsOrig', "default", max_key)
+        all_id_entries = self.table_service.query_entities('Scoops', filter="PartitionKey eq \'"+str(scoopID)+"\'")
+
+        max_date=0
+        for entry in all_id_entries:
+            if int(entry.RowKey) > max_date:
+                max_date = int(entry.RowKey)
 
         sns = self.table_service.get_entity('Scoops', str(scoopID), str(max_date))
         return {"imet1":sns.IMET1, "imet2":sns.IMET2, "imet3":sns.IMET3, "imet4":sns.IMET4,
@@ -157,19 +154,11 @@ class Azure_Coef_Manager:
         :return: information about the sensor, including offset OR coefs and calibration equation
         """
         try:
-            possible_coefs = \
-                self.table_service.query_entities('MasterCoefOrig', 
-                filter="RowKey ge '" + str(serial_number).rjust(5, '0') + "_00000000'", 
-                select="RowKey")
-            max_key = str(serial_number).rjust(5, '0') + "_00000000"
-            for entity in possible_coefs:
-                if entity.RowKey > max_key:
-                    max_key = entity.RowKey
-            coefs = self.table_service.get_entity('MasterCoefOrig', "default", max_key)
+            coefs = self.table_service.get_entity('MasterCoef', type, str(serial_number))
         except AzureMissingResourceHttpError:
             print('No coefficients found for ' + type + " sensor " + str(serial_number) 
                   + " - using default coefs.")
-            coefs = self.table_service.get_entity('MasterCoefOrig', type, str(0))
+            coefs = self.table_service.get_entity('MasterCoef', type, str(0))
 
         return {"A":coefs.A, "B":coefs.B, "C":coefs.C, "D":coefs.D, "Equation":coefs.Equation,
                 "Offset":coefs.Offset}

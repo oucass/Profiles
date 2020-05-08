@@ -40,8 +40,7 @@ class Profile_Set():
 
     def __init__(self, resolution=10, res_units='m', ascent=True,
                  dev=False, confirm_bounds=True, profile_start_height=None,
-                 nc_level='none',
-                 coefs_path=os.path.join(utils.package_path, "coefs")):
+                 nc_level='none'):
         """ Creates a Profiles object.
 
         :param int resolution: resolution to which data should be
@@ -77,7 +76,6 @@ class Profile_Set():
         self._nc_level = nc_level
         self.root_dir = ""
         self._base_start = None
-        self.coefs_path = coefs_path
 
     def add_all_profiles(self, file_path, scoop_id=None,
                          meta_flight_path=None, meta_header_path=None):
@@ -112,8 +110,7 @@ class Profile_Set():
         raw_profile_set = Raw_Profile(file_path, self.dev, scoop_id,
                                       nc_level=self._nc_level,
                                       meta_header_path=meta_header_path,
-                                      meta_flight_path=meta_flight_path,
-                                      coefs_path=self.coefs_path)
+                                      meta_flight_path=meta_flight_path)
         pos = raw_profile_set.pos_data()
 
         # Identify the start, peak, and end indices of each profile
@@ -151,8 +148,7 @@ class Profile_Set():
                                              profile_start_height=self
                                              .profile_start_height,
                                              nc_level=self._nc_level,
-                                             base_start=self._base_start,
-                                             coefs_path=self.coefs_path))
+                                             base_start=self._base_start))
 
         self.profiles.sort()
         print(len(self.profiles), "profile(s) including those added from file",
@@ -193,8 +189,7 @@ class Profile_Set():
         raw_profile = Raw_Profile(file_path, self.dev, scoop_id,
                                   nc_level=self._nc_level,
                                   meta_header_path=meta_header_path,
-                                  meta_flight_path=meta_flight_path,
-                                  coefs_path=self.coefs_path)
+                                  meta_flight_path=meta_flight_path)
         pos = raw_profile.pos_data()
 
         # Identify the start, peak, and end indices of each profile
@@ -211,8 +206,7 @@ class Profile_Set():
                                          raw_profile=raw_profile,
                                          profile_start_height=self
                                          .profile_start_height,
-                                         nc_level=self._nc_level,
-                                         coefs_path=self.coefs_path))
+                                         nc_level=self._nc_level))
         else:
             for profile_num_guess in range(len(index_list)):
                 # Check if this profile is the first to start after time
@@ -226,8 +220,7 @@ class Profile_Set():
                                          raw_profile=raw_profile,
                                          profile_start_height=self
                                          .profile_start_height,
-                                         nc_level=self._nc_level,
-                                         coefs_path=self.coefs_path))
+                                         nc_level=self._nc_level))
 
                 # No need to add any more profiles from this file
                 break

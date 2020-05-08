@@ -1,11 +1,5 @@
 """
 Calculates and stores basic thermodynamic parameters
-
-Authors Brian Greene, Jessica Blunt, Tyler Bell, Gus Azevedo \n
-Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
-2019
-
-Component of Profiles v1.0.0
 """
 from metpy import calc
 import profiles.utils as utils
@@ -53,10 +47,12 @@ class Thermo_Profile():
             Raw_Profile.thermo_data
         :param Quantity resoltion: vertical resolution in units of altitude \
            or pressure to which the data should be calculated
-        :param str filepath: the path to the original data file WITHOUT the \
+        :param str file_path: the path to the original data file WITHOUT the \
            suffix .nc or .json
         :param np.Array<Datetime> gridded_times: times at which data points \
            should be calculated
+        :param np.Array<Quantity> gridded_base: base values corresponding to \
+           gridded_times
         :param bool ascent: True if data should be processed for the ascending\
            leg of the flight, False if descending
         :param metpy.Units units: the unit registry created by Profile

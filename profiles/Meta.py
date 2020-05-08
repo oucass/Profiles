@@ -5,11 +5,11 @@ class Meta:
     """ Processes, stores, and writes metadata files (JSON-LD for public, CSV
     for private) for a flight
 
-       :var dict<str; Object> all_fields: Dictionary containing all information
+       :var dict <str; Object> all_fields: Dictionary containing all information
           to be written to metadata files
-       :var list<str> private_fields: List of fields to be included in the CSV
+       :var list <str> private_fields: List of fields to be included in the CSV
           file
-       :var list<str> public_fields: List of fields to be included in the JSON
+       :var list <str> public_fields: List of fields to be included in the JSON
           file
     """
 

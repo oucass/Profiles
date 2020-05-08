@@ -38,8 +38,7 @@ class Wind_Profile():
 
     def _init2(self, wind_dict, resolution, file_path=None,
                gridded_times=None, gridded_base=None, indices=(None, None),
-               ascent=True, units=None, nc_level='low',
-               coefs_path=os.path.join(utils.package_path, "coefs")):
+               ascent=True, units=None, nc_level='low'):
         """ Creates Wind_Profile object based on rotation data at the specified
         resolution
 
@@ -63,7 +62,11 @@ class Wind_Profile():
         """
 
 
-        self.coefs_path = coefs_path
+        if ascent:
+            self._ascent_filename_tag = "Ascending"
+        else:
+            self._ascent_filename_tag = "Descending"
+
         try:
             self._read_netCDF(file_path + "wind_" +
                               str(resolution.magnitude) +
@@ -81,13 +84,7 @@ class Wind_Profile():
             self._units = units
             self._datadir = os.path.dirname(file_path + ".json")
 
-        if ascent:
-            self._ascent_filename_tag = "Ascending"
-        else:
-            self._ascent_filename_tag = "Descending"
-
-
-
+        
         # If no indices given, use entire file
         if not indices[0] is None:
             # trim profile
@@ -185,7 +182,7 @@ class Wind_Profile():
         """
 
         # TODO account for moving platform
-        tail_num = wind_data["serial_numbers"]["wind"]
+        tail_num = utils.coef_manager.get_tail_n(wind_data['serial_numbers']['copterID'])
 
         # psi and az represent the copter's direction in spherical coordinates
         psi = np.zeros(len(wind_data["roll"])) * self._units.rad
@@ -214,13 +211,9 @@ class Wind_Profile():
             psi[i] = np.arccos(R[2, 2])
             az[i] = np.arctan2(R[1, 2], R[0, 2])
 
-        coefs = pd.read_csv(os.path.join(self.coefs_path, 'MasterCoefList.csv'))
-        a_spd = float(coefs.A[coefs.SerialNumber == tail_num]
-                      [coefs.SensorType == "Wind"])
-        b_spd = float(coefs.B[coefs.SerialNumber == tail_num]
-                      [coefs.SensorType == "Wind"])
 
-        speed = a_spd * np.sqrt(np.tan(psi)) + b_spd
+        coefs = utils.coef_manager.get_coefs('Wind', tail_num)
+        speed = float(coefs['A']) * np.sqrt(np.tan(psi)).magnitude + float(coefs['B'])
 
         speed = speed * self._units.m / self._units.s
         # Throw out negative speeds

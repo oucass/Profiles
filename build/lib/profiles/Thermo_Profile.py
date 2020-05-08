@@ -38,8 +38,7 @@ class Thermo_Profile():
 
     def _init2(self, temp_dict, resolution, file_path=None,
                gridded_times=None, gridded_base=None, indices=(None, None),
-               ascent=True, units=None, nc_level='low',
-               coefs_path=os.path.join(utils.package_path, "coefs")):
+               ascent=True, units=None, nc_level='low'):
         """ Creates Thermo_Profile object from raw data at the specified
         resolution.
 
@@ -68,13 +67,16 @@ class Thermo_Profile():
            and Wind Profile, specify 'low'. For no NetCDF files, specify \
            'none'.
         """
-
         self._units = units
+        if ascent:
+            self._ascent_filename_tag = "Ascending"
+        else:
+            self._ascent_filename_tag = "Descending"
 
         try:
             self._read_netCDF(file_path + "thermo_" +
-                            str(self.resolution.magnitude) +
-                            str(self.resolution.units) +
+                            str(resolution.magnitude) +
+                            str(resolution.units) +
                             self._ascent_filename_tag + ".nc")
             return
         except Exception:
@@ -84,14 +86,11 @@ class Thermo_Profile():
             self.pres = None
             self.temp = None
             self.alt = None
+            self.rh_flags = None
+            self.temp_flags = None
             self._units = units
             self._datadir = os.path.dirname(file_path + ".json")
-
-        if ascent:
-            self._ascent_filename_tag = "Ascending"
-        else:
-            self._ascent_filename_tag = "Descending"
-
+        
         if not indices[0] is None:
             # trim profile
             selection_temp = np.where(np.array(temp_dict["time_temp"]) > indices[0],
@@ -121,6 +120,7 @@ class Thermo_Profile():
                          temp_dict[key] = np.array(temp_dict[key])[np.where(selection_pres)]
                      elif "rh" in key:
                         temp_dict[key] = np.array(temp_dict[key])[np.where(selection_rh)]
+
         temp = []
         rh = []
 
@@ -145,8 +145,7 @@ class Thermo_Profile():
         if use_resistance:
             for i in range(len(temp_raw)):
                 temp_raw[i] = utils.temp_calib(temp_raw[i],
-                                               serial_numbers["imet"+str(i+1)],
-                                               coefs_path=coefs_path)
+                                               serial_numbers["imet"+str(i+1)])
         # End if-else blocks
 
         rh_raw = []
@@ -155,7 +154,8 @@ class Thermo_Profile():
             # Ensure only humidity is processed here
             if "rh" in key and "temp" not in key and "time" not in key:
                 rh_raw.append(temp_dict[key].magnitude)
-
+        for i in range(len(rh_raw)):
+            rh_raw[i] = utils.rh_calib(rh_raw[i], serial_numbers["rh"+str(i+1)])
         alts = np.array(temp_dict["alt_pres"].magnitude)\
             * temp_dict["alt_pres"].units
         pres = np.array(temp_dict["pres"].magnitude)\
@@ -165,11 +165,11 @@ class Thermo_Profile():
         time_pres = temp_dict["time_pres"]
         time_temp = temp_dict["time_temp"]
         # Determine bad sensors
-        rh_flags = utils.qc(rh_raw, 0.4, 0.2)  # TODO read these from file
+        self.rh_flags = utils.qc(rh_raw, 0.4, 0.2)  # TODO read these from file
 
         # Remove bad sensors
-        for flags_ind in range(len(rh_flags)):
-            if rh_flags[flags_ind] != 0:
+        for flags_ind in range(len(self.rh_flags)):
+            if self.rh_flags[flags_ind] != 0:
                 rh_raw[flags_ind] = np.full(len(rh_raw[flags_ind]), np.NaN)
 
         # Average the sensors
@@ -178,14 +178,13 @@ class Thermo_Profile():
                                   range(len(rh_raw))]))
 
         rh = np.array(rh) * units.percent
-
         # Determine which sensors are "bad"
-        temp_flags = utils.qc(temp_raw, 0.25, 0.1)
+        self.temp_flags = utils.qc(temp_raw, 0.25, 0.1)
 
         # Remove bad sensors
         temp_ind = 0  # track index in temp_raw  after items are removed.
-        for flags_ind in range(len(temp_flags)):
-            if temp_flags[flags_ind] != 0:
+        for flags_ind in range(len(self.temp_flags)):
+            if self.temp_flags[flags_ind] != 0:
                 print("Temperature sensor", temp_ind + 1, "removed")
                 temp_raw[temp_ind] = \
                     [np.nan]*len(temp_raw[temp_ind])
@@ -278,6 +277,20 @@ class Thermo_Profile():
         main_file = netCDF4.Dataset(file_path, "w",
                                     format="NETCDF4", mmap=False)
 
+        #
+        # Get the flags in
+        #
+        flag_dict = {0: "good",
+                     2: "bias",
+                     3: "lag",
+                     4: "empty"}
+        rh_flags = main_file.createGroup("rh_flags")
+        for i in range(len(self.rh_flags)):
+            rh_flags.setncattr("sensor" + str(i+1), flag_dict[self.rh_flags[i]])
+        temp_flags = main_file.createGroup("temp_flags")
+        for i in range(len(self.temp_flags)):
+            temp_flags.setncattr("sensor" + str(i+1), flag_dict[self.temp_flags[i]])
+
         main_file.createDimension("time", None)
         # TIME
         time_var = main_file.createVariable("time", "f8", ("time",))
@@ -327,6 +340,11 @@ class Thermo_Profile():
         """
         main_file = netCDF4.Dataset(file_path, "r",
                                     format="NETCDF4", mmap=False)
+
+        self.temp_flags = [main_file["temp_flags"].getncattr("sensor"+str(i+1)) for i in 
+                           range(len(main_file["temp_flags"].ncattrs()))] 
+        self.rh_flags = [main_file["rh_flags"].getncattr("sensor"+str(i+1)) for i in 
+                           range(len(main_file["rh_flags"].ncattrs()))]
         # Note: each data chunk is converted to an np array. This is not a
         # superfluous conversion; a Variable object is incompatible with pint.
 

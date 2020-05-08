@@ -1,11 +1,5 @@
 """
 Utils contains misc. functions to aid in data analysis.
-
-Authors Brian Greene, Jessica Blunt, Tyler Bell, Gus Azevedo \n
-Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
-2019
-
-Component of Profiles v1.0.0
 """
 import sys
 import os
@@ -44,6 +38,8 @@ def regrid_base(base=None, base_times=None, new_res=None, ascent=True,
     :param bool ascent: True if data from ascending leg of profile is to be \
        analyzed, false if descending
     :param pint.UnitRegistry units: The unit registry defined in Profile
+    :param tuple indices: start and end times
+    :param Quantity base_start: lowest altitude value of gridded_base
     :rtype: tuple(np.Array<Datetime>, np.Array<Quantity>)
     :return: times at which the craft is at vertical points n*res above \
        the profile starting height and the corrosponding base values
@@ -160,7 +156,6 @@ def temp_calib(resistance, sn):
     :rtype: list<Quantity>
     :return: list of temperatures in K
     """
-
     coefs = coef_manager.get_coefs("Imet", sn)
     a = float(coefs["A"])
     b = float(coefs["B"])
@@ -178,8 +173,12 @@ def rh_calib(raw, sn):
     :rtype: list<Quantity>
     :return: list of calibrated rh
     """
+    offset = coef_manager.get_coefs('RH', sn)['Offset']
+    try:
+        offset = float(coef_manager.get_coefs('RH', sn)['Offset']) / 1000
+    except Exception:
+        offset = 0
 
-    offset = float(coef_manager.get_coefs('RH', sn)['Offset']) / 1000
     return np.add(raw, offset)
 
 
