@@ -233,7 +233,9 @@ class Wind_Profile():
                                     str(self.resolution.units) +
                                     self._ascent_filename_tag + ".nc", "w",
                                     format="NETCDF4", mmap=False)
-
+        # File NC compliant to version 1.8
+        main_file.setncattr("Conventions", "NC-1.8")
+        
         main_file.createDimension("time", None)
         # DIRECTION
         dir_var = main_file.createVariable("dir", "f8", ("time",))

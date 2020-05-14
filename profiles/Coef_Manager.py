@@ -121,10 +121,7 @@ class Azure_Coef_Manager:
         :rtype: str
         :return: the tail number
         """
-        copter_entity = self.table_service.query_entities('Copters', filter="PartitionKey eq \'"+str(copterID)+"\'")
-        # TODO there has to be a more elegant way to do this...
-        for entity in copter_entity:
-            return entity.RowKey
+        return self.table_service.get_entity('Copters', 'default', str(int(copterID))).name
 
     def get_sensors(self, scoopID):
         """ Get the sensor serial numbers for the given scoop.
@@ -135,15 +132,16 @@ class Azure_Coef_Manager:
                                     "rh1":"", "rh2":"", "rh3":"", "rh4":""}
         """
         all_scoop = \
-            self.table_service.query_entities('ScoopsOrig', 
+            self.table_service.query_entities('Scoops', 
             filter="RowKey ge '" + str(scoopID).rjust(7, '0') + "_00000000'", 
             select="RowKey")
         max_key = str(scoopID).rjust(7, '0') + "_00000000"
         for entity in all_scoop:
             if entity.RowKey > max_key:
                 max_key = entity.RowKey
-        coefs = self.table_service.get_entity('ScoopsOrig', "default", max_key)
+        coefs = self.table_service.get_entity('Scoops', "default", max_key)
 
+        # TODO test that max
         sns = self.table_service.get_entity('Scoops', str(scoopID), str(max_date))
         return {"imet1":sns.IMET1, "imet2":sns.IMET2, "imet3":sns.IMET3, "imet4":sns.IMET4,
                 "rh1":sns.RH1, "rh2":sns.RH2, "rh3":sns.RH3, "rh4":sns.RH4}
@@ -156,23 +154,27 @@ class Azure_Coef_Manager:
         :rtype: dict
         :return: information about the sensor, including offset OR coefs and calibration equation
         """
+        tester = self.table_service.query_entities('MasterCoef', 
+                filter="RowKey ge '" + str(serial_number).rjust(5, '0') + "-00000000' and " + 
+                    "RowKey lt '" + str(int(serial_number)+1).rjust(5, '0') + "-00000000'", 
+                select="RowKey")
         try:
             possible_coefs = \
-                self.table_service.query_entities('MasterCoefOrig', 
-                filter="RowKey ge '" + str(serial_number).rjust(5, '0') + "_00000000'", 
+                self.table_service.query_entities('MasterCoef', 
+                filter="RowKey ge '" + str(serial_number).rjust(5, '0') + "-00000000' and " + 
+                    "RowKey lt '" + str(int(serial_number)+1).rjust(5, '0') + "-00000000'", 
                 select="RowKey")
-            max_key = str(serial_number).rjust(5, '0') + "_00000000"
+            max_key = str(serial_number).rjust(5, '0') + "-00000000"
             for entity in possible_coefs:
                 if entity.RowKey > max_key:
                     max_key = entity.RowKey
-            coefs = self.table_service.get_entity('MasterCoefOrig', "default", max_key)
+            coefs = self.table_service.get_entity('MasterCoef', "default", max_key)
         except AzureMissingResourceHttpError:
             print('No coefficients found for ' + type + " sensor " + str(serial_number) 
                   + " - using default coefs.")
-            coefs = self.table_service.get_entity('MasterCoefOrig', type, str(0))
+            coefs = self.table_service.get_entity('MasterCoef', type, str(0))
 
-        return {"A":coefs.A, "B":coefs.B, "C":coefs.C, "D":coefs.D, "Equation":coefs.Equation,
-                "Offset":coefs.Offset}
+        return {"A":coefs.A, "B":coefs.B, "C":coefs.C, "D":coefs.D, "Equation":coefs.Equation}
 
 
 class CSV_Coef_Manager(Coef_Manager_Base):

@@ -272,6 +272,8 @@ class Thermo_Profile():
         """
         main_file = netCDF4.Dataset(file_path, "w",
                                     format="NETCDF4", mmap=False)
+        # File NC compliant to version 1.8
+        main_file.setncattr("Conventions", "NC-1.8")
 
         #
         # Get the flags in

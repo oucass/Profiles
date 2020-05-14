@@ -173,9 +173,9 @@ def rh_calib(raw, sn):
     :rtype: list<Quantity>
     :return: list of calibrated rh
     """
-    offset = coef_manager.get_coefs('RH', sn)['Offset']
+    offset = coef_manager.get_coefs('RH', sn)['A']
     try:
-        offset = float(coef_manager.get_coefs('RH', sn)['Offset']) / 1000
+        offset = float(coef_manager.get_coefs('RH', sn)['A']) / 1000
     except Exception:
         offset = 0
 

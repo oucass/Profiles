@@ -152,7 +152,7 @@ class Raw_Profile():
         to_return["time_pres"] = self.pres[-1]
 
         to_return["serial_numbers"] = self.serial_numbers
-
+        # TODO verify serial numbers
         return to_return
 
     def wind_data(self):
@@ -652,6 +652,9 @@ class Raw_Profile():
         """
         main_file = netCDF4.Dataset(file_path[:-5] + ".nc", "w",
                                     format="NETCDF4", mmap=False)
+
+        # File NC compliant to version 1.8
+        main_file.setncattr("Conventions", "NC-1.8")
 
         # SERIAL NUMBERS
         sn_grp = main_file.createGroup("/serial_numbers")
