@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>oucass-profiles Overview &#8212; oucass-profiles 1.3.0 documentation</title>
+    <link rel="stylesheet" href="_static/nature1.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Coef_Manager" href="Coef_Manager.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      # TODO turn this into a link to index.html
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="oucass-profiles-overview">
+<h1>oucass-profiles Overview<a class="headerlink" href="#oucass-profiles-overview" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Coef_Manager.html">Coef_Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Meta.html">Meta</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Profile.html">Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Profile_Set.html">Profile_Set</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Raw_Profile.html">Raw_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Thermo_Profile.html">Thermo_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Wind_Profile.html">Wind_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coefs.html">Set-up: Sensor Coefficients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conf.html">Set-up: Run Configuration</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="key-equations">
+<h1>Key Equations<a class="headerlink" href="#key-equations" title="Permalink to this headline">¶</a></h1>
+<ol class="arabic simple">
+<li><p>Position data to wind</p></li>
+</ol>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+\mathrm{Speed} &amp;= A \sqrt{\tan{[\arccos{(\cos{(\mathrm{PITCH})} - \cos{(\mathrm{ROLL})})}]}} + B \\
+\\
+\mathrm{Direction} &amp;= \arctan{\Bigg[\frac{-\cos{(\mathrm{YAW})}\sin{(\mathrm{ROLL})}}{\sin{(\mathrm{YAW})}\sin{(\mathrm{ROLL})} + \sin{(\mathrm{PITCH})}\cos{(\mathrm{YAW})}\cos{(\mathrm{ROLL})}} \Bigg]}
+\end{aligned}\end{split}\]</div>
+<ol class="arabic simple" start="2">
+<li><p>Thermistor resistance to temperature</p></li>
+</ol>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+T &amp;= \frac{1}{A + B (log{R}) + C (log{R})^3}
+\end{aligned}\]</div>
+</div>
+<div class="section" id="contact-us">
+<h1>Contact us!<a class="headerlink" href="#contact-us" title="Permalink to this headline">¶</a></h1>
+<embed>
+<form name='input' method='POST' action=https://formspree.io/cass@ou.edu>
+   Name: <input type="text" name="Name" placeholder="Your name"><br>
+   Email: <input type="email" name="_replyto" placeholder="Your email"><br>
+   Message: <textarea name="message" placeholder="Type your message here"></textarea><br>
+   <input type="submit" value="send">
+   <input type="hidden" name="_subject" value="PROFILES INQUIRY">
+   <input type="hidden" name="_cc" value="ajacobs@ou.edu"
+</form>
+</embed></div>
+
+
+          </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      # TODO turn this into a link to index.html
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

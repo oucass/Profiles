@@ -1,11 +1,5 @@
 """
 Calculates and stores wind parameters
-
-Authors Brian Greene, Jessica Blunt, Tyler Bell, Gus Azevedo \n
-Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
-2019
-
-Component of Profiles v1.0.0
 """
 import numpy as np
 import pandas as pd
@@ -38,7 +32,7 @@ class Wind_Profile():
 
     def _init2(self, wind_dict, resolution, file_path=None,
                gridded_times=None, gridded_base=None, indices=(None, None),
-               ascent=True, units=None, nc_level='low'):
+               ascent=True, units=None, nc_level='low', meta=None):
         """ Creates Wind_Profile object based on rotation data at the specified
         resolution
 
@@ -53,6 +47,7 @@ class Wind_Profile():
            processed? If not, False.
         :param metpy.units units: the units defined by Raw_Profile
         :param str file_path: the original file passed to the package
+        :param Meta meta: the parent Profile's Meta object
         :param str nc_level: either 'low', or 'none'. This parameter \
            is used when processing non-NetCDF files to determine which types \
            of NetCDF files will be generated. For individual files for each \
@@ -61,7 +56,7 @@ class Wind_Profile():
            'none'.
         """
 
-
+        self._meta = meta
         if ascent:
             self._ascent_filename_tag = "Ascending"
         else:
@@ -234,12 +229,19 @@ class Wind_Profile():
         :param string file_path: file name
         """
 
-        main_file = netCDF4.Dataset(file_path + "wind_" +
-                                    str(self.resolution.magnitude) +
-                                    str(self.resolution.units) +
-                                    self._ascent_filename_tag + ".nc", "w",
-                                    format="NETCDF4", mmap=False)
+        file_name = str(self._meta.get("location")) + str(self.resolution.magnitude) + \
+                    str(self._meta.get("platform_id")) + "CMT" + \
+                    "wind_" + self._ascent_filename_tag + ".c1." + \
+                    self._meta.get("timestamp").replace("_", ".") + ".cdf"
+        file_name = os.path.join(os.path.dirname(file_path), file_name)
+        if os.path.isfile(file_name):
+            return
 
+        main_file = netCDF4.Dataset(file_name, "w",
+                                    format="NETCDF4", mmap=False)
+        # File NC compliant to version 1.8
+        main_file.setncattr("Conventions", "NC-1.8")
+        
         main_file.createDimension("time", None)
         # DIRECTION
         dir_var = main_file.createVariable("dir", "f8", ("time",))

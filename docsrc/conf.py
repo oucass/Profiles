@@ -25,9 +25,9 @@ copyright = u'2020, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ar
 author = u'Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs'
 
 # The short X.Y version
-version = u'1.2'
+version = u'1.3'
 # The full version, including alpha/beta/rc tags
-release = u'1.2.0'
+release = u'1.3.0'
 
 
 # -- General configuration ---------------------------------------------------

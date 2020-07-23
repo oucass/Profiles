@@ -222,13 +222,8 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
 # TODO Test with big flight data
 def plot_skewT(profiles, wind_barbs=False):
     r""" Plots a SkewT diagram.
-    :param list<number> temp: Temperatures in C
-    :param list<number> pres: Pressures in ?
-    :param list<number> t_d: Dewpoint temperatures in C
-    :param list<number> u: U-component of wind in kts
-    :param list<number> v: V-component of wind in kts
-    :param datetime time: The starting time of the flight
-    :param \**kwargs: see below
+    :param list<number> profiles: profiles which contain T_d, press, and temp data
+    :param bool wind_barbs: if True, plot wind barbs. Requires that profiles contain u, v data.
     :rtype: matplotlib.figure.Figure
     :return: fig containing a SkewT diagram of the data
     """

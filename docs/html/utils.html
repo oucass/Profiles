@@ -1,0 +1,229 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>utils &#8212; oucass-profiles 1.3.0 documentation</title>
+    <link rel="stylesheet" href="_static/nature1.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Set-Up: Sensor Coefficients" href="coefs.html" />
+    <link rel="prev" title="plotting" href="plotting.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      # TODO turn this into a link to index.html
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-profiles.utils">
+<span id="utils"></span><h1>utils<a class="headerlink" href="#module-profiles.utils" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="profiles.utils.regrid_base">
+<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">regrid_base</code><span class="sig-paren">(</span><em class="sig-param">base=None</em>, <em class="sig-param">base_times=None</em>, <em class="sig-param">new_res=None</em>, <em class="sig-param">ascent=True</em>, <em class="sig-param">units=None</em>, <em class="sig-param">indices=(None</em>, <em class="sig-param">None)</em>, <em class="sig-param">base_start=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#regrid_base"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.regrid_base" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates times at which data means should be calculated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base</strong> (<em>np.Array&lt;Quantity&gt;</em>) – Measurements of the variable serving as        the vertical coordinate</p></li>
+<li><p><strong>base_times</strong> (<em>np.Array&lt;Datetime&gt;</em>) – Times coresponding to base</p></li>
+<li><p><strong>new_res</strong> (<em>Quantity</em>) – The resolution to which base should be gridded.        This must have the same dimension (i.e. both length or both pressure)        as base.</p></li>
+<li><p><strong>ascent</strong> (<em>bool</em>) – True if data from ascending leg of profile is to be        analyzed, false if descending</p></li>
+<li><p><strong>units</strong> (<em>pint.UnitRegistry</em>) – The unit registry defined in Profile</p></li>
+<li><p><strong>indices</strong> (<em>tuple</em>) – start and end times</p></li>
+<li><p><strong>base_start</strong> (<em>Quantity</em>) – lowest altitude value of gridded_base</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple(np.Array&lt;Datetime&gt;, np.Array&lt;Quantity&gt;)</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>times at which the craft is at vertical points n*res above        the profile starting height and the corrosponding base values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="profiles.utils.regrid_data">
+<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">regrid_data</code><span class="sig-paren">(</span><em class="sig-param">data=None</em>, <em class="sig-param">data_times=None</em>, <em class="sig-param">gridded_times=None</em>, <em class="sig-param">units=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#regrid_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.regrid_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns data interpolated to an evenly spaced array based on
+gridded_times.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.Array&lt;Quantity&gt;</em>) – a non-base variable (i.e. not yor chosen        vertical coordinate)</p></li>
+<li><p><strong>data_times</strong> (<em>np.Array&lt;Datetime&gt;</em>) – Times coresponding to data</p></li>
+<li><p><strong>units</strong> (<em>pint.UnitRegistry</em>) – The unit registry defined in Profile</p></li>
+<li><p><strong>gridded_times</strong> (<em>np.Array&lt;Datetime&gt;</em>) – The times returned by regrid_base</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>np.Array&lt;Quantity&gt;</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>gridded_data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="profiles.utils.profiles.utils.temp_calib">
+<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">temp_calib</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#profiles.utils.profiles.utils.temp_calib" title="Permalink to this definition">¶</a></dt>
+<dt>
+<code class="sig-name descname">Converts resistance to temperature using the coefficients for the    sensor specified OR generalized coefficients if the serial number (sn)   is not recognized.</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>resistance</strong> (<em>list&lt;Quantity&gt;</em>) – resistances recorded by temperature sensors</p></li>
+<li><p><strong>sn</strong> (<em>int</em>) – the serial number of the sensor reporting</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list&lt;Quantity&gt;</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of temperatures in K</p>
+</dd>
+</dl>
+<p><strong>Temperature Calibration</strong></p>
+<p>Resistance (R) to temperature (T)</p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+T &amp;= \frac{1}{A + B (log{R}) + C (log{R})^3}
+\end{aligned}\]</div>
+<p>Coefficients are pulled from ./coefs/MasterCoefList.csv on your computer.</p>
+<dl class="simple">
+<dt>Equation from: Greene, B.R. Boundary Layer Profiling Using Rotary-Wing </dt><dd><p>Unmanned Aircraft Systems: Filling the Atmospheric Data Gap. Master’s Thesis, The University of Oklahoma, Norman, OK, USA, 2018.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="profiles.utils.identify_profile">
+<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">identify_profile</code><span class="sig-paren">(</span><em class="sig-param">alts</em>, <em class="sig-param">alt_times</em>, <em class="sig-param">confirm_bounds=True</em>, <em class="sig-param">profile_start_height=None</em>, <em class="sig-param">to_return=[]</em>, <em class="sig-param">ind=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#identify_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.identify_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identifies the temporal bounds of all profiles in the data file. These
+assumptions must be valid:
+* The craft starts and ends each profile below profile_start_height
+* The craft does not go above profile_start_height until the first
+profile is started
+* The craft does not go above profile_start_height after the last
+profile is ended.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alts</strong> (<em>np.Array&lt;Quantity&gt;</em>) – recorded altitudes; units don’t matter</p></li>
+<li><p><strong>alt_times</strong> (<em>np.Array&lt;Datetime&gt;</em>) – times coresponding to alts</p></li>
+<li><p><strong>confirm_bounds</strong> (<em>bool</em>) – if True, will ask user for verification that        the start, peak, and end times of the profile have been properly        identified</p></li>
+<li><p><strong>profile_start_height</strong> (<em>int</em>) – if this is given, the user will not be        prompted to enter a start height for each profile. This is recommended        when processing many profiles from the same mission. At least one        profile should be processed without this option to determine the correct       value.</p></li>
+<li><p><strong>ind</strong> (<em>int</em>) – used privately for recurrsion - leave this alone</p></li>
+<li><p><strong>to_return</strong> (<em>list</em>) – used privately for recurrsion - leave this alone</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list&lt;tuple&gt;</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of times defining the profiles in the format        (time_start, time_max_height, time_end)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="profiles.utils.qc">
+<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">qc</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">max_bias</em>, <em class="sig-param">max_variance</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#qc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.qc" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Determines which sensors are not reliable from a given set. Be sure</dt><dd><dl class="simple">
+<dt>to only include like sensors (not both temperature inside and outside</dt><dd><p>the CO2 sensor) in Data.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>list&lt;Quantity&gt;</em>) – a list containing one list for each sensor
+in the ensemble, i.e. all external RH sensors</p></li>
+<li><p><strong>max_bias</strong> (<em>Quantity</em>) – the maximum absolute difference between the        mean of one sensor and the mean of all sensors of that type. This        should be determined experimentally for each type of sensor.</p></li>
+<li><p><strong>max_variance</strong> (<em>Quantity</em>) – the maximum absolute difference between the        standard deviation of one sensor and the standard deviation of all        sensors of that type. This should be determined experimentally for        each type of sensor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list&lt;int&gt; of length len(data)</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list containing 0 in the position of each “good” sensor, 2 in the
+position of each sensor flagged for bias, 3 in the position of each
+sensor flagged for response time, and 4 in the position of each flagged as empty</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="profiles.utils.temp_calib">
+<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">temp_calib</code><span class="sig-paren">(</span><em class="sig-param">resistance</em>, <em class="sig-param">sn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#temp_calib"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.temp_calib" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts resistance to temperature using the coefficients for the        sensor specified OR generalized coefficients if the serial number (sn)       is not recognized.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>resistance</strong> (<em>list&lt;Quantity&gt;</em>) – resistances recorded by temperature        sensors</p></li>
+<li><p><strong>sn</strong> (<em>int</em>) – the serial number of the sensor reporting</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list&lt;Quantity&gt;</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of temperatures in K</p>
+</dd>
+</dl>
+</dd></dl>
+
+<script type="text/javascript">
+var methods = document.getElementsByClassName("function");
+var i;
+for (i=0; i<methods.length; i++)
+{
+   methods[i].addEventListener("click", function()
+      {
+         this.classList.toggle("active");
+         var content = this.lastElementChild;
+         if (content.style.display == "block")
+         {
+            content.style.display = "none";
+         }
+         else
+         {
+            content.style.display = "block";
+         }
+      });
+   // Initially set all to hidden
+   methods[i].lastElementChild.style.display = "none";
+}
+</script></div>
+
+
+          </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      # TODO turn this into a link to index.html
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

@@ -66,9 +66,9 @@ class Coef_Manager(Coef_Manager_Base):
                 if os.path.exists(coef_info.FILE_PATH):
                     self.sub_manager = CSV_Coef_Manager(coef_info.FILE_PATH)
                 else:
-                    raise Exception("The FILE_PATH in __init__.py is not valid")
+                    raise Exception("The FILE_PATH in conf.py is not valid")
             else:
-                raise Exception("When USE_AZURE is NO, the FILE_PATH must be set in __init__.py.")
+                raise Exception("When USE_AZURE is NO, the FILE_PATH must be set in conf.py.")
         else:
             raise Exception("USE_AZURE in __init__.py must be YES or NO")
 
@@ -121,10 +121,7 @@ class Azure_Coef_Manager:
         :rtype: str
         :return: the tail number
         """
-        copter_entity = self.table_service.query_entities('Copters', filter="PartitionKey eq \'"+str(copterID)+"\'")
-        # TODO there has to be a more elegant way to do this...
-        for entity in copter_entity:
-            return entity.RowKey
+        return self.table_service.get_entity('Copters', 'default', str(int(copterID))).name
 
     def get_sensors(self, scoopID):
         """ Get the sensor serial numbers for the given scoop.
@@ -134,13 +131,17 @@ class Azure_Coef_Manager:
         :return: sensor numbers as {"imet1":"", "imet2":"", "imet3":"", "imet4":"",\
                                     "rh1":"", "rh2":"", "rh3":"", "rh4":""}
         """
-        all_id_entries = self.table_service.query_entities('Scoops', filter="PartitionKey eq \'"+str(scoopID)+"\'")
+        all_scoop = \
+            self.table_service.query_entities('Scoops', 
+            filter="RowKey ge '" + str(scoopID).rjust(7, '0') + "_00000000'", 
+            select="RowKey")
+        max_key = str(scoopID).rjust(7, '0') + "_00000000"
+        for entity in all_scoop:
+            if entity.RowKey > max_key:
+                max_key = entity.RowKey
+        coefs = self.table_service.get_entity('Scoops', "default", max_key)
 
-        max_date=0
-        for entry in all_id_entries:
-            if int(entry.RowKey) > max_date:
-                max_date = int(entry.RowKey)
-
+        # TODO test that max
         sns = self.table_service.get_entity('Scoops', str(scoopID), str(max_date))
         return {"imet1":sns.IMET1, "imet2":sns.IMET2, "imet3":sns.IMET3, "imet4":sns.IMET4,
                 "rh1":sns.RH1, "rh2":sns.RH2, "rh3":sns.RH3, "rh4":sns.RH4}
@@ -153,15 +154,36 @@ class Azure_Coef_Manager:
         :rtype: dict
         :return: information about the sensor, including offset OR coefs and calibration equation
         """
+        tester = self.table_service.query_entities('MasterCoef', 
+                filter="RowKey ge '" + str(serial_number).rjust(5, '0') + "-00000000' and " + 
+                    "RowKey lt '" + str(int(serial_number)+1).rjust(5, '0') + "-00000000'", 
+                select="RowKey")
         try:
-            coefs = self.table_service.get_entity('MasterCoef', type, str(serial_number))
+            possible_coefs = \
+                self.table_service.query_entities('MasterCoef', 
+                filter="RowKey ge '" + str(serial_number).rjust(5, '0') + "-00000000' and " + 
+                    "RowKey lt '" + str(int(serial_number)+1).rjust(5, '0') + "-00000000'", 
+                select="RowKey")
+            max_key = str(serial_number).rjust(5, '0') + "-00000000"
+            for entity in possible_coefs:
+                if entity.RowKey > max_key:
+                    max_key = entity.RowKey
+            coefs = self.table_service.get_entity('MasterCoef', "default", max_key)
         except AzureMissingResourceHttpError:
             print('No coefficients found for ' + type + " sensor " + str(serial_number) 
                   + " - using default coefs.")
-            coefs = self.table_service.get_entity('MasterCoef', type, str(0))
+            coefs = self.table_service.get_entity('MasterCoef', "default", "00000-00000000")
 
-        return {"A":coefs.A, "B":coefs.B, "C":coefs.C, "D":coefs.D, "Equation":coefs.Equation,
-                "Offset":coefs.Offset}
+        try:
+            return {"A":coefs.A, "B":coefs.B, "C":coefs.C, "D":coefs.D, "Equation":coefs.Equation}
+        except AttributeError:
+            try:
+                return {"A":coefs.A, "B":coefs.B, "C":coefs.C, "Equation":coefs.Equation}
+            except AttributeError:
+                try:
+                    return {"A":coefs.A, "B":coefs.B, "Equation":coefs.Equation}
+                except AttributeError:
+                    return {"A":coefs.A, "Equation":coefs.Equation}
 
 
 class CSV_Coef_Manager(Coef_Manager_Base):
