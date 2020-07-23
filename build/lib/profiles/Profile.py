@@ -236,7 +236,7 @@ class Profile():
         result = cls.__new__(cls)
         memo[id(self)] = result
         for key, value in self.__dict__.items():
-            print(key)
+            # print(key)
             if key in "_units":
                 continue
             if key in "_pos":

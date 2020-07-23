@@ -97,7 +97,7 @@ class Profile():
                                         profile_start_height)
             indices = index_list[profile_num - 1]
         except IndexError:
-            print("Analysis shows that the given file has few than " +
+            print("Analysis shows that the given file has fewer than " +
                   str(profile_num) + " profiles. If you are certain the file "
                   + "does contain more profiles than we have found, try again "
                   + "with a different starting height. \n\n")
@@ -183,6 +183,7 @@ class Profile():
                              gridded_base=self.gridded_base,
                              indices=self.indices, ascent=self.ascent,
                              units=self._units, file_path=self.file_path,
+                             meta=self.meta,
                              nc_level=self._nc_level)
             if len(self._wind_profile.gridded_times) > len(self.gridded_times):
                 new_len = len(self.gridded_times)
@@ -212,6 +213,7 @@ class Profile():
                                gridded_base=self.gridded_base,
                                indices=self.indices, ascent=self.ascent,
                                units=self._units, file_path=self.file_path,
+                               meta=self.meta,
                                nc_level=self._nc_level)
             if len(self._thermo_profile.gridded_times) > \
                     len(self.gridded_times):

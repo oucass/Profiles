@@ -32,7 +32,7 @@ class Thermo_Profile():
 
     def _init2(self, temp_dict, resolution, file_path=None,
                gridded_times=None, gridded_base=None, indices=(None, None),
-               ascent=True, units=None, nc_level='low'):
+               ascent=True, units=None, meta=None, nc_level='low'):
         """ Creates Thermo_Profile object from raw data at the specified
         resolution.
 
@@ -56,6 +56,7 @@ class Thermo_Profile():
         :param bool ascent: True if data should be processed for the ascending\
            leg of the flight, False if descending
         :param metpy.Units units: the unit registry created by Profile
+        :param Meta meta: the parent Profile's Meta object
         :param str nc_level: either 'low', or 'none'. This parameter \
            is used when processing non-NetCDF files to determine which types \
            of NetCDF files will be generated. For individual files for each \
@@ -63,6 +64,7 @@ class Thermo_Profile():
            and Wind Profile, specify 'low'. For no NetCDF files, specify \
            'none'.
         """
+        self._meta = meta
         self._units = units
         if ascent:
             self._ascent_filename_tag = "Ascending"
@@ -242,10 +244,7 @@ class Thermo_Profile():
                  units.gPerKg
 
         if nc_level in 'low':
-            self._save_netCDF(file_path + "thermo_" +
-                              str(self.resolution.magnitude) +
-                              str(self.resolution.units) +
-                              self._ascent_filename_tag + ".nc")
+            self._save_netCDF(file_path)
 
     def truncate_to(self, new_len):
         """ Shortens arrays to have no more than new_len data points
@@ -270,7 +269,13 @@ class Thermo_Profile():
 
         :param string file_path: file name
         """
-        main_file = netCDF4.Dataset(file_path, "w",
+        file_name = str(self._meta.get("location")) + str(self.resolution.magnitude) + \
+                    str(self._meta.get("platform_id")) + "CMT" + \
+                    "thermo_" + self._ascent_filename_tag + ".c1." + \
+                    self._meta.get("timestamp").replace("_", ".") + ".cdf"
+        file_name = os.path.join(os.path.dirname(file_path), file_name)
+
+        main_file = netCDF4.Dataset(file_name, "w",
                                     format="NETCDF4", mmap=False)
         # File NC compliant to version 1.8
         main_file.setncattr("Conventions", "NC-1.8")
@@ -336,6 +341,11 @@ class Thermo_Profile():
 
         :param string file_path: file name
         """
+        file_name = str(self._meta.get("location")) + str(self.resolution.magnitude) + \
+                    str(self._meta.get("platform_id")) + "CMT" + \
+                    "thermo_" + self._ascent_filename_tag + ".c1." + \
+                    self._meta.get("date_utc").replace("_", ".") + ".cdf"
+        file_name = os.path.join(os.path.dirname(file_path), file_name)
         main_file = netCDF4.Dataset(file_path, "r",
                                     format="NETCDF4", mmap=False)
 

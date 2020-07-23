@@ -172,9 +172,18 @@ class Azure_Coef_Manager:
         except AzureMissingResourceHttpError:
             print('No coefficients found for ' + type + " sensor " + str(serial_number) 
                   + " - using default coefs.")
-            coefs = self.table_service.get_entity('MasterCoef', type, str(0))
+            coefs = self.table_service.get_entity('MasterCoef', "default", "00000-00000000")
 
-        return {"A":coefs.A, "B":coefs.B, "C":coefs.C, "D":coefs.D, "Equation":coefs.Equation}
+        try:
+            return {"A":coefs.A, "B":coefs.B, "C":coefs.C, "D":coefs.D, "Equation":coefs.Equation}
+        except AttributeError:
+            try:
+                return {"A":coefs.A, "B":coefs.B, "C":coefs.C, "Equation":coefs.Equation}
+            except AttributeError:
+                try:
+                    return {"A":coefs.A, "B":coefs.B, "Equation":coefs.Equation}
+                except AttributeError:
+                    return {"A":coefs.A, "Equation":coefs.Equation}
 
 
 class CSV_Coef_Manager(Coef_Manager_Base):

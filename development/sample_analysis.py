@@ -3,6 +3,7 @@ from profiles.Profile import Profile
 import profiles.plotting as plotting
 import matplotlib.pyplot as plt
 import numpy as np
+from metpy.plots import Hodograph
 
 """
 Read data. The raw data will be read in any case because ".json" was specified,
@@ -23,7 +24,8 @@ different profile start height.
 
 # Example using Profile_Set
 a = Profile_Set(resolution=1, res_units='m', ascent=True, dev=True, profile_start_height=400, confirm_bounds=False, nc_level='low')
-a.add_all_profiles("/home/jessicablunt/data_templates/00000106.BIN")
+a.add_all_profiles("/home/jessicablunt/data_templates/CS_N935UA_KAEFS_flights/20200710_1814.json")
+a.add_all_profiles("/home/jessicablunt/data_templates/CS_N935UA_KAEFS_flights/20200710_1832.json")
 
 
 
@@ -63,16 +65,23 @@ a1 = a.profiles[0]
 plotting.plot_skewT(temp=a1.get("temp"), pres=a1.get("pres"), t_d=a1.get("T_d"),
                     u=a1.get("u"), v=a1.get("v"), time=a1.get("gridded_times"),
                     units=a1.get("_units"))
-plt.savefig("/home/jessicablunt/20200108__mSkewT.png")
+plt.show()
+a2 = a.profiles[1]
+plotting.plot_skewT(temp=a2.get("temp"), pres=a2.get("pres"), t_d=a2.get("T_d"),
+                    u=a2.get("u"), v=a2.get("v"), time=a2.get("gridded_times"),
+                    units=a2.get("_units"))
 plt.show()
 
-# plt.figure()
-# for w in aw:
-#     # Create a hodograph
-#     ws = w.speed
-#     wt = w.gridded_times
-#     plt.plot(w.speed, w.gridded_times)
-# plt.show()
+
+for w in aw:
+     # Create a hodograph
+     plt.figure()
+     h = Hodograph(component_range=10)
+     h.plot(w.u, w.v)
+     #ws = w.speed
+     #wt = w.gridded_times
+     #plt.plot(w.speed, w.gridded_times)
+     plt.show()
 
 
 # Example using Profile

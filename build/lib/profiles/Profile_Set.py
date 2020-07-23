@@ -410,7 +410,7 @@ class Profile_Set():
                     rh_var[:] = thermo.rh.magnitude
                     rh_var.units = str(thermo.rh.units)
                 except Exception:
-                    print("")
+                    continue
                 # TEMP
                 try:
                     temp_var = profile_group.createVariable("temp", "f8",
@@ -418,7 +418,7 @@ class Profile_Set():
                     temp_var[:] = thermo.temp.magnitude
                     temp_var.units = str(thermo.temp.units)
                 except Exception:
-                    print("")
+                    continue
                 # MIXING RATIO
                 try:
                     mr_var = profile_group.createVariable("mr", "f8",
@@ -426,7 +426,7 @@ class Profile_Set():
                     mr_var[:] = thermo.mixing_ratio.magnitude
                     mr_var.units = str(thermo.mixing_ratio.units)
                 except Exception:
-                    print("")
+                    continue
                 # TIME
                 try:
                     time_var = profile_group.createVariable("time", "f8",
@@ -437,7 +437,7 @@ class Profile_Set():
                     time_var.units = \
                         'microseconds since 2010-01-01 00:00:00:00'
                 except Exception:
-                    print("")
+                    continue
                 # ALT
                 try:
                     alt_var = profile_group.createVariable("alt", "f8",
@@ -445,7 +445,7 @@ class Profile_Set():
                     alt_var[:] = thermo.alt.magnitude
                     alt_var.units = str(thermo.alt.units)
                 except Exception:
-                    print("")
+                    continue
                 # PRES
                 try:
                     pres_var = profile_group.createVariable("pres", "f8",
@@ -453,7 +453,7 @@ class Profile_Set():
                     pres_var[:] = thermo.pres.magnitude
                     pres_var.units = str(thermo.pres.units)
                 except Exception:
-                    print("")
+                    continue
 
             #
             # Wind
@@ -470,7 +470,7 @@ class Profile_Set():
                     dir_var[:] = wind.dir.magnitude
                     dir_var.units = str(wind.dir.units)
                 except Exception:
-                    print("")
+                    continue
                 # SPEED
                 try:
                     spd_var = profile_group.createVariable("speed", "f8",
@@ -478,7 +478,7 @@ class Profile_Set():
                     spd_var[:] = wind.speed.magnitude
                     spd_var.units = str(wind.speed.units)
                 except Exception:
-                    print("")
+                    continue
                 # U
                 try:
                     u_var = profile_group.createVariable("u", "f8",
@@ -486,14 +486,14 @@ class Profile_Set():
                     u_var[:] = wind.u.magnitude
                     u_var.units = str(wind.u.units)
                 except Exception:
-                    print("")
+                    continue
                 # V
                 try:
                     v_var = profile_group.createVariable("v", "f8", ("time",))
                     v_var[:] = wind.v.magnitude
                     v_var.units = str(wind.v.units)
                 except Exception:
-                    print("")
+                    continue
                 # PRES
                 try:
                     pres_var = profile_group.createVariable("pres", "f8",
@@ -501,7 +501,7 @@ class Profile_Set():
                     pres_var[:] = wind.pres.magnitude
                     pres_var.units = str(wind.pres.units)
                 except Exception:
-                    print("")
+                    continue
                 # TIME
                 try:
                     time_var = profile_group.createVariable("time", "f8",
@@ -512,7 +512,7 @@ class Profile_Set():
                     time_var.units = \
                         'microseconds since 2010-01-01 00:00:00:00'
                 except Exception:
-                    print("")
+                    continue
                 # ALT
                 try:
                     alt_var = profile_group.createVariable("alt", "f8",
@@ -520,7 +520,7 @@ class Profile_Set():
                     alt_var[:] = wind.alt.magnitude
                     alt_var.units = str(wind.alt.units)
                 except Exception:
-                    print("")
+                    continue
 
 
         #

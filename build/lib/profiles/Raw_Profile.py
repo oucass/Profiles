@@ -289,7 +289,7 @@ class Raw_Profile():
                         # as a list of NaN.
                         temp_list[value].append(np.nan)
                     except IndexError:
-                        print("Error in Raw_Profile - 227")
+                        print("Error in Raw_Profile - 292")
 
             # Humidity
             elif elem["meta"]["type"] == "RHUM":
@@ -650,6 +650,9 @@ class Raw_Profile():
 
         :param string file_path: file name
         """
+        file_name = str(self.meta.get("location")) + "0n" + \
+                    str(self.meta.get("platform_id")) + "CMT" + \
+                    ".a0." + self.meta.get("date_utc").replace("_", ".") + ".cdf"
         main_file = netCDF4.Dataset(file_path[:-5] + ".nc", "w",
                                     format="NETCDF4", mmap=False)
 
@@ -685,14 +688,14 @@ class Raw_Profile():
         rh_grp.createDimension("rh_time", None)
         rh_sensor_numbers = np.add(range(int((len(self.rh)-1)/2)), 1)
         for num in rh_sensor_numbers:
-            new_rh = rh_grp.createVariable("rh" + str(num),
+            new_rh = rh_grp.createVariable("relative_humidity" + str(num),
                                            "f8", ("rh_time", ))
-            new_temp = rh_grp.createVariable("temp" + str(num),
+            new_temp = rh_grp.createVariable("air_temperature" + str(num),
                                              "f8", ("rh_time", ))
             new_rh[:] = self.rh[2*num-2].magnitude
             new_temp[:] = self.rh[2*num-1].magnitude
             new_rh.units = "%"
-            new_temp.units = "F"
+            new_temp.units = "F" # TODO convert to K
         new_var = rh_grp.createVariable("time", "i8", ("rh_time",))
         new_var[:] = netCDF4.date2num(self.rh[-1],
                                       units="microseconds since \

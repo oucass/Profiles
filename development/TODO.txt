@@ -48,6 +48,6 @@ CO2:
   User access
     In Profile.get_co2_profile, create a CO2_Profile object.
 
-AFTER ANY CHANGE TO THE USER INTERFACE, UPDATE RST FILES, AND HTML FILES.
+AFTER ANY CHANGE TO THE USER INTERFACE, UPDATE RST FILES AND HTML FILES.
 Email jessicamblunt@gmail.com if you are unsure how to do this - I can
 make changes remotely.

@@ -220,8 +220,7 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
 # TODO plot all variables
 # TODO determine x_lim
 # TODO Test with big flight data
-def plot_skewT(temp=None, pres=None, t_d=None, u=None, v=None, time=None, units=None,
-               **kwargs):
+def plot_skewT(profiles, wind_barbs=False):
     r""" Plots a SkewT diagram.
     :param list<number> temp: Temperatures in C
     :param list<number> pres: Pressures in ?
@@ -233,33 +232,31 @@ def plot_skewT(temp=None, pres=None, t_d=None, u=None, v=None, time=None, units=
     :rtype: matplotlib.figure.Figure
     :return: fig containing a SkewT diagram of the data
     """
-
-    # Ensure all NaNs are np.nan
-    pres = np.where(np.isnan(pres.magnitude), np.nan, pres.magnitude) * pres.units
-    u = np.where(np.isnan(u.magnitude), np.nan, u.magnitude) * u.units
-    v = np.where(np.isnan(v.magnitude), np.nan, v.magnitude) * v.units
-
-
     # Create plot
-    rotation = 30
-    fig = mpplots.SkewT(rotation=rotation, aspect=80.5)
+    fig = mpplots.SkewT(rotation=30, aspect=80.5)
     fig.ax.yaxis.set_major_locator(ticker.MultipleLocator(5))
-    fig.plot(pres, temp, 'r', label="Temperature")
-    fig.plot(pres, t_d, 'g', label="Dewpoint")
-    fig.ax.set_ylim(np.nanmax(pres.to(units.hPa).magnitude) + 10,
-                    np.nanmin(pres.to(units.hPa).magnitude) - 20)
-    fig.ax.set_xlim(np.nanmin(t_d.to(units.degC).magnitude) - 5,
-                    np.nanmax(temp.to(units.degC).magnitude) + 10)
     fig.plot_dry_adiabats(linewidth=0.5, label="Dry Adiabats")
     fig.plot_moist_adiabats(linewidth=0.5, label="Moist Adiabats")
     fig.plot_mixing_lines(linewidth=0.5, label="Mixing Ratio")
-    #fig.plot_barbs(np.array(pres.magnitude, dtype='float64') * pres.units,
-    #               np.array(u.magnitude, dtype='float64') * u.units,
-    #               np.array(v.magnitude, dtype='float64') * v.units)
+
+    for profile in profiles:
+
+        # Pressure is used several times, so copy here to minimize passing
+        pres = profile.get("pres")
+        # Add data to plot
+        fig.plot(pres, profile.get("temp"), 'r', label="Temperature")
+        fig.plot(pres, profile.get("T_d"), 'g', label="Dewpoint")
+        
+        u = profile.get("u")
+        v = profile.get("v")
+        fig.plot_barbs(pres, u, v)
+
     plt.legend(loc='upper left')
-
-    # Set limits
-
+    units = profiles[0]._units
+    fig.ax.set_ylim(np.nanmax(pres.to(units.hPa).magnitude) + 10,
+                    np.nanmin(pres.to(units.hPa).magnitude) - 20)
+    fig.ax.set_xlim(np.nanmin(profiles[0].get("T_d").to(units.degC).magnitude) - 5,
+                    np.nanmax(profiles[0].get("temp").to(units.degC).magnitude) + 10)
     return fig
 '''
 def meteogram(fpath):
