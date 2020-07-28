@@ -8,11 +8,11 @@
     <link rel="stylesheet" href="_static/nature1.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Set-Up: Sensor Coefficients" href="coefs.html" />
@@ -29,9 +29,9 @@
             
   <div class="section" id="module-profiles.utils">
 <span id="utils"></span><h1>utils<a class="headerlink" href="#module-profiles.utils" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
+<dl class="py function">
 <dt id="profiles.utils.regrid_base">
-<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">regrid_base</code><span class="sig-paren">(</span><em class="sig-param">base=None</em>, <em class="sig-param">base_times=None</em>, <em class="sig-param">new_res=None</em>, <em class="sig-param">ascent=True</em>, <em class="sig-param">units=None</em>, <em class="sig-param">indices=(None</em>, <em class="sig-param">None)</em>, <em class="sig-param">base_start=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#regrid_base"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.regrid_base" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">regrid_base</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">base_times</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">new_res</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ascent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">indices</span><span class="o">=</span><span class="default_value">None, None</span></em>, <em class="sig-param"><span class="n">base_start</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#regrid_base"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.regrid_base" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates times at which data means should be calculated.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -54,9 +54,9 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="profiles.utils.regrid_data">
-<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">regrid_data</code><span class="sig-paren">(</span><em class="sig-param">data=None</em>, <em class="sig-param">data_times=None</em>, <em class="sig-param">gridded_times=None</em>, <em class="sig-param">units=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#regrid_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.regrid_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">regrid_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data_times</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gridded_times</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#regrid_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.regrid_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns data interpolated to an evenly spaced array based on
 gridded_times.</p>
 <dl class="field-list simple">
@@ -77,7 +77,7 @@ gridded_times.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="profiles.utils.profiles.utils.temp_calib">
 <code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">temp_calib</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#profiles.utils.profiles.utils.temp_calib" title="Permalink to this definition">¶</a></dt>
 <dt>
@@ -109,9 +109,9 @@ T &amp;= \frac{1}{A + B (log{R}) + C (log{R})^3}
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="profiles.utils.identify_profile">
-<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">identify_profile</code><span class="sig-paren">(</span><em class="sig-param">alts</em>, <em class="sig-param">alt_times</em>, <em class="sig-param">confirm_bounds=True</em>, <em class="sig-param">profile_start_height=None</em>, <em class="sig-param">to_return=[]</em>, <em class="sig-param">ind=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#identify_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.identify_profile" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">identify_profile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">alts</span></em>, <em class="sig-param"><span class="n">alt_times</span></em>, <em class="sig-param"><span class="n">confirm_bounds</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">profile_start_height</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">to_return</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">ind</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#identify_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.identify_profile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Identifies the temporal bounds of all profiles in the data file. These
 assumptions must be valid:
 * The craft starts and ends each profile below profile_start_height
@@ -139,9 +139,9 @@ profile is ended.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="profiles.utils.qc">
-<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">qc</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">max_bias</em>, <em class="sig-param">max_variance</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#qc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.qc" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">qc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">max_bias</span></em>, <em class="sig-param"><span class="n">max_variance</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#qc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.qc" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Determines which sensors are not reliable from a given set. Be sure</dt><dd><dl class="simple">
 <dt>to only include like sensors (not both temperature inside and outside</dt><dd><p>the CO2 sensor) in Data.</p>
@@ -169,9 +169,9 @@ sensor flagged for response time, and 4 in the position of each flagged as empty
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="profiles.utils.temp_calib">
-<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">temp_calib</code><span class="sig-paren">(</span><em class="sig-param">resistance</em>, <em class="sig-param">sn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#temp_calib"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.temp_calib" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">profiles.utils.</code><code class="sig-name descname">temp_calib</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">resistance</span></em>, <em class="sig-param"><span class="n">sn</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/profiles/utils.html#temp_calib"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#profiles.utils.temp_calib" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts resistance to temperature using the coefficients for the        sensor specified OR generalized coefficients if the serial number (sn)       is not recognized.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -223,7 +223,7 @@ for (i=0; i<methods.length; i++)
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.1.2.
     </div>
   </body>
 </html>

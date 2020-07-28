@@ -8,11 +8,11 @@
     <link rel="stylesheet" href="../_static/nature1.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head><body>
@@ -119,7 +119,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">index_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">index_list</span> <span class="o">=</span> \
-                 <span class="n">utils</span><span class="o">.</span><span class="n">identify_profile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="s2">&quot;alt_MSL&quot;</span><span class="p">],</span>
+                 <span class="n">utils</span><span class="o">.</span><span class="n">identify_profile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="s2">&quot;alt_MSL&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
                                         <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">confirm_bounds</span><span class="p">,</span>
                                         <span class="n">profile_start_height</span><span class="o">=</span>\
                                         <span class="n">profile_start_height</span><span class="p">)</span>
@@ -317,7 +317,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.1.2.
     </div>
   </body>
 </html>

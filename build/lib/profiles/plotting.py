@@ -233,21 +233,22 @@ def plot_skewT(profiles, wind_barbs=False):
     fig.plot_dry_adiabats(linewidth=0.5, label="Dry Adiabats")
     fig.plot_moist_adiabats(linewidth=0.5, label="Moist Adiabats")
     fig.plot_mixing_lines(linewidth=0.5, label="Mixing Ratio")
+    units = profiles[0]._units
 
     for profile in profiles:
 
         # Pressure is used several times, so copy here to minimize passing
-        pres = profile.get("pres")
+        pres = profile.get("pres").to(units.hectopascal)
         # Add data to plot
         fig.plot(pres, profile.get("temp"), 'r', label="Temperature")
         fig.plot(pres, profile.get("T_d"), 'g', label="Dewpoint")
         
-        u = profile.get("u")
-        v = profile.get("v")
+        u = profile.get("u").to(units.knot)
+        v = profile.get("v").to(units.knot)
+
         fig.plot_barbs(pres, u, v)
 
     plt.legend(loc='upper left')
-    units = profiles[0]._units
     fig.ax.set_ylim(np.nanmax(pres.to(units.hPa).magnitude) + 10,
                     np.nanmin(pres.to(units.hPa).magnitude) - 20)
     fig.ax.set_xlim(np.nanmin(profiles[0].get("T_d").to(units.degC).magnitude) - 5,

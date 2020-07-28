@@ -8,11 +8,11 @@
     <link rel="stylesheet" href="_static/nature1.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Profile_Set" href="Profile_Set.html" />
@@ -30,9 +30,9 @@
   <div class="section" id="module-Profile">
 <span id="profile"></span><h1>Profile<a class="headerlink" href="#module-Profile" title="Permalink to this headline">¶</a></h1>
 <p>Manages data from a single flight or profile</p>
-<dl class="class">
+<dl class="py class">
 <dt id="Profile.Profile">
-<em class="property">class </em><code class="sig-prename descclassname">Profile.</code><code class="sig-name descname">Profile</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile.html#Profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile.Profile" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">Profile.</code><code class="sig-name descname">Profile</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile.html#Profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile.Profile" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Profile object contains data from a profile (if altitude or pressure
 is specified under resolution) or flight (if the resolution is in units
 of time)</p>
@@ -49,9 +49,9 @@ of time)</p>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="Profile.Profile.get">
-<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">varname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile.html#Profile.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile.Profile.get" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">varname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile.html#Profile.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile.Profile.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the requested variable, which may be in Profile or one of its
 attributes (ex. temp is in thermo_profile)</p>
 <dl class="field-list simple">
@@ -64,7 +64,7 @@ attributes (ex. temp is in thermo_profile)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Profile.Profile.get_thermo_profile">
 <code class="sig-name descname">get_thermo_profile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile.html#Profile.get_thermo_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile.Profile.get_thermo_profile" title="Permalink to this definition">¶</a></dt>
 <dd><p>If a Thermo_Profile object does not already exist, it is created
@@ -79,7 +79,7 @@ when this method is called.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Profile.Profile.get_wind_profile">
 <code class="sig-name descname">get_wind_profile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile.html#Profile.get_wind_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile.Profile.get_wind_profile" title="Permalink to this definition">¶</a></dt>
 <dd><p>If a Wind_Profile object does not already exist, it is created when
@@ -130,7 +130,7 @@ for (i=0; i<methods.length; i++)
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.1.2.
     </div>
   </body>
 </html>

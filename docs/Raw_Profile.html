@@ -8,11 +8,11 @@
     <link rel="stylesheet" href="_static/nature1.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Thermo_Profile" href="Thermo_Profile.html" />
@@ -30,9 +30,9 @@
   <div class="section" id="module-Raw_Profile">
 <span id="raw-profile"></span><h1>Raw_Profile<a class="headerlink" href="#module-Raw_Profile" title="Permalink to this headline">¶</a></h1>
 <p>Reads data file (JSON or netCDF) and stores the raw data</p>
-<dl class="class">
+<dl class="py class">
 <dt id="Raw_Profile.Raw_Profile">
-<em class="property">class </em><code class="sig-prename descclassname">Raw_Profile.</code><code class="sig-name descname">Raw_Profile</code><span class="sig-paren">(</span><em class="sig-param">file_path</em>, <em class="sig-param">dev=False</em>, <em class="sig-param">scoop_id=None</em>, <em class="sig-param">nc_level='low'</em>, <em class="sig-param">meta_flight_path=None</em>, <em class="sig-param">meta_header_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Raw_Profile.html#Raw_Profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Raw_Profile.Raw_Profile" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">Raw_Profile.</code><code class="sig-name descname">Raw_Profile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">dev</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">scoop_id</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nc_level</span><span class="o">=</span><span class="default_value">'low'</span></em>, <em class="sig-param"><span class="n">meta_flight_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">meta_header_path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Raw_Profile.html#Raw_Profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Raw_Profile.Raw_Profile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Contains data from one file. Data is stored as a pandas DataFrame.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables</dt>
@@ -52,7 +52,7 @@ time)</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="Raw_Profile.Raw_Profile.get_units">
 <code class="sig-name descname">get_units</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Raw_Profile.html#Raw_Profile.get_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Raw_Profile.Raw_Profile.get_units" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
@@ -62,9 +62,9 @@ time)</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Raw_Profile.Raw_Profile.is_equal">
-<code class="sig-name descname">is_equal</code><span class="sig-paren">(</span><em class="sig-param">other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Raw_Profile.html#Raw_Profile.is_equal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Raw_Profile.Raw_Profile.is_equal" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_equal</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Raw_Profile.html#Raw_Profile.is_equal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Raw_Profile.Raw_Profile.is_equal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks if two Raw_Profiles are the same.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -73,7 +73,7 @@ time)</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Raw_Profile.Raw_Profile.pos_data">
 <code class="sig-name descname">pos_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Raw_Profile.html#Raw_Profile.pos_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Raw_Profile.Raw_Profile.pos_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets data needed by the Profile constructor.</p>
@@ -81,7 +81,7 @@ time)</p></li>
 return: {“lat”:, “lon”:, “alt_MSL”:, “time”:, “units”}</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Raw_Profile.Raw_Profile.thermo_data">
 <code class="sig-name descname">thermo_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Raw_Profile.html#Raw_Profile.thermo_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Raw_Profile.Raw_Profile.thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets data needed by the Thermo_Profile constructor.</p>
@@ -89,7 +89,7 @@ return: {“lat”:, “lon”:, “alt_MSL”:, “time”:, “units”}</p>
 return: {“temp1”:, “temp2”:, …, “tempj”:,                  “resi1”:, “resi2”:, …, “resij”: , “time_temp”:                  “rh1”:, “rh2”:, …, “rhk”:, “time_rh”:,                  “temp_rh1”:, “temp_rh2”:, …, “temp_rhk”:,                  “pres”:, “temp_pres”:, “ground_temp_pres”:,                  “alt_pres”:, “time_pres”}</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Raw_Profile.Raw_Profile.wind_data">
 <code class="sig-name descname">wind_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Raw_Profile.html#Raw_Profile.wind_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Raw_Profile.Raw_Profile.wind_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets data needed by the Wind_Profile constructor.</p>
@@ -133,7 +133,7 @@ for (i=0; i<methods.length; i++)
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.1.2.
     </div>
   </body>
 </html>

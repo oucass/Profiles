@@ -8,11 +8,11 @@
     <link rel="stylesheet" href="_static/nature1.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Meta" href="Meta.html" />
@@ -29,13 +29,13 @@
             
   <div class="section" id="module-Coef_Manager">
 <span id="coef-manager"></span><h1>Coef_Manager<a class="headerlink" href="#module-Coef_Manager" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="Coef_Manager.Azure_Coef_Manager">
-<em class="property">class </em><code class="sig-prename descclassname">Coef_Manager.</code><code class="sig-name descname">Azure_Coef_Manager</code><span class="sig-paren">(</span><em class="sig-param">table_service</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Azure_Coef_Manager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Azure_Coef_Manager" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">Coef_Manager.</code><code class="sig-name descname">Azure_Coef_Manager</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">table_service</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Azure_Coef_Manager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Azure_Coef_Manager" title="Permalink to this definition">¶</a></dt>
 <dd><p>interface with Azure</p>
-<dl class="method">
+<dl class="py method">
 <dt id="Coef_Manager.Azure_Coef_Manager.get_coefs">
-<code class="sig-name descname">get_coefs</code><span class="sig-paren">(</span><em class="sig-param">type</em>, <em class="sig-param">serial_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Azure_Coef_Manager.get_coefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Azure_Coef_Manager.get_coefs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_coefs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">serial_number</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Azure_Coef_Manager.get_coefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Azure_Coef_Manager.get_coefs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the coefs for the sensor with the given type and serial number.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -53,9 +53,9 @@
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Coef_Manager.Azure_Coef_Manager.get_sensors">
-<code class="sig-name descname">get_sensors</code><span class="sig-paren">(</span><em class="sig-param">scoopID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Azure_Coef_Manager.get_sensors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Azure_Coef_Manager.get_sensors" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_sensors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scoopID</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Azure_Coef_Manager.get_sensors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Azure_Coef_Manager.get_sensors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the sensor serial numbers for the given scoop.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -70,9 +70,9 @@
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Coef_Manager.Azure_Coef_Manager.get_tail_n">
-<code class="sig-name descname">get_tail_n</code><span class="sig-paren">(</span><em class="sig-param">copterID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Azure_Coef_Manager.get_tail_n"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Azure_Coef_Manager.get_tail_n" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_tail_n</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">copterID</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Azure_Coef_Manager.get_tail_n"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Azure_Coef_Manager.get_tail_n" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the tail number corresponding to a short ID number.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -89,12 +89,12 @@
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="Coef_Manager.CSV_Coef_Manager">
-<em class="property">class </em><code class="sig-prename descclassname">Coef_Manager.</code><code class="sig-name descname">CSV_Coef_Manager</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#CSV_Coef_Manager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.CSV_Coef_Manager" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<em class="property">class </em><code class="sig-prename descclassname">Coef_Manager.</code><code class="sig-name descname">CSV_Coef_Manager</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#CSV_Coef_Manager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.CSV_Coef_Manager" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
 <dt id="Coef_Manager.CSV_Coef_Manager.get_coefs">
-<code class="sig-name descname">get_coefs</code><span class="sig-paren">(</span><em class="sig-param">type</em>, <em class="sig-param">serial_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#CSV_Coef_Manager.get_coefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.CSV_Coef_Manager.get_coefs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_coefs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">serial_number</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#CSV_Coef_Manager.get_coefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.CSV_Coef_Manager.get_coefs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the coefs for the sensor with the given type and serial number.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -112,9 +112,9 @@
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Coef_Manager.CSV_Coef_Manager.get_sensors">
-<code class="sig-name descname">get_sensors</code><span class="sig-paren">(</span><em class="sig-param">scoopID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#CSV_Coef_Manager.get_sensors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.CSV_Coef_Manager.get_sensors" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_sensors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scoopID</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#CSV_Coef_Manager.get_sensors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.CSV_Coef_Manager.get_sensors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the sensor serial numbers for the given scoop.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -129,9 +129,9 @@
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Coef_Manager.CSV_Coef_Manager.get_tail_n">
-<code class="sig-name descname">get_tail_n</code><span class="sig-paren">(</span><em class="sig-param">copterID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#CSV_Coef_Manager.get_tail_n"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.CSV_Coef_Manager.get_tail_n" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_tail_n</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">copterID</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#CSV_Coef_Manager.get_tail_n"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.CSV_Coef_Manager.get_tail_n" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the tail number corresponding to a short ID number.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -148,13 +148,13 @@
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="Coef_Manager.Coef_Manager">
 <em class="property">class </em><code class="sig-prename descclassname">Coef_Manager.</code><code class="sig-name descname">Coef_Manager</code><a class="reference internal" href="_modules/Coef_Manager.html#Coef_Manager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Coef_Manager" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads the .profilesrc file to determine if the coefs are in the        local file system or on Azure and to determine the file path        or connection string, then ingests the data from the proper source.        This object can then be queried by scoop number (to get sensor numbers),        by sensor numbers (to get coefs), or by copter number (to get tail        number).</p>
-<dl class="method">
+<dl class="py method">
 <dt id="Coef_Manager.Coef_Manager.get_coefs">
-<code class="sig-name descname">get_coefs</code><span class="sig-paren">(</span><em class="sig-param">type</em>, <em class="sig-param">serial_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Coef_Manager.get_coefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Coef_Manager.get_coefs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_coefs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">serial_number</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Coef_Manager.get_coefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Coef_Manager.get_coefs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the coefs for the sensor with the given type and serial number.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -172,9 +172,9 @@
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Coef_Manager.Coef_Manager.get_sensors">
-<code class="sig-name descname">get_sensors</code><span class="sig-paren">(</span><em class="sig-param">scoopID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Coef_Manager.get_sensors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Coef_Manager.get_sensors" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_sensors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scoopID</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Coef_Manager.get_sensors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Coef_Manager.get_sensors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the sensor serial numbers for the given scoop.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -189,9 +189,9 @@
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Coef_Manager.Coef_Manager.get_tail_n">
-<code class="sig-name descname">get_tail_n</code><span class="sig-paren">(</span><em class="sig-param">copterID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Coef_Manager.get_tail_n"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Coef_Manager.get_tail_n" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_tail_n</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">copterID</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Coef_Manager.get_tail_n"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Coef_Manager.get_tail_n" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the tail number corresponding to a short ID number.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -208,12 +208,12 @@
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="Coef_Manager.Coef_Manager_Base">
 <em class="property">class </em><code class="sig-prename descclassname">Coef_Manager.</code><code class="sig-name descname">Coef_Manager_Base</code><a class="reference internal" href="_modules/Coef_Manager.html#Coef_Manager_Base"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Coef_Manager_Base" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><dl class="py method">
 <dt id="Coef_Manager.Coef_Manager_Base.get_coefs">
-<em class="property">abstract </em><code class="sig-name descname">get_coefs</code><span class="sig-paren">(</span><em class="sig-param">type</em>, <em class="sig-param">serial_number</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Coef_Manager_Base.get_coefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Coef_Manager_Base.get_coefs" title="Permalink to this definition">¶</a></dt>
+<em class="property">abstract </em><code class="sig-name descname">get_coefs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">serial_number</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Coef_Manager_Base.get_coefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Coef_Manager_Base.get_coefs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the coefs for the sensor with the given type and serial number.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -231,9 +231,9 @@
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Coef_Manager.Coef_Manager_Base.get_sensors">
-<em class="property">abstract </em><code class="sig-name descname">get_sensors</code><span class="sig-paren">(</span><em class="sig-param">scoopID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Coef_Manager_Base.get_sensors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Coef_Manager_Base.get_sensors" title="Permalink to this definition">¶</a></dt>
+<em class="property">abstract </em><code class="sig-name descname">get_sensors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scoopID</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Coef_Manager_Base.get_sensors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Coef_Manager_Base.get_sensors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the sensor serial numbers for the given scoop.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -248,9 +248,9 @@
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Coef_Manager.Coef_Manager_Base.get_tail_n">
-<em class="property">abstract </em><code class="sig-name descname">get_tail_n</code><span class="sig-paren">(</span><em class="sig-param">copterID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Coef_Manager_Base.get_tail_n"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Coef_Manager_Base.get_tail_n" title="Permalink to this definition">¶</a></dt>
+<em class="property">abstract </em><code class="sig-name descname">get_tail_n</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">copterID</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coef_Manager.html#Coef_Manager_Base.get_tail_n"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Coef_Manager.Coef_Manager_Base.get_tail_n" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the tail number corresponding to a short ID number.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -301,7 +301,7 @@ for (i=0; i<methods.length; i++)
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.1.2.
     </div>
   </body>
 </html>

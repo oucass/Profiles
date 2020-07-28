@@ -8,11 +8,11 @@
     <link rel="stylesheet" href="_static/nature1.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Raw_Profile" href="Raw_Profile.html" />
@@ -30,9 +30,9 @@
   <div class="section" id="module-Profile_Set">
 <span id="profile-set"></span><h1>Profile_Set<a class="headerlink" href="#module-Profile_Set" title="Permalink to this headline">¶</a></h1>
 <p>Manages data from a collection of flights or profiles at a specific location</p>
-<dl class="class">
+<dl class="py class">
 <dt id="Profile_Set.Profile_Set">
-<em class="property">class </em><code class="sig-prename descclassname">Profile_Set.</code><code class="sig-name descname">Profile_Set</code><span class="sig-paren">(</span><em class="sig-param">resolution=10</em>, <em class="sig-param">res_units='m'</em>, <em class="sig-param">ascent=True</em>, <em class="sig-param">dev=False</em>, <em class="sig-param">confirm_bounds=True</em>, <em class="sig-param">profile_start_height=None</em>, <em class="sig-param">nc_level='none'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">Profile_Set.</code><code class="sig-name descname">Profile_Set</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">resolution</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">res_units</span><span class="o">=</span><span class="default_value">'m'</span></em>, <em class="sig-param"><span class="n">ascent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">dev</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">confirm_bounds</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">profile_start_height</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nc_level</span><span class="o">=</span><span class="default_value">'none'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class manages data (in the form of Profile objects) from one or
 many flights.</p>
 <dl class="field-list simple">
@@ -49,9 +49,9 @@ many flights.</p>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="Profile_Set.Profile_Set.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">resolution=10</em>, <em class="sig-param">res_units='m'</em>, <em class="sig-param">ascent=True</em>, <em class="sig-param">dev=False</em>, <em class="sig-param">confirm_bounds=True</em>, <em class="sig-param">profile_start_height=None</em>, <em class="sig-param">nc_level='none'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">resolution</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">res_units</span><span class="o">=</span><span class="default_value">'m'</span></em>, <em class="sig-param"><span class="n">ascent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">dev</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">confirm_bounds</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">profile_start_height</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nc_level</span><span class="o">=</span><span class="default_value">'none'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a Profiles object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -69,15 +69,15 @@ calculated in units of altitude or pressure</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Profile_Set.Profile_Set.__str__">
 <code class="sig-name descname">__str__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.__str__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.__str__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return str(self).</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Profile_Set.Profile_Set.add_all_profiles">
-<code class="sig-name descname">add_all_profiles</code><span class="sig-paren">(</span><em class="sig-param">file_path</em>, <em class="sig-param">scoop_id=None</em>, <em class="sig-param">meta_flight_path=None</em>, <em class="sig-param">meta_header_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.add_all_profiles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.add_all_profiles" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_all_profiles</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">scoop_id</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">meta_flight_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">meta_header_path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.add_all_profiles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.add_all_profiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads a file, splits it in to several vertical profiles, and adds
 all Profiles to profiles</p>
 <dl class="field-list simple">
@@ -92,9 +92,9 @@ all Profiles to profiles</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Profile_Set.Profile_Set.add_profile">
-<code class="sig-name descname">add_profile</code><span class="sig-paren">(</span><em class="sig-param">file_path</em>, <em class="sig-param">time=datetime.datetime(1</em>, <em class="sig-param">1</em>, <em class="sig-param">1</em>, <em class="sig-param">0</em>, <em class="sig-param">0)</em>, <em class="sig-param">profile_num=None</em>, <em class="sig-param">scoop_id=None</em>, <em class="sig-param">meta_header_path=None</em>, <em class="sig-param">meta_flight_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.add_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.add_profile" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_profile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">time</span><span class="o">=</span><span class="default_value">datetime.datetime(1, 1, 1, 0, 0)</span></em>, <em class="sig-param"><span class="n">profile_num</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scoop_id</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">meta_header_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">meta_flight_path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.add_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.add_profile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads a file and creates a Profile for the first vertical profile
 after time OR for the profile_numth profile.</p>
 <dl class="field-list simple">
@@ -112,9 +112,9 @@ after time OR for the profile_numth profile.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Profile_Set.Profile_Set.merge">
-<code class="sig-name descname">merge</code><span class="sig-paren">(</span><em class="sig-param">to_add</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.merge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.merge" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">merge</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">to_add</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.merge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads all Profile objects from a pre-existing Profiles into this
 Profiles. All flights must be from the same location.</p>
 <dl class="field-list simple">
@@ -124,9 +124,9 @@ Profiles. All flights must be from the same location.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Profile_Set.Profile_Set.read_netCDF">
-<code class="sig-name descname">read_netCDF</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.read_netCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.read_netCDF" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">read_netCDF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.read_netCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.read_netCDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Re-creates a Profile_Set object which has been saved as a NetCDF</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -171,7 +171,7 @@ for (i=0; i<methods.length; i++)
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.1.2.
     </div>
   </body>
 </html>

@@ -91,7 +91,7 @@ class Profile():
         try:
             if index_list is None:
                 index_list = \
-                 utils.identify_profile(self._pos["alt_MSL"],
+                 utils.identify_profile(self._pos["alt_MSL"].magnitude,
                                         self._pos["time"], confirm_bounds,
                                         profile_start_height=\
                                         profile_start_height)

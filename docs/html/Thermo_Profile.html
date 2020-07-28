@@ -8,11 +8,11 @@
     <link rel="stylesheet" href="_static/nature1.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Wind_Profile" href="Wind_Profile.html" />
@@ -30,9 +30,9 @@
   <div class="section" id="module-Thermo_Profile">
 <span id="thermo-profile"></span><h1>Thermo_Profile<a class="headerlink" href="#module-Thermo_Profile" title="Permalink to this headline">¶</a></h1>
 <p>Calculates and stores basic thermodynamic parameters</p>
-<dl class="class">
+<dl class="py class">
 <dt id="Thermo_Profile.Thermo_Profile">
-<em class="property">class </em><code class="sig-prename descclassname">Thermo_Profile.</code><code class="sig-name descname">Thermo_Profile</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">Thermo_Profile.</code><code class="sig-name descname">Thermo_Profile</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Contains data from one file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables</dt>
@@ -51,21 +51,21 @@ altitude, or pressure to which the data is calculated</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="Thermo_Profile.Thermo_Profile.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Thermo_Profile.Thermo_Profile.__str__">
 <code class="sig-name descname">__str__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile.__str__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile.__str__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return str(self).</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Thermo_Profile.Thermo_Profile._init2">
-<code class="sig-name descname">_init2</code><span class="sig-paren">(</span><em class="sig-param">temp_dict</em>, <em class="sig-param">resolution</em>, <em class="sig-param">file_path=None</em>, <em class="sig-param">gridded_times=None</em>, <em class="sig-param">gridded_base=None</em>, <em class="sig-param">indices=(None</em>, <em class="sig-param">None)</em>, <em class="sig-param">ascent=True</em>, <em class="sig-param">units=None</em>, <em class="sig-param">meta=None</em>, <em class="sig-param">nc_level='low'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile._init2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile._init2" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">_init2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">temp_dict</span></em>, <em class="sig-param"><span class="n">resolution</span></em>, <em class="sig-param"><span class="n">file_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gridded_times</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gridded_base</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">indices</span><span class="o">=</span><span class="default_value">None, None</span></em>, <em class="sig-param"><span class="n">ascent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">meta</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nc_level</span><span class="o">=</span><span class="default_value">'low'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile._init2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile._init2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates Thermo_Profile object from raw data at the specified
 resolution.</p>
 <dl class="field-list simple">
@@ -85,9 +85,9 @@ resolution.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Thermo_Profile.Thermo_Profile._read_netCDF">
-<code class="sig-name descname">_read_netCDF</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile._read_netCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile._read_netCDF" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">_read_netCDF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile._read_netCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile._read_netCDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads data from a NetCDF file. Called by the constructor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -96,9 +96,9 @@ resolution.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Thermo_Profile.Thermo_Profile._save_netCDF">
-<code class="sig-name descname">_save_netCDF</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile._save_netCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile._save_netCDF" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">_save_netCDF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile._save_netCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile._save_netCDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a NetCDF file to facilitate future processing if a .JSON was
 read.</p>
 <dl class="field-list simple">
@@ -108,9 +108,9 @@ read.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Thermo_Profile.Thermo_Profile.truncate_to">
-<code class="sig-name descname">truncate_to</code><span class="sig-paren">(</span><em class="sig-param">new_len</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile.truncate_to"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile.truncate_to" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">truncate_to</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_len</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Thermo_Profile.html#Thermo_Profile.truncate_to"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Thermo_Profile.Thermo_Profile.truncate_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shortens arrays to have no more than new_len data points</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -168,7 +168,7 @@ T &amp;= \frac{1}{A + B (log{R}) + C (log{R})^3}
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.1.2.
     </div>
   </body>
 </html>

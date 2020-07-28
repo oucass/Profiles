@@ -4,12 +4,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-"""
-b = Profile("/home/jessica/GitHub/data_templates/"
-            + "DL_Data_20190627_to_20190628/00000014.JSON", 10, 'm', 1,
-            dev=True, ascent=True)
-
-bw = b.get_wind_profile()
+b = Profile("/home/jessicablunt/data_templates/CS_N935UA_KAEFS_flights/20200710_1541.json", 10, "m", 1,
+            meta_flight_path="/home/jessicablunt/Logs/20200710_1500N935UA_CS_2.5_flight_log.csv",
+            meta_header_path="/home/jessicablunt/Logs/20200710_1500N935UA_CS_2.5_log_header.csv", 
+            dev=True, ascent=True, confirm_bounds=False, nc_level="low", profile_start_height=400)
 
 # Example using Profile
 bt = b.get_thermo_profile()
@@ -32,7 +30,7 @@ a = Profile_Set(resolution=10, res_units='m', ascent=True, dev=True,
                 confirm_bounds=True, profile_start_height=350)
 a.add_all_profiles("/home/jessica/GitHub/data_templates/OfficialMany.BIN")
 
-"""
+
 for file_name in os.listdir(datadir_a):
     if ".json" in file_name or ".JSON" in file_name or ".BIN" in file_name:
         a.add_all_profiles(os.path.join(datadir_a, file_name))

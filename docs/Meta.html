@@ -8,11 +8,11 @@
     <link rel="stylesheet" href="_static/nature1.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Profile" href="Profile.html" />
@@ -29,9 +29,9 @@
             
   <div class="section" id="module-Meta">
 <span id="meta"></span><h1>Meta<a class="headerlink" href="#module-Meta" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="Meta.Meta">
-<em class="property">class </em><code class="sig-prename descclassname">Meta.</code><code class="sig-name descname">Meta</code><span class="sig-paren">(</span><em class="sig-param">header_path=None</em>, <em class="sig-param">flight_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Meta.html#Meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Meta.Meta" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">Meta.</code><code class="sig-name descname">Meta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">header_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">flight_path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Meta.html#Meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Meta.Meta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Processes, stores, and writes metadata files (JSON-LD for public, CSV
 for private) for a flight</p>
 <blockquote>
@@ -50,9 +50,9 @@ file</p>
 </dd>
 </dl>
 </div></blockquote>
-<dl class="method">
+<dl class="py method">
 <dt id="Meta.Meta.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">header_path=None</em>, <em class="sig-param">flight_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Meta.html#Meta.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Meta.Meta.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">header_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">flight_path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Meta.html#Meta.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Meta.Meta.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates new object of type Meta from header file and flight file.
 Details about the input files can be found at the bottom of this page.</p>
 <dl class="field-list simple">
@@ -65,9 +65,9 @@ Details about the input files can be found at the bottom of this page.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Meta.Meta.combine">
-<code class="sig-name descname">combine</code><span class="sig-paren">(</span><em class="sig-param">other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Meta.html#Meta.combine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Meta.Meta.combine" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">combine</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Meta.html#Meta.combine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Meta.Meta.combine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge two Meta objects to create a file that accurately describes
 ALL related header and flight files. Only fields that are the same
 for both Meta objects are included; all others are set to None.</p>
@@ -79,9 +79,9 @@ object (self) will be altered</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Meta.Meta.get">
-<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Meta.html#Meta.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Meta.Meta.get" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Meta.html#Meta.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Meta.Meta.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request the value of a metadata field</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -93,9 +93,9 @@ object (self) will be altered</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Meta.Meta.read_file">
-<code class="sig-name descname">read_file</code><span class="sig-paren">(</span><em class="sig-param">csv_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Meta.html#Meta.read_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Meta.Meta.read_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">read_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">csv_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Meta.html#Meta.read_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Meta.Meta.read_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copy data from the CSV file to the all_fields dictionary</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -104,9 +104,9 @@ object (self) will be altered</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="Meta.Meta.write_public_meta">
-<code class="sig-name descname">write_public_meta</code><span class="sig-paren">(</span><em class="sig-param">out_path</em>, <em class="sig-param">include_private=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Meta.html#Meta.write_public_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Meta.Meta.write_public_meta" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">write_public_meta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">out_path</span></em>, <em class="sig-param"><span class="n">include_private</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Meta.html#Meta.write_public_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Meta.Meta.write_public_meta" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Write a human-readable text file containing metadata for the</dt><dd><p>flight. Unless include_private is set to True, only fields specified
 in public_fields will be included in this metadata file.</p>
@@ -160,7 +160,7 @@ for (i=0; i<methods.length; i++)
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.1.2.
     </div>
   </body>
 </html>
