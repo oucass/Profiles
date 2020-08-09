@@ -1,7 +1,7 @@
-Wind_Profile
-===================================================================================
+Coef_Manager
+=============
 
-.. automodule:: Wind_Profile
+.. automodule:: Coef_Manager
    :members:
    :undoc-members:
 
