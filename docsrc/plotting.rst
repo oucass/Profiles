@@ -5,6 +5,8 @@ plotting
 
 .. autofunction:: plotting.contour_height_time
 
+.. autofunction:: plotting.plot_skewT
+
 .. raw:: html
 
    <script type="text/javascript">

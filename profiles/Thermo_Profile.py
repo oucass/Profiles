@@ -239,7 +239,7 @@ class Thermo_Profile():
                             self.pres)
 
         self.theta = calc.potential_temperature(self.pres, self.temp)
-        self.T_d = calc.dewpoint_rh(self.temp, self.rh)
+        self.T_d = calc.dewpoint_from_relative_humidity(self.temp, self.rh)
         self.q = calc.specific_humidity_from_mixing_ratio(self.mixing_ratio) * \
                  units.gPerKg
 

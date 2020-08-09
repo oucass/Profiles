@@ -77,6 +77,17 @@ Accepted variable names are:</p>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt id="plotting.plot_skewT">
+<code class="sig-prename descclassname">plotting.</code><code class="sig-name descname">plot_skewT</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">profiles</span></em>, <em class="sig-param"><span class="n">wind_barbs</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">barb_density</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plotting.html#plot_skewT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotting.plot_skewT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a SkewT diagram.
+:param list&lt;number&gt; profiles: profiles which contain T_d, press, and temp data
+:param bool wind_barbs: if True, plot wind barbs. Requires that profiles contain u, v data.
+:param int barb_density: n for which every nth barb is plotted
+:rtype: matplotlib.figure.Figure
+:return: fig containing a SkewT diagram of the data</p>
+</dd></dl>
+
 <script type="text/javascript">
 var methods = document.getElementsByClassName("function");
 var i;

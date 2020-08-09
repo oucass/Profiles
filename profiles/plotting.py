@@ -220,16 +220,19 @@ def contour_height_time(profiles, var=['temp'], use_pres=False):
 # TODO plot all variables
 # TODO determine x_lim
 # TODO Test with big flight data
-def plot_skewT(profiles, wind_barbs=False):
+def plot_skewT(profiles, wind_barbs=False, barb_density=10):
     r""" Plots a SkewT diagram.
     :param list<number> profiles: profiles which contain T_d, press, and temp data
     :param bool wind_barbs: if True, plot wind barbs. Requires that profiles contain u, v data.
+    :param int barb_density: n for which every nth barb is plotted
     :rtype: matplotlib.figure.Figure
     :return: fig containing a SkewT diagram of the data
     """
     # Create plot
-    fig = mpplots.SkewT(rotation=30, aspect=80.5)
-    fig.ax.yaxis.set_major_locator(ticker.MultipleLocator(5))
+    fig = mpplots.SkewT(rotation=30, aspect=350)
+    fig._fig.set_figheight(9)
+    fig._fig.set_figwidth(9)
+    fig.ax.yaxis.set_major_locator(ticker.MultipleLocator(10))
     fig.plot_dry_adiabats(linewidth=0.5, label="Dry Adiabats")
     fig.plot_moist_adiabats(linewidth=0.5, label="Moist Adiabats")
     fig.plot_mixing_lines(linewidth=0.5, label="Mixing Ratio")
@@ -243,10 +246,14 @@ def plot_skewT(profiles, wind_barbs=False):
         fig.plot(pres, profile.get("temp"), 'r', label="Temperature")
         fig.plot(pres, profile.get("T_d"), 'g', label="Dewpoint")
         
-        u = profile.get("u").to(units.knot)
-        v = profile.get("v").to(units.knot)
+        
+        u = profile.get("u").to(units.knots)
+        v = profile.get("v").to(units.knots)
 
-        fig.plot_barbs(pres, u, v)
+        if wind_barbs:
+            fig.plot_barbs(pres.astype('float64')[::barb_density],
+                           u.astype('float64')[::barb_density],
+                           v.astype('float64')[::barb_density])
 
     plt.legend(loc='upper left')
     fig.ax.set_ylim(np.nanmax(pres.to(units.hPa).magnitude) + 10,

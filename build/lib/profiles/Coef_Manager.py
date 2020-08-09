@@ -1,4 +1,5 @@
 import os
+import contextlib
 import pandas as pd
 from profiles.conf import coef_info
 from abc import abstractmethod
@@ -56,7 +57,8 @@ class Coef_Manager(Coef_Manager_Base):
         self.sub_manager = None
         if coef_info.USE_AZURE.upper() in "YES":
             try:
-                table_service = TableService(connection_string=coef_info.AZURE_CONNECTION_STRING)
+                with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+                    table_service = TableService(connection_string=coef_info.AZURE_CONNECTION_STRING)
             except Exception:
                 raise Exception("There are no valid connection strings in __init__.py")
             # If this point has been reached, we have an active table_service to pull data from
@@ -121,7 +123,8 @@ class Azure_Coef_Manager:
         :rtype: str
         :return: the tail number
         """
-        return self.table_service.get_entity('Copters', 'default', str(int(copterID))).name
+        with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+            return self.table_service.get_entity('Copters', 'default', str(int(copterID))).name
 
     def get_sensors(self, scoopID):
         """ Get the sensor serial numbers for the given scoop.
@@ -131,20 +134,21 @@ class Azure_Coef_Manager:
         :return: sensor numbers as {"imet1":"", "imet2":"", "imet3":"", "imet4":"",\
                                     "rh1":"", "rh2":"", "rh3":"", "rh4":""}
         """
-        all_scoop = \
-            self.table_service.query_entities('Scoops', 
-            filter="RowKey ge '" + str(scoopID).rjust(7, '0') + "_00000000'", 
-            select="RowKey")
-        max_key = str(scoopID).rjust(7, '0') + "_00000000"
-        for entity in all_scoop:
-            if entity.RowKey > max_key:
-                max_key = entity.RowKey
-        coefs = self.table_service.get_entity('Scoops', "default", max_key)
+        with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+            all_scoop = \
+                self.table_service.query_entities('Scoops', 
+                filter="RowKey ge '" + str(scoopID).rjust(7, '0') + "_00000000'", 
+                select="RowKey")
+            max_key = str(scoopID).rjust(7, '0') + "_00000000"
+            for entity in all_scoop:
+                if entity.RowKey > max_key:
+                    max_key = entity.RowKey
+            coefs = self.table_service.get_entity('Scoops', "default", max_key)
 
-        # TODO test that max
-        sns = self.table_service.get_entity('Scoops', str(scoopID), str(max_date))
-        return {"imet1":sns.IMET1, "imet2":sns.IMET2, "imet3":sns.IMET3, "imet4":sns.IMET4,
-                "rh1":sns.RH1, "rh2":sns.RH2, "rh3":sns.RH3, "rh4":sns.RH4}
+            # TODO test that max
+            sns = self.table_service.get_entity('Scoops', str(scoopID), str(max_date))
+            return {"imet1":sns.IMET1, "imet2":sns.IMET2, "imet3":sns.IMET3, "imet4":sns.IMET4,
+                    "rh1":sns.RH1, "rh2":sns.RH2, "rh3":sns.RH3, "rh4":sns.RH4}
 
     def get_coefs(self, type, serial_number):
         """ Get the coefs for the sensor with the given type and serial number.
@@ -154,21 +158,18 @@ class Azure_Coef_Manager:
         :rtype: dict
         :return: information about the sensor, including offset OR coefs and calibration equation
         """
-        tester = self.table_service.query_entities('MasterCoef', 
-                filter="RowKey ge '" + str(serial_number).rjust(5, '0') + "-00000000' and " + 
-                    "RowKey lt '" + str(int(serial_number)+1).rjust(5, '0') + "-00000000'", 
-                select="RowKey")
         try:
-            possible_coefs = \
-                self.table_service.query_entities('MasterCoef', 
-                filter="RowKey ge '" + str(serial_number).rjust(5, '0') + "-00000000' and " + 
-                    "RowKey lt '" + str(int(serial_number)+1).rjust(5, '0') + "-00000000'", 
-                select="RowKey")
-            max_key = str(serial_number).rjust(5, '0') + "-00000000"
-            for entity in possible_coefs:
-                if entity.RowKey > max_key:
-                    max_key = entity.RowKey
-            coefs = self.table_service.get_entity('MasterCoef', "default", max_key)
+            with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+                possible_coefs = \
+                    self.table_service.query_entities('MasterCoef', 
+                    filter="RowKey ge '" + str(serial_number).rjust(5, '0') + "-00000000' and " + 
+                        "RowKey lt '" + str(int(serial_number)+1).rjust(5, '0') + "-00000000'", 
+                    select="RowKey")
+                max_key = str(serial_number).rjust(5, '0') + "-00000000"
+                for entity in possible_coefs:
+                    if entity.RowKey > max_key:
+                        max_key = entity.RowKey
+                coefs = self.table_service.get_entity('MasterCoef', "default", max_key)
         except AzureMissingResourceHttpError:
             print('No coefficients found for ' + type + " sensor " + str(serial_number) 
                   + " - using default coefs.")
