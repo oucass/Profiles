@@ -105,7 +105,7 @@ class Profile_Set():
         pos = raw_profile_set.pos_data()
 
         # Identify the start, peak, and end indices of each profile
-        index_list = utils.identify_profile(pos["alt_MSL"].magnitude,
+        index_list = utils.identify_profile(pos["alt_MSL"],
                                             pos["time"], self.confirm_bounds,
                                             to_return=[],
                                             profile_start_height=self
