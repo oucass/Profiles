@@ -3,6 +3,7 @@ setup.py
 oucass_profiles.egg-info/PKG-INFO
 oucass_profiles.egg-info/SOURCES.txt
 oucass_profiles.egg-info/dependency_links.txt
+oucass_profiles.egg-info/requires.txt
 oucass_profiles.egg-info/top_level.txt
 profiles/Meta.py
 profiles/Profile.py

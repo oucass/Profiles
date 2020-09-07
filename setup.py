@@ -13,6 +13,11 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/oucass/Profiles",
     packages=setuptools.find_packages(),
+    install_requires = [
+        'metpy==0.12.2',
+        'pymavlink==2.4.9',
+        'azure-cosmosdb-table'
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",

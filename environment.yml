@@ -1,0 +1,13 @@
+name: cass
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - matplotlib
+  - pandas
+  - netcdf4
+  - pip
+  - pip:
+    - azure-cosmosdb-table==1.0.6
+    - metpy==0.12.2
+    - pymavlink==2.4.9
