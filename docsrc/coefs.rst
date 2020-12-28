@@ -1,11 +1,17 @@
-Using your own Sensor Coefficients
-================================================================================
+***************************
+Set-Up: Sensor Coefficients
+***************************
 
-It is highly recommended that you use your own sensor coefficients, rather
-than the ones that we have provided. This page attempts to break down the
+This page attempts to break down the
 process of specifying your coefficients into manageable steps. If you get stuck,
 send us a message using the contact form on our home page!
 
+There are 2 ways to host your coefficients so that oucass-profiles can read them. 
+The simplest is to use CSV files in your local file system. Larger teams are likely to 
+prefer the instant updates possible when your coefficients are stored in Azure tables.
+
+Local File System
+============================
 
 Step 1: Start your file structure
 ----------------------------------
@@ -153,8 +159,35 @@ At this point, your coef folder should contain the following files:
     |-...
     |-MasterCoefList.csv
 
-Step 5: Process your data!
---------------------------
+Azure Tables
+==============
 
-To use your newly-specified coefficients, use the parameter "coefs_path"
-whenever you create a Profile or Profile_Set object.
+Step 1: Create an Azure "Storage Account"
+-----------------------------------------
+
+Make an account for your team at https://www.portal.azure.com. You can get set up with a free account, but will eventually need to transition to a paid account. Individual team members can make changes to the team account from personal, free accounts.
+
+The easiest way to interact with your Storage Account is through Microsoft Azure Storage Explorer. 
+
+Step 2: Assign each platform a unique numerical ID
+--------------------------------------------------
+
+Each platform (UAS) will need to have an ID, in addition to a name. The ID should be saved to the "SYSID_THISMAV" variable in your JSON file.
+
+Create a new Table in your Storage Account named "Copters". The PartitionKey can be whatever you'd like, or you can leave it set to "default". The CopterID should be assigned to RowKey, with the name of the copter in a new Property (column) called "Name"
+
+Step 3: Assign each sensor to a "scoop"
+----------------------------------------
+
+In oucass-profiles, a "scoop" is a collection of sensors that are used together. If your platforms have interchangable sensor loads, this can be really useful. If not, the "scoop" will represent the platform itself.
+
+Using Azure allows you more freedom in chosing your scoop names. You can use single character names (such as "A") or descriptive names (like "ChemFW1"). Assign these names to the PartitionKey of each row in a new table called "Scoops". The RowKey must be a date in the format YYYYMMDD and should represent the day on which the listed sensors were installed on the scoop. Don't delete outdated entries - oucass-profiles will make sure to use the serial numbers associated with thelatest scoop entry BEFORE the flight date.
+
+The Parameters of the Scoops table should be "Engineer", "IMET1", "IMET2", ..., "RH1", "RH2", ... The Engineer field can be used to identify the person who created an entry in the case of any discrepancies.
+
+Step 4: Supply the coefficients
+--------------------------------
+
+The next Table to create in your Storage Account is "MasterCoef". There should be one row per sensor in your inventory. The PartitionKey identifies the type of sensor ("Imet", "RH", or "Wind"), while the RowKey specifies the sensor's serial number. The serial number "0" is used to specify default coefficients for rough calculations when specific coefficients are not available. 
+
+The Parameters "A", "B", "C", "D", and "Offset" must exist in your table. The lettered columns hold the actual coefficients to convert resistance or voltage to some atmospheric property. "Offset" is used when a sensor (typically an RH sensor) is corrected for bias. Additional Parameters can be added according to your team's needs.

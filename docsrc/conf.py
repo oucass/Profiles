@@ -21,13 +21,13 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = u'oucass-profiles'
-copyright = u'2019, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs'
+copyright = u'2020, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs'
 author = u'Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs'
 
 # The short X.Y version
-version = u'1.1'
+version = u'1.3'
 # The full version, including alpha/beta/rc tags
-release = u'1.1.0'
+release = u'1.3.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -79,14 +79,13 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'agogo'
+html_theme = 'cassdoc'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
-
+# html_theme_options = {'render_sidebar': False}
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".

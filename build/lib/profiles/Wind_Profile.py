@@ -1,11 +1,5 @@
 """
 Calculates and stores wind parameters
-
-Authors Brian Greene, Jessica Blunt, Tyler Bell, Gus Azevedo \n
-Copyright University of Oklahoma Center for Autonomous Sensing and Sampling
-2019
-
-Component of Profiles v1.0.0
 """
 import numpy as np
 import pandas as pd
@@ -38,8 +32,7 @@ class Wind_Profile():
 
     def _init2(self, wind_dict, resolution, file_path=None,
                gridded_times=None, gridded_base=None, indices=(None, None),
-               ascent=True, units=None, nc_level='low',
-               coefs_path=os.path.join(utils.package_path, "coefs")):
+               ascent=True, units=None, nc_level='low', meta=None):
         """ Creates Wind_Profile object based on rotation data at the specified
         resolution
 
@@ -54,6 +47,7 @@ class Wind_Profile():
            processed? If not, False.
         :param metpy.units units: the units defined by Raw_Profile
         :param str file_path: the original file passed to the package
+        :param Meta meta: the parent Profile's Meta object
         :param str nc_level: either 'low', or 'none'. This parameter \
            is used when processing non-NetCDF files to determine which types \
            of NetCDF files will be generated. For individual files for each \
@@ -62,8 +56,12 @@ class Wind_Profile():
            'none'.
         """
 
+        self._meta = meta
+        if ascent:
+            self._ascent_filename_tag = "Ascending"
+        else:
+            self._ascent_filename_tag = "Descending"
 
-        self.coefs_path = coefs_path
         try:
             self._read_netCDF(file_path + "wind_" +
                               str(resolution.magnitude) +
@@ -81,13 +79,7 @@ class Wind_Profile():
             self._units = units
             self._datadir = os.path.dirname(file_path + ".json")
 
-        if ascent:
-            self._ascent_filename_tag = "Ascending"
-        else:
-            self._ascent_filename_tag = "Descending"
-
-
-
+        
         # If no indices given, use entire file
         if not indices[0] is None:
             # trim profile
@@ -185,7 +177,7 @@ class Wind_Profile():
         """
 
         # TODO account for moving platform
-        tail_num = wind_data["serial_numbers"]["wind"]
+        tail_num = utils.coef_manager.get_tail_n(wind_data['serial_numbers']['copterID'])
 
         # psi and az represent the copter's direction in spherical coordinates
         psi = np.zeros(len(wind_data["roll"])) * self._units.rad
@@ -214,13 +206,9 @@ class Wind_Profile():
             psi[i] = np.arccos(R[2, 2])
             az[i] = np.arctan2(R[1, 2], R[0, 2])
 
-        coefs = pd.read_csv(os.path.join(self.coefs_path, 'MasterCoefList.csv'))
-        a_spd = float(coefs.A[coefs.SerialNumber == tail_num]
-                      [coefs.SensorType == "Wind"])
-        b_spd = float(coefs.B[coefs.SerialNumber == tail_num]
-                      [coefs.SensorType == "Wind"])
-
-        speed = a_spd * np.sqrt(np.tan(psi)) + b_spd
+        
+        coefs = utils.coef_manager.get_coefs('Wind', tail_num)
+        speed = float(coefs['A']) * np.sqrt(np.tan(psi)).magnitude + float(coefs['B'])
 
         speed = speed * self._units.m / self._units.s
         # Throw out negative speeds
@@ -241,12 +229,19 @@ class Wind_Profile():
         :param string file_path: file name
         """
 
-        main_file = netCDF4.Dataset(file_path + "wind_" +
-                                    str(self.resolution.magnitude) +
-                                    str(self.resolution.units) +
-                                    self._ascent_filename_tag + ".nc", "w",
-                                    format="NETCDF4", mmap=False)
+        file_name = str(self._meta.get("location")) + str(self.resolution.magnitude) + \
+                    str(self._meta.get("platform_id")) + "CMT" + \
+                    "wind_" + self._ascent_filename_tag + ".c1." + \
+                    self._meta.get("timestamp").replace("_", ".") + ".cdf"
+        file_name = os.path.join(os.path.dirname(file_path), file_name)
+        if os.path.isfile(file_name):
+            return
 
+        main_file = netCDF4.Dataset(file_name, "w",
+                                    format="NETCDF4", mmap=False)
+        # File NC compliant to version 1.8
+        main_file.setncattr("Conventions", "NC-1.8")
+        
         main_file.createDimension("time", None)
         # DIRECTION
         dir_var = main_file.createVariable("dir", "f8", ("time",))
