@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="oucass-profiles",
-    version="1.3.0",
+    version="1.3.1",
     author="Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, Ariel Jacobs",
     author_email="cass@ou.edu",
     description="Tools to process atmospheric data collected by UAS along either vertical or horizontal lines",
@@ -15,8 +15,11 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires = [
         'metpy==0.12.2',
-        'pymavlink==2.4.9',
-        'azure-cosmosdb-table'
+        'pymavlink',
+        'azure-cosmosdb-table',
+        'netCDF4',
+        'matplotlib',
+        'pandas'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
