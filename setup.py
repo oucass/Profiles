@@ -16,7 +16,7 @@ setuptools.setup(
     install_requires = [
         'metpy==0.12.2',
         'pymavlink',
-        'azure-cosmosdb-table',
+        'azure-data-tables',
         'netCDF4',
         'matplotlib',
         'pandas',

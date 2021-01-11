@@ -5,15 +5,13 @@ import sys
 import os
 import warnings
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import timedelta
 from pandas.plotting import register_matplotlib_converters
 from pint import UnitStrippedWarning
 from metpy.units import units as u
-from azure.cosmosdb.table.tableservice import TableService
-from azure.cosmosdb.table.models import Entity
+
 from .Coef_Manager import Coef_Manager
 
 
