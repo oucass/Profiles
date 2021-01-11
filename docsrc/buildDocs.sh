@@ -34,12 +34,17 @@ docroot=`mktemp -d`
 
 export REPO_NAME="${GITHUB_REPOSITORY##*/}"
 
+#####################
+# build oucass-profiles #
+#####################
+pip install -e .
+
 ##############
 # BUILD DOCS #
 ##############
 
 # first, cleanup any old builds' static assets
-make -C docs clean
+make -C docsrc clean
 
 # get a list of branches, excluding 'HEAD' and 'gh-pages'
 versions="`git for-each-ref '--format=%(refname:lstrip=-1)' refs/remotes/origin/ | grep -viE '^(HEAD|gh-pages)$'`"
@@ -69,20 +74,20 @@ for current_version in ${versions}; do
       echo "INFO: Building for ${current_language}"
 
       # HTML #
-      sphinx-build -b html docsrc/ docs/_build/html/${current_language}/${current_version} -D language="${current_language}"
+      sphinx-build -b html docsrc/ docs/html/${current_language}/${current_version} -D language="${current_language}"
 
       # PDF #
-      sphinx-build -b rinoh docs/ docs/_build/rinoh -D language="${current_language}"
+      sphinx-build -b rinoh docsrc/ docs/rinoh -D language="${current_language}"
       mkdir -p "${docroot}/${current_language}/${current_version}"
-      cp "docs/_build/rinoh/target.pdf" "${docroot}/${current_language}/${current_version}/profiles-docs_${current_language}_${current_version}.pdf"
+      cp "docs/rinoh/target.pdf" "${docroot}/${current_language}/${current_version}/profiles-docs_${current_language}_${current_version}.pdf"
 
       # EPUB #
-      sphinx-build -b epub docs/ docs/_build/epub -D language="${current_language}"
+      sphinx-build -b epub docsrc/ docs/epub -D language="${current_language}"
       mkdir -p "${docroot}/${current_language}/${current_version}"
-      cp "docs/_build/epub/target.epub" "${docroot}/${current_language}/${current_version}/profiles-docs_${current_language}_${current_version}.epub"
+      cp "docs/epub/target.epub" "${docroot}/${current_language}/${current_version}/profiles-docs_${current_language}_${current_version}.epub"
 
       # copy the static assets produced by the above build into our docroot
-      rsync -av "docs/_build/html/" "${docroot}/"
+      rsync -av "docs/html/" "${docroot}/"
 
    done
 

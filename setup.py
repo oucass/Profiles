@@ -19,7 +19,8 @@ setuptools.setup(
         'azure-cosmosdb-table',
         'netCDF4',
         'matplotlib',
-        'pandas'
+        'pandas',
+        'cmocean'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
