@@ -21,6 +21,8 @@ apt-get -y install git rsync python3-dev python3-sphinx python3-sphinx-rtd-theme
 
 python3 -m pip install --upgrade rinohtype pygments
 
+python3 -m pip install .
+
 #####################
 # DECLARE VARIABLES #
 #####################
