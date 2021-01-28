@@ -20,7 +20,8 @@ setuptools.setup(
         'netCDF4',
         'matplotlib',
         'pandas',
-        'cmocean'
+        'cmocean',
+        'numpy>=1.16.5'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
