@@ -1,0 +1,447 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Coef_Manager &mdash; oucass-profiles 1.3.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> oucass-profiles
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                master
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Coef_Manager.html">Coef_Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Meta.html">Meta</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Profile.html">Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Profile_Set.html">Profile_Set</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Raw_Profile.html">Raw_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Thermo_Profile.html">Thermo_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Wind_Profile.html">Wind_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../plotting.html">plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coefs.html">Set-up: Sensor Coefficients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../conf.html">Set-up: Run Configuration</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">oucass-profiles</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>Coef_Manager</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for Coef_Manager</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">profiles.conf</span> <span class="kn">import</span> <span class="n">coef_info</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">azure.data.tables</span> <span class="kn">import</span> <span class="n">TableServiceClient</span>
+<span class="kn">from</span> <span class="nn">azure.core.exceptions</span> <span class="kn">import</span> <span class="n">ResourceNotFoundError</span>
+
+<div class="viewcode-block" id="Coef_Manager_Base"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.Coef_Manager_Base">[docs]</a><span class="k">class</span> <span class="nc">Coef_Manager_Base</span><span class="p">:</span>
+<div class="viewcode-block" id="Coef_Manager_Base.get_tail_n"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.Coef_Manager_Base.get_tail_n">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_tail_n</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">copterID</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the tail number corresponding to a short ID number.</span>
+
+<span class="sd">        :param int copterID: the short ID number of the copter</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        :return: the tail number</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Coef_Manager_Base.get_sensors"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.Coef_Manager_Base.get_sensors">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_sensors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scoopID</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the sensor serial numbers for the given scoop.</span>
+
+<span class="sd">        :param str scoopID: The scoop&#39;s identifier</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        :return: sensor numbers as {&quot;imet1&quot;:&quot;&quot;, &quot;imet2&quot;:&quot;&quot;, &quot;imet3&quot;:&quot;&quot;, &quot;imet4&quot;:&quot;&quot;,\</span>
+<span class="sd">                                    &quot;rh1&quot;:&quot;&quot;, &quot;rh2&quot;:&quot;&quot;, &quot;rh3&quot;:&quot;&quot;, &quot;rh4&quot;:&quot;&quot;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Coef_Manager_Base.get_coefs"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.Coef_Manager_Base.get_coefs">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_coefs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">serial_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the coefs for the sensor with the given type and serial number.</span>
+
+<span class="sd">        :param str type: &quot;Imet&quot; or &quot;RH&quot; or &quot;Wind&quot;</span>
+<span class="sd">        :param str serial_number: the sensor&#39;s serial number</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        :return: information about the sensor, including offset OR coefs and calibration equation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="Coef_Manager"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.Coef_Manager">[docs]</a><span class="k">class</span> <span class="nc">Coef_Manager</span><span class="p">(</span><span class="n">Coef_Manager_Base</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Reads the .profilesrc file to determine if the coefs are in the \</span>
+<span class="sd">       local file system or on Azure and to determine the file path \</span>
+<span class="sd">       or connection string, then ingests the data from the proper source. \</span>
+<span class="sd">       This object can then be queried by scoop number (to get sensor numbers), \</span>
+<span class="sd">       by sensor numbers (to get coefs), or by copter number (to get tail \</span>
+<span class="sd">       number).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create Coef_Manager</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The sub_manager will implement all abstract methods</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_manager</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">coef_info</span><span class="o">.</span><span class="n">USE_AZURE</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="s2">&quot;YES&quot;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">,</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+                    <span class="n">table_service</span> <span class="o">=</span> <span class="n">TableServiceClient</span><span class="o">.</span><span class="n">from_connection_string</span><span class="p">(</span><span class="n">conn_str</span><span class="o">=</span><span class="n">coef_info</span><span class="o">.</span><span class="n">AZURE_CONNECTION_STRING</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;There are no valid connection strings in __init__.py&quot;</span><span class="p">)</span>
+            <span class="c1"># If this point has been reached, we have an active table_service to pull data from</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sub_manager</span> <span class="o">=</span> <span class="n">Azure_Coef_Manager</span><span class="p">(</span><span class="n">table_service</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">coef_info</span><span class="o">.</span><span class="n">USE_AZURE</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="s2">&quot;NO&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coef_info</span><span class="o">.</span><span class="n">FILE_PATH</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">coef_info</span><span class="o">.</span><span class="n">FILE_PATH</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">sub_manager</span> <span class="o">=</span> <span class="n">CSV_Coef_Manager</span><span class="p">(</span><span class="n">coef_info</span><span class="o">.</span><span class="n">FILE_PATH</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The FILE_PATH in conf.py is not valid&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;When USE_AZURE is NO, the FILE_PATH must be set in conf.py.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;USE_AZURE in __init__.py must be YES or NO&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Coef_Manager.get_tail_n"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.Coef_Manager.get_tail_n">[docs]</a>    <span class="k">def</span> <span class="nf">get_tail_n</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">copterID</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the tail number corresponding to a short ID number.</span>
+
+<span class="sd">        :param int copterID: the short ID number of the copter</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        :return: the tail number</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_manager</span><span class="o">.</span><span class="n">get_tail_n</span><span class="p">(</span><span class="n">copterID</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Coef_Manager.get_sensors"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.Coef_Manager.get_sensors">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scoopID</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the sensor serial numbers for the given scoop.</span>
+
+<span class="sd">        :param str scoopID: The scoop&#39;s identifier</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        :return: sensor numbers as {&quot;imet1&quot;:&quot;&quot;, &quot;imet2&quot;:&quot;&quot;, &quot;imet3&quot;:&quot;&quot;, &quot;imet4&quot;:&quot;&quot;,\</span>
+<span class="sd">                                    &quot;rh1&quot;:&quot;&quot;, &quot;rh2&quot;:&quot;&quot;, &quot;rh3&quot;:&quot;&quot;, &quot;rh4&quot;:&quot;&quot;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_manager</span><span class="o">.</span><span class="n">get_sensors</span><span class="p">(</span><span class="n">scoopID</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Coef_Manager.get_coefs"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.Coef_Manager.get_coefs">[docs]</a>    <span class="k">def</span> <span class="nf">get_coefs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">serial_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the coefs for the sensor with the given type and serial number.</span>
+
+<span class="sd">        :param str type: &quot;Imet&quot; or &quot;RH&quot; or &quot;Wind&quot;</span>
+<span class="sd">        :param [str or int] serial_number: the sensor&#39;s serial number</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        :return: information about the sensor, including offset OR coefs and calibration equation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_manager</span><span class="o">.</span><span class="n">get_coefs</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">serial_number</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="Azure_Coef_Manager"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.Azure_Coef_Manager">[docs]</a><span class="k">class</span> <span class="nc">Azure_Coef_Manager</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; interface with Azure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_service</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create Azure_Coef_Manager</span>
+
+<span class="sd">        :param azure.cosmosdb.table.tableservice.TableService table_service: TableService connected \</span>
+<span class="sd">           to storage account containing coef tables</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_service</span> <span class="o">=</span> <span class="n">table_service</span>
+
+<div class="viewcode-block" id="Azure_Coef_Manager.get_tail_n"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.Azure_Coef_Manager.get_tail_n">[docs]</a>    <span class="k">def</span> <span class="nf">get_tail_n</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">copterID</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the tail number corresponding to a short ID number.</span>
+
+<span class="sd">        :param int copterID: the short ID number of the copter</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        :return: the tail number</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">,</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_service</span><span class="o">.</span><span class="n">get_table_client</span><span class="p">(</span><span class="s1">&#39;Copters&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_entity</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">copterID</span><span class="p">)))</span><span class="o">.</span><span class="n">name</span></div>
+
+<div class="viewcode-block" id="Azure_Coef_Manager.get_sensors"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.Azure_Coef_Manager.get_sensors">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scoopID</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the sensor serial numbers for the given scoop.</span>
+
+<span class="sd">        :param str scoopID: The scoop&#39;s identifier</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        :return: sensor numbers as {&quot;imet1&quot;:&quot;&quot;, &quot;imet2&quot;:&quot;&quot;, &quot;imet3&quot;:&quot;&quot;, &quot;imet4&quot;:&quot;&quot;,\</span>
+<span class="sd">                                    &quot;rh1&quot;:&quot;&quot;, &quot;rh2&quot;:&quot;&quot;, &quot;rh3&quot;:&quot;&quot;, &quot;rh4&quot;:&quot;&quot;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">,</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+            <span class="n">all_scoop</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">table_service</span><span class="o">.</span><span class="n">get_table_client</span><span class="p">(</span><span class="s1">&#39;Scoops&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span>
+                <span class="nb">filter</span><span class="o">=</span><span class="s2">&quot;RowKey ge &#39;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">scoopID</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_00000000&#39;&quot;</span><span class="p">,</span> 
+                <span class="n">select</span><span class="o">=</span><span class="s2">&quot;RowKey&quot;</span><span class="p">)</span>
+            <span class="n">max_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">scoopID</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_00000000&quot;</span>
+            <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">all_scoop</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">entity</span><span class="o">.</span><span class="n">RowKey</span> <span class="o">&gt;</span> <span class="n">max_key</span><span class="p">:</span>
+                    <span class="n">max_key</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">RowKey</span>
+            <span class="n">coefs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_service</span><span class="o">.</span><span class="n">get_table_client</span><span class="p">(</span><span class="s1">&#39;Scoops&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_entity</span><span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">max_key</span><span class="p">)</span>
+
+            <span class="c1"># TODO test that max</span>
+            <span class="n">sns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_service</span><span class="o">.</span><span class="n">get_table_client</span><span class="p">(</span><span class="s1">&#39;Scoops&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_entity</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">scoopID</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_date</span><span class="p">))</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;imet1&quot;</span><span class="p">:</span><span class="n">sns</span><span class="o">.</span><span class="n">IMET1</span><span class="p">,</span> <span class="s2">&quot;imet2&quot;</span><span class="p">:</span><span class="n">sns</span><span class="o">.</span><span class="n">IMET2</span><span class="p">,</span> <span class="s2">&quot;imet3&quot;</span><span class="p">:</span><span class="n">sns</span><span class="o">.</span><span class="n">IMET3</span><span class="p">,</span> <span class="s2">&quot;imet4&quot;</span><span class="p">:</span><span class="n">sns</span><span class="o">.</span><span class="n">IMET4</span><span class="p">,</span>
+                    <span class="s2">&quot;rh1&quot;</span><span class="p">:</span><span class="n">sns</span><span class="o">.</span><span class="n">RH1</span><span class="p">,</span> <span class="s2">&quot;rh2&quot;</span><span class="p">:</span><span class="n">sns</span><span class="o">.</span><span class="n">RH2</span><span class="p">,</span> <span class="s2">&quot;rh3&quot;</span><span class="p">:</span><span class="n">sns</span><span class="o">.</span><span class="n">RH3</span><span class="p">,</span> <span class="s2">&quot;rh4&quot;</span><span class="p">:</span><span class="n">sns</span><span class="o">.</span><span class="n">RH4</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="Azure_Coef_Manager.get_coefs"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.Azure_Coef_Manager.get_coefs">[docs]</a>    <span class="k">def</span> <span class="nf">get_coefs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">serial_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the coefs for the sensor with the given type and serial number.</span>
+
+<span class="sd">        :param str type: &quot;Imet&quot; or &quot;RH&quot; or &quot;Wind&quot;</span>
+<span class="sd">        :param str serial_number: the sensor&#39;s serial number</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        :return: information about the sensor, including offset OR coefs and calibration equation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">,</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+                <span class="n">possible_coefs</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">table_service</span><span class="o">.</span><span class="n">get_table_client</span><span class="p">(</span><span class="s1">&#39;MasterCoef&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span>
+                    <span class="nb">filter</span><span class="o">=</span><span class="s2">&quot;RowKey ge &#39;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">serial_number</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;-00000000&#39; and &quot;</span> <span class="o">+</span> 
+                        <span class="s2">&quot;RowKey lt &#39;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">serial_number</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;-00000000&#39;&quot;</span><span class="p">,</span> 
+                    <span class="n">select</span><span class="o">=</span><span class="s2">&quot;RowKey&quot;</span><span class="p">)</span>
+                <span class="n">max_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">serial_number</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;-00000000&quot;</span>
+                <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">possible_coefs</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">entity</span><span class="o">.</span><span class="n">RowKey</span> <span class="o">&gt;</span> <span class="n">max_key</span><span class="p">:</span>
+                        <span class="n">max_key</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">RowKey</span>
+                <span class="n">coefs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_service</span><span class="o">.</span><span class="n">get_table_client</span><span class="p">(</span><span class="s1">&#39;MasterCoef&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_entity</span><span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">max_key</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ResourceNotFoundError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No coefficients found for &#39;</span> <span class="o">+</span> <span class="nb">type</span> <span class="o">+</span> <span class="s2">&quot; sensor &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">serial_number</span><span class="p">)</span> 
+                  <span class="o">+</span> <span class="s2">&quot; - using default coefs.&quot;</span><span class="p">)</span>
+            <span class="n">coefs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_service</span><span class="o">.</span><span class="n">get_table_client</span><span class="p">(</span><span class="s1">&#39;MasterCoef&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_entity</span><span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="s2">&quot;00000-00000000&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;A&quot;</span><span class="p">:</span><span class="n">coefs</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span><span class="n">coefs</span><span class="o">.</span><span class="n">B</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span><span class="n">coefs</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">:</span><span class="n">coefs</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="s2">&quot;Equation&quot;</span><span class="p">:</span><span class="n">coefs</span><span class="o">.</span><span class="n">Equation</span><span class="p">}</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;A&quot;</span><span class="p">:</span><span class="n">coefs</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span><span class="n">coefs</span><span class="o">.</span><span class="n">B</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span><span class="n">coefs</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="s2">&quot;Equation&quot;</span><span class="p">:</span><span class="n">coefs</span><span class="o">.</span><span class="n">Equation</span><span class="p">}</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;A&quot;</span><span class="p">:</span><span class="n">coefs</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span><span class="n">coefs</span><span class="o">.</span><span class="n">B</span><span class="p">,</span> <span class="s2">&quot;Equation&quot;</span><span class="p">:</span><span class="n">coefs</span><span class="o">.</span><span class="n">Equation</span><span class="p">}</span>
+                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;A&quot;</span><span class="p">:</span><span class="n">coefs</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="s2">&quot;Equation&quot;</span><span class="p">:</span><span class="n">coefs</span><span class="o">.</span><span class="n">Equation</span><span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="CSV_Coef_Manager"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.CSV_Coef_Manager">[docs]</a><span class="k">class</span> <span class="nc">CSV_Coef_Manager</span><span class="p">(</span><span class="n">Coef_Manager_Base</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span> <span class="o">=</span> <span class="n">file_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coefs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;MasterCoefList.csv&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">copternums</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;copterID.csv&#39;</span><span class="p">),</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;tail&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="CSV_Coef_Manager.get_tail_n"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.CSV_Coef_Manager.get_tail_n">[docs]</a>    <span class="k">def</span> <span class="nf">get_tail_n</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">copterID</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the tail number corresponding to a short ID number.</span>
+
+<span class="sd">        :param int copterID: the short ID number of the copter</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        :return: the tail number</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">copternums</span><span class="p">[</span><span class="s1">&#39;tail&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">copternums</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span><span class="n">copterID</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="CSV_Coef_Manager.get_sensors"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.CSV_Coef_Manager.get_sensors">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scoopID</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the sensor serial numbers for the given scoop.</span>
+
+<span class="sd">        :param str scoopID: The scoop&#39;s identifier</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        :return: sensor numbers as {&quot;imet1&quot;:&quot;&quot;, &quot;imet2&quot;:&quot;&quot;, &quot;imet3&quot;:&quot;&quot;, &quot;imet4&quot;:&quot;&quot;,\</span>
+<span class="sd">                                    &quot;rh1&quot;:&quot;&quot;, &quot;rh2&quot;:&quot;&quot;, &quot;rh3&quot;:&quot;&quot;, &quot;rh4&quot;:&quot;&quot;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">scoop_info</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;scoop&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">scoopID</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.csv&#39;</span><span class="p">))</span>
+        <span class="n">max_date</span><span class="o">=</span><span class="s2">&quot;0000-00-00&quot;</span>
+        <span class="n">dates</span> <span class="o">=</span> <span class="n">scoop_info</span><span class="o">.</span><span class="n">validFrom</span>
+        <span class="k">for</span> <span class="n">date</span> <span class="ow">in</span> <span class="n">dates</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">date</span> <span class="o">&gt;</span> <span class="n">max_date</span><span class="p">:</span>
+                <span class="n">max_date</span> <span class="o">=</span> <span class="n">date</span>
+
+        <span class="n">most_recent</span> <span class="o">=</span> <span class="n">scoop_info</span><span class="p">[</span><span class="n">scoop_info</span><span class="o">.</span><span class="n">validFrom</span> <span class="o">==</span> <span class="n">max_date</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;imet1&quot;</span><span class="p">:</span><span class="nb">str</span><span class="p">(</span><span class="n">most_recent</span><span class="o">.</span><span class="n">imet1</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;imet2&quot;</span><span class="p">:</span><span class="nb">str</span><span class="p">(</span><span class="n">most_recent</span><span class="o">.</span><span class="n">imet2</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                <span class="s2">&quot;imet3&quot;</span><span class="p">:</span><span class="nb">str</span><span class="p">(</span><span class="n">most_recent</span><span class="o">.</span><span class="n">imet3</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;imet4&quot;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;rh1&quot;</span><span class="p">:</span><span class="nb">str</span><span class="p">(</span><span class="n">most_recent</span><span class="o">.</span><span class="n">rh1</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                <span class="s2">&quot;rh2&quot;</span><span class="p">:</span><span class="nb">str</span><span class="p">(</span><span class="n">most_recent</span><span class="o">.</span><span class="n">rh2</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>  <span class="s2">&quot;rh3&quot;</span><span class="p">:</span><span class="nb">str</span><span class="p">(</span><span class="n">most_recent</span><span class="o">.</span><span class="n">rh3</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;rh4&quot;</span><span class="p">:</span><span class="kc">None</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="CSV_Coef_Manager.get_coefs"><a class="viewcode-back" href="../Coef_Manager.html#Coef_Manager.CSV_Coef_Manager.get_coefs">[docs]</a>    <span class="k">def</span> <span class="nf">get_coefs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">serial_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the coefs for the sensor with the given type and serial number.</span>
+
+<span class="sd">        :param str type: &quot;Imet&quot; or &quot;RH&quot; or &quot;Wind&quot;</span>
+<span class="sd">        :param [str or int] serial_number: the sensor&#39;s serial number</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        :return: information about the sensor, including offset OR coefs and calibration equation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">serial_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">serial_number</span><span class="p">)</span>
+        <span class="n">coefs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coefs</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">coefs</span><span class="o">.</span><span class="n">A</span><span class="p">[</span><span class="n">coefs</span><span class="o">.</span><span class="n">SerialNumber</span> <span class="o">==</span> <span class="n">serial_number</span><span class="p">][</span><span class="n">coefs</span><span class="o">.</span><span class="n">SensorType</span> <span class="o">==</span> <span class="nb">type</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">coefs</span><span class="o">.</span><span class="n">B</span><span class="p">[</span><span class="n">coefs</span><span class="o">.</span><span class="n">SerialNumber</span> <span class="o">==</span> <span class="n">serial_number</span><span class="p">][</span><span class="n">coefs</span><span class="o">.</span><span class="n">SensorType</span> <span class="o">==</span> <span class="nb">type</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">coefs</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="n">coefs</span><span class="o">.</span><span class="n">SerialNumber</span> <span class="o">==</span> <span class="n">serial_number</span><span class="p">][</span><span class="n">coefs</span><span class="o">.</span><span class="n">SensorType</span> <span class="o">==</span> <span class="nb">type</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">coefs</span><span class="o">.</span><span class="n">D</span><span class="p">[</span><span class="n">coefs</span><span class="o">.</span><span class="n">SerialNumber</span> <span class="o">==</span> <span class="n">serial_number</span><span class="p">][</span><span class="n">coefs</span><span class="o">.</span><span class="n">SensorType</span> <span class="o">==</span> <span class="nb">type</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">eq</span> <span class="o">=</span> <span class="n">coefs</span><span class="o">.</span><span class="n">Equation</span><span class="p">[</span><span class="n">coefs</span><span class="o">.</span><span class="n">SerialNumber</span> <span class="o">==</span> <span class="n">serial_number</span><span class="p">][</span><span class="n">coefs</span><span class="o">.</span><span class="n">SensorType</span> <span class="o">==</span> <span class="nb">type</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">coefs</span><span class="o">.</span><span class="n">Offset</span><span class="p">[</span><span class="n">coefs</span><span class="o">.</span><span class="n">SerialNumber</span> <span class="o">==</span> <span class="n">serial_number</span><span class="p">][</span><span class="n">coefs</span><span class="o">.</span><span class="n">SensorType</span> <span class="o">==</span> <span class="nb">type</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;A&quot;</span><span class="p">:</span><span class="n">a</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span><span class="n">b</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span><span class="n">c</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">:</span><span class="n">d</span><span class="p">,</span> <span class="s2">&quot;Equation&quot;</span><span class="p">:</span><span class="n">eq</span><span class="p">,</span> <span class="s2">&quot;Offset&quot;</span><span class="p">:</span><span class="n">offset</span><span class="p">}</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

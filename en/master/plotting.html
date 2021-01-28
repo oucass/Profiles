@@ -1,0 +1,305 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>plotting &mdash; oucass-profiles 1.3.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utils" href="utils.html" />
+    <link rel="prev" title="Wind_Profile" href="Wind_Profile.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> oucass-profiles
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                master
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Coef_Manager.html">Coef_Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Meta.html">Meta</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Profile.html">Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Profile_Set.html">Profile_Set</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Raw_Profile.html">Raw_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Thermo_Profile.html">Thermo_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Wind_Profile.html">Wind_Profile</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coefs.html">Set-up: Sensor Coefficients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conf.html">Set-up: Run Configuration</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">oucass-profiles</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>plotting</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/oucass/Profiles/blob/master/docs/plotting.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="plotting">
+<h1>plotting<a class="headerlink" href="#plotting" title="Permalink to this headline">¶</a></h1>
+<dl class="data">
+<dt id="fpath_logos">
+<code class="descname">fpath_logos</code><a class="headerlink" href="#fpath_logos" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="plotting.contour_height_time">
+<code class="descclassname">plotting.</code><code class="descname">contour_height_time</code><span class="sig-paren">(</span><em>profiles, var=['temp'], use_pres=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plotting.html#contour_height_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotting.contour_height_time" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>contourHeightTime creates a filled contour plot of the first element of</dt>
+<dd><p class="first">var in a time-height coordinate system. If len(var) &gt; 1, it also
+overlays unfilled contours of the remaining elements. No more than 4
+variables can be plotted at once.
+Accepted variable names are:</p>
+<ul class="last simple">
+<li>‘theta’</li>
+<li>‘temp’</li>
+<li>‘T_d’</li>
+<li>‘dewp’</li>
+<li>‘r’</li>
+<li>‘mr’</li>
+<li>‘q’</li>
+<li>‘rh’</li>
+<li>‘speed’:</li>
+<li>‘u’</li>
+<li>‘v’</li>
+<li>‘dir’</li>
+<li>‘pres’</li>
+<li>‘p’</li>
+<li>‘alt’</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>profiles</strong> (<em>list</em>) – a list of all profiles to be included in the plot</li>
+<li><strong>var</strong> (<em>list&lt;str&gt;</em>) – names of the variable to be plotted</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">matplotlib.figure.Figure</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the contoured plot</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotting.plot_skewT">
+<code class="descclassname">plotting.</code><code class="descname">plot_skewT</code><span class="sig-paren">(</span><em>profiles</em>, <em>wind_barbs=False</em>, <em>barb_density=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plotting.html#plot_skewT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotting.plot_skewT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a SkewT diagram.
+:param list&lt;number&gt; profiles: profiles which contain T_d, press, and temp data
+:param bool wind_barbs: if True, plot wind barbs. Requires that profiles contain u, v data.
+:param int barb_density: n for which every nth barb is plotted
+:rtype: matplotlib.figure.Figure
+:return: fig containing a SkewT diagram of the data</p>
+</dd></dl>
+
+<script type="text/javascript">
+var methods = document.getElementsByClassName("function");
+var i;
+for (i=0; i<methods.length; i++)
+{
+   methods[i].addEventListener("click", function()
+      {
+         this.classList.toggle("active");
+         var content = this.lastElementChild;
+         if (content.style.display == "block")
+         {
+            content.style.display = "none";
+         }
+         else
+         {
+            content.style.display = "block";
+         }
+      });
+   // Initially set all to hidden
+   methods[i].lastElementChild.style.display = "none";
+}
+</script></div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="utils.html" class="btn btn-neutral float-right" title="utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Wind_Profile.html" class="btn btn-neutral float-left" title="Wind_Profile" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

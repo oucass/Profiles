@@ -1,0 +1,318 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Profile &mdash; oucass-profiles 1.3.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Profile_Set" href="Profile_Set.html" />
+    <link rel="prev" title="Meta" href="Meta.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> oucass-profiles
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                master
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Coef_Manager.html">Coef_Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Meta.html">Meta</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Profile_Set.html">Profile_Set</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Raw_Profile.html">Raw_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Thermo_Profile.html">Thermo_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Wind_Profile.html">Wind_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coefs.html">Set-up: Sensor Coefficients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conf.html">Set-up: Run Configuration</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">oucass-profiles</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Profile</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/oucass/Profiles/blob/master/docs/Profile.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-Profile">
+<span id="profile"></span><h1>Profile<a class="headerlink" href="#module-Profile" title="Permalink to this headline">¶</a></h1>
+<p>Manages data from a single flight or profile</p>
+<dl class="class">
+<dt id="Profile.Profile">
+<em class="property">class </em><code class="descclassname">Profile.</code><code class="descname">Profile</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile.html#Profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile.Profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Profile object contains data from a profile (if altitude or pressure
+is specified under resolution) or flight (if the resolution is in units
+of time)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dev</strong> (<em>bool</em>) – True if data is from developmental flights</li>
+<li><strong>resolution</strong> (<em>Quantity</em>) – resolution of the data in units of altitude or        pressure</li>
+<li><strong>indices</strong> (<em>tuple</em>) – the bounds of the profile to be processed as       (start_time, end_time)</li>
+<li><strong>ascent</strong> (<em>bool</em>) – True if data from the ascending leg should be processed,       otherwise the descending leg will be processed instead</li>
+<li><strong>file_path</strong> (<em>String</em>) – the path to you .bin, .json, or .nc data file</li>
+<li><strong>gridded_times</strong> (<em>np.Array&lt;Datetime&gt;</em>) – the times at which data points are        generated</li>
+<li><strong>gridded_base</strong> (<em>np.Array&lt;Quantity&gt;</em>) – the value of the vertical coordinate       at each data point</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="Profile.Profile.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>varname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile.html#Profile.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile.Profile.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the requested variable, which may be in Profile or one of its
+attributes (ex. temp is in thermo_profile)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>varname</strong> (<em>str</em>) – the name of the requested variable</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the requested variable</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Profile.Profile.get_thermo_profile">
+<code class="descname">get_thermo_profile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile.html#Profile.get_thermo_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile.Profile.get_thermo_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>If a Thermo_Profile object does not already exist, it is created
+when this method is called.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the Thermo_Profile object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="Thermo_Profile.html#Thermo_Profile.Thermo_Profile" title="Thermo_Profile.Thermo_Profile">Thermo_Profile</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Profile.Profile.get_wind_profile">
+<code class="descname">get_wind_profile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile.html#Profile.get_wind_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile.Profile.get_wind_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>If a Wind_Profile object does not already exist, it is created when
+this method is called.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the Wind_Profile object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="Wind_Profile.html#Wind_Profile.Wind_Profile" title="Wind_Profile.Wind_Profile">Wind_Profile</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<script type="text/javascript">
+var methods = document.getElementsByClassName("method");
+var i;
+for (i=0; i<methods.length; i++)
+{
+   methods[i].addEventListener("click", function()
+      {
+         this.classList.toggle("active");
+         var content = this.lastElementChild;
+         if (content.style.display == "block")
+         {
+            content.style.display = "none";
+         }
+         else
+         {
+            content.style.display = "block";
+         }
+      });
+   // Initially set all to hidden
+   methods[i].lastElementChild.style.display = "none";
+}
+</script></div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Profile_Set.html" class="btn btn-neutral float-right" title="Profile_Set" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Meta.html" class="btn btn-neutral float-left" title="Meta" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

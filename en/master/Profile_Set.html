@@ -1,0 +1,371 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Profile_Set &mdash; oucass-profiles 1.3.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Raw_Profile" href="Raw_Profile.html" />
+    <link rel="prev" title="Profile" href="Profile.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> oucass-profiles
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                master
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Coef_Manager.html">Coef_Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Meta.html">Meta</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Profile.html">Profile</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Profile_Set</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Raw_Profile.html">Raw_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Thermo_Profile.html">Thermo_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Wind_Profile.html">Wind_Profile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coefs.html">Set-up: Sensor Coefficients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conf.html">Set-up: Run Configuration</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">oucass-profiles</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Profile_Set</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/oucass/Profiles/blob/master/docs/Profile_Set.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-Profile_Set">
+<span id="profile-set"></span><h1>Profile_Set<a class="headerlink" href="#module-Profile_Set" title="Permalink to this headline">¶</a></h1>
+<p>Manages data from a collection of flights or profiles at a specific location</p>
+<dl class="class">
+<dt id="Profile_Set.Profile_Set">
+<em class="property">class </em><code class="descclassname">Profile_Set.</code><code class="descname">Profile_Set</code><span class="sig-paren">(</span><em>resolution=10</em>, <em>res_units='m'</em>, <em>ascent=True</em>, <em>dev=False</em>, <em>confirm_bounds=True</em>, <em>profile_start_height=None</em>, <em>nc_level='none'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class manages data (in the form of Profile objects) from one or
+many flights.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>profiles</strong> (<em>list&lt;Profile&gt;</em>) – list of Profile objects at this location</li>
+<li><strong>ascent</strong> (<em>bool</em>) – True if data from the ascending leg of the profile is        to be used. If False, the descending leg will be processed instead</li>
+<li><strong>dev</strong> (<em>bool</em>) – True if data from developmental flights is to be uploaded</li>
+<li><strong>resolution</strong> (<em>int</em>) – the vertical resolution desired</li>
+<li><strong>res_units</strong> (<em>str</em>) – the units in which the vertical resolution is given</li>
+<li><strong>confirm_bounds</strong> (<em>bool</em>) – if True, the user will be asked to verify the        automatically-determined start, peak, and end times of each profile</li>
+<li><strong>profile_start_height</strong> (<em>int</em>) – either passed to the constructor or        provided by the user during processing</li>
+<li><strong>meta</strong> (<a class="reference internal" href="Meta.html#Meta.Meta" title="Meta.Meta"><em>Meta</em></a>) – reads and processes metadata from oucass-checklist</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="Profile_Set.Profile_Set.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>resolution=10</em>, <em>res_units='m'</em>, <em>ascent=True</em>, <em>dev=False</em>, <em>confirm_bounds=True</em>, <em>profile_start_height=None</em>, <em>nc_level='none'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a Profiles object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>resolution</strong> (<em>int</em>) – resolution to which data should be
+calculated in units of altitude or pressure</li>
+<li><strong>res_units</strong> (<em>str</em>) – units of resolution in a format which can            be parsed by pint</li>
+<li><strong>ascent</strong> (<em>bool</em>) – True to use ascending leg of flight, False to use            descending leg</li>
+<li><strong>dev</strong> (<em>bool</em>) – True if data is from a developmental flight</li>
+<li><strong>confirm_bounds</strong> – False to bypass user confirmation of            automatically identified start, peak, and end times</li>
+<li><strong>profile_start_height</strong> (<em>int</em>) – if provided, the user will not be            prompted to enter the starting height for each profile separately.           This can be usefull when processing many profiles from the same            mission, but at least one profile should be processed without this            parameter to determine its correct value.</li>
+<li><strong>nc_level</strong> (<em>str</em>) – either ‘low’, or ‘none’. This parameter            is used when processing non-NetCDF files to determine which types            of NetCDF files will be generated. For individual files for each            Raw, Thermo,            and Wind Profile, specify ‘low’. For no NetCDF files, specify            ‘none’. To generate a single, Profile_Set-level file, call            Profile_Set.save_netCDF where you are done adding data.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Profile_Set.Profile_Set.__str__">
+<code class="descname">__str__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.__str__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return str(self).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Profile_Set.Profile_Set.add_all_profiles">
+<code class="descname">add_all_profiles</code><span class="sig-paren">(</span><em>file_path</em>, <em>scoop_id=None</em>, <em>meta_flight_path=None</em>, <em>meta_header_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.add_all_profiles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.add_all_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a file, splits it in to several vertical profiles, and adds
+all Profiles to profiles</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>file_path</strong> (<em>str</em>) – the data file</li>
+<li><strong>scoop_id</strong> (<em>str</em>) – the identifier of the sensor package used</li>
+<li><strong>meta_flight_path</strong> (<em>str</em>) – path to the “flight” file generated by oucass-checklist</li>
+<li><strong>meta_header_path</strong> (<em>str</em>) – path to the “header” file generated by oucass-checklist</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Profile_Set.Profile_Set.add_profile">
+<code class="descname">add_profile</code><span class="sig-paren">(</span><em>file_path</em>, <em>time=datetime.datetime(1</em>, <em>1</em>, <em>1</em>, <em>0</em>, <em>0)</em>, <em>profile_num=None</em>, <em>scoop_id=None</em>, <em>meta_header_path=None</em>, <em>meta_flight_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.add_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.add_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a file and creates a Profile for the first vertical profile
+after time OR for the profile_numth profile.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>file_path</strong> (<em>string</em>) – the data file</li>
+<li><strong>time</strong> (<em>datetime</em>) – the time after which the profile begins
+(used only if profile_num is not specified)</li>
+<li><strong>profile_num</strong> (<em>int</em>) – use the nth profile in the file</li>
+<li><strong>scoop_id</strong> (<em>str</em>) – the identifier of the sensor package used</li>
+<li><strong>meta_flight_path</strong> (<em>str</em>) – path to the “flight” file generated by oucass-checklist</li>
+<li><strong>meta_header_path</strong> (<em>str</em>) – path to the “header” file generated by oucass-checklist</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Profile_Set.Profile_Set.merge">
+<code class="descname">merge</code><span class="sig-paren">(</span><em>to_add</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.merge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads all Profile objects from a pre-existing Profiles into this
+Profiles. All flights must be from the same location.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>to_add</strong> (<em>Profiles</em>) – the Profiles object to be merged in</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Profile_Set.Profile_Set.read_netCDF">
+<code class="descname">read_netCDF</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Profile_Set.html#Profile_Set.read_netCDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Profile_Set.Profile_Set.read_netCDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Re-creates a Profile_Set object which has been saved as a NetCDF</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_path</strong> (<em>string</em>) – the NetCDF file</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<script type="text/javascript">
+var methods = document.getElementsByClassName("method");
+var i;
+for (i=0; i<methods.length; i++)
+{
+   methods[i].addEventListener("click", function()
+      {
+         this.classList.toggle("active");
+         var content = this.lastElementChild;
+         if (content.style.display == "block")
+         {
+            content.style.display = "none";
+         }
+         else
+         {
+            content.style.display = "block";
+         }
+      });
+   // Initially set all to hidden
+   methods[i].lastElementChild.style.display = "none";
+}
+</script></div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Raw_Profile.html" class="btn btn-neutral float-right" title="Raw_Profile" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Profile.html" class="btn btn-neutral float-left" title="Profile" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, Jessica Blunt, Tyler Bell, Brian Greene, Gus Azevedo, and Ariel Jacobs
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
